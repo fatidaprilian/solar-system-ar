@@ -1,0 +1,426 @@
+{
+  "cliVersion": "3.0.44",
+  "generatedAt": "2026-05-10T17:34:50.863Z",
+  "operationMode": "init",
+  "selectedProfile": "balanced",
+  "selectedPreset": null,
+  "projectScope": {
+    "key": "both",
+    "label": "Both (frontend + backend)"
+  },
+  "projectTopology": null,
+  "runtimeDecision": {
+    "mode": "agent-decision-required",
+    "explicitStack": null,
+    "detectedStackEvidence": "typescript.md",
+    "detectedAdditionalStackEvidence": []
+  },
+  "architectureDecision": {
+    "mode": "agent-decision-required",
+    "explicitBlueprint": null,
+    "detectedBlueprintEvidence": null
+  },
+  "selectedStack": null,
+  "selectedAdditionalStacks": [],
+  "selectedBlueprint": null,
+  "selectedAdditionalBlueprints": [],
+  "ruleLoadingPolicy": {
+    "canonicalSource": ".instructions.md",
+    "stackLoadingMode": "lazy",
+    "domainRuleLoadingMode": "lazy",
+    "loadedOnDemand": true,
+    "primaryStack": null,
+    "additionalStacks": [],
+    "agentDecisionRequired": true
+  },
+  "ciGuardrailsEnabled": true,
+  "setupDurationMs": 2593,
+  "runtimeEnvironment": {
+    "selected": "windows",
+    "selectedLabel": "Windows",
+    "detected": "windows",
+    "detectedLabel": "Windows",
+    "detectionSource": "process.platform"
+  },
+  "containerizationStrategy": {
+    "selected": null,
+    "developmentRequired": false,
+    "productionRequired": false,
+    "materializationRequired": false,
+    "requiredRuleFile": null,
+    "commandExecutionPolicy": null
+  },
+  "tokenOptimization": {
+    "enabled": true,
+    "selectedAgent": "copilot",
+    "preferredShellProxy": "native-fallback",
+    "stateFile": ".agent-context/state/token-optimization.json"
+  },
+  "memoryContinuity": {
+    "enabled": true,
+    "hydrationMode": "progressive-disclosure",
+    "adapters": [
+      "claude-code",
+      "gemini-cli",
+      "vscode-chat"
+    ],
+    "stateFile": ".agent-context/state/memory-continuity.json",
+    "activeSnapshotFile": ".agent-context/state/active-memory.json"
+  },
+  "autoDetection": {
+    "detectedStack": "typescript.md",
+    "detectedAdditionalStacks": [],
+    "detectedBlueprint": null,
+    "detectedAdditionalBlueprints": [],
+    "confidenceLabel": "high",
+    "confidenceScore": 0.97,
+    "confidenceGap": 0.97,
+    "detectionReasoning": "Top signal Typescript won with confidence 0.97 from markers: package.json, tsconfig.json, Vite config.",
+    "rankedCandidates": [
+      {
+        "stackFileName": "typescript.md",
+        "confidenceScore": 0.97,
+        "evidence": [
+          "package.json",
+          "tsconfig.json",
+          "Vite config"
+        ]
+      }
+    ],
+    "evidence": [
+      "package.json",
+      "tsconfig.json",
+      "Vite config"
+    ],
+    "detectionTransparency": {
+      "declaredAt": "2026-05-10T17:34:48.281Z",
+      "declarationType": "existing-project",
+      "declarationShown": true,
+      "detectionSummary": "This folder looks like Typescript with high confidence based on package.json, tsconfig.json, Vite config. Confidence gap: 0.97.",
+      "activeRulesSummary": {
+        "canonicalSource": ".instructions.md",
+        "compiledRulebook": ".agent-instructions.md",
+        "legacyThinAdapters": [
+          ".cursorrules",
+          ".windsurfrules",
+          ".clauderc"
+        ],
+        "generatedBridgeAdapters": [
+          "AGENTS.md",
+          "CLAUDE.md",
+          "GEMINI.md",
+          ".cursor/rules/agentic-senior-core.mdc",
+          ".windsurf/rules/agentic-senior-core.md",
+          ".github/copilot-instructions.md",
+          ".github/instructions/agentic-senior-core.instructions.md",
+          ".gemini/instructions.md"
+        ],
+        "stackLoadingMode": "lazy",
+        "domainRuleLoadingMode": "lazy",
+        "selectedProfile": "balanced",
+        "selectedProfileDisplayName": "Balanced",
+        "blockingSeverities": [
+          "critical",
+          "high"
+        ],
+        "ciGuardrailsEnabled": true
+      },
+      "majorConstraints": [
+        "Preserve existing project markers and avoid forced stack migration.",
+        "Use detected runtime markers as evidence only; do not convert them into stack migration or design direction.",
+        "Explicit stack or blueprint overrides are constraints only when the user provides them."
+      ],
+      "quickConfirmation": {
+        "offered": false,
+        "response": "evidence-only",
+        "source": "existing-project-detection"
+      },
+      "decision": {
+        "mode": "existing-project-evidence-only",
+        "selectedStackFileName": "agent-decision-runtime.md",
+        "selectedBlueprintFileName": "agent-decision-architecture.md",
+        "selectedAdditionalStackFileNames": [],
+        "selectedAdditionalBlueprintFileNames": [],
+        "usedDetectedSetup": false,
+        "selectedProjectScopeKey": "both",
+        "selectedProjectScopeLabel": "Both (frontend + backend)"
+      },
+      "projectContextEvidence": "package.json: tugas-akhir-var-tata-surya | README.md: # TUGAS-AKHIR-VAR-TATA-SURYA Project Web AR marker-based (Hiro) untuk eksplorasi tata surya menggunakan: - Vite"
+    },
+    "uiScope": {
+      "isUiScopeLikely": true,
+      "signalReasons": [
+        "ui markers: src, vite.config.ts, public, index.html",
+        "workspace src: ui markers: styles"
+      ],
+      "workspaceUiEntries": [
+        {
+          "relativePath": "src",
+          "detectedUiMarkers": [
+            "styles"
+          ],
+          "detectedUiDependencies": []
+        }
+      ],
+      "frontendEvidenceMetrics": {
+        "scannedFileCount": 5,
+        "hardcodedColorCount": 68,
+        "propDrillingCandidateCount": 0,
+        "mediaQueryCount": 2,
+        "tailwindBreakpointUsageCount": 0,
+        "arbitraryBreakpointCount": 0,
+        "uniqueMediaWidthCount": 1,
+        "structuredClassAttributeCount": 31,
+        "boundClassExpressionCount": 0,
+        "inlineStyleObjectCount": 0,
+        "inlineStyleBindingCount": 0,
+        "inlineStyleTokenBypassCount": 0
+      },
+      "designEvidenceSummary": {
+        "summaryVersion": "v1",
+        "source": "lightweight-static-scan",
+        "scanRootRelativePaths": [
+          "src"
+        ],
+        "scannedFileCount": 5,
+        "cssVariables": {
+          "definitionCount": 11,
+          "referenceCount": 24,
+          "sampleNames": [
+            "bg-0",
+            "bg-1",
+            "bg-2",
+            "panel",
+            "line",
+            "text-0",
+            "text-1",
+            "accent",
+            "danger",
+            "vh",
+            "planet-theme"
+          ],
+          "categoryCounts": {
+            "color": 6,
+            "spacing": 0,
+            "radius": 0,
+            "shadow": 0,
+            "typography": 1,
+            "motion": 0,
+            "other": 4
+          }
+        },
+        "colors": {
+          "hardcodedCount": 68,
+          "kindCounts": {
+            "hex": 44,
+            "rgb": 24,
+            "hsl": 0,
+            "oklch": 0,
+            "other": 0
+          },
+          "sampleValues": [
+            "#00b7ff",
+            "#ffbe73",
+            "#afafaf",
+            "#d6b07b",
+            "#5aa6ff",
+            "#d18d70",
+            "#d4ad83",
+            "#ccb180",
+            "#8cd6e5",
+            "#5b83e0",
+            "#b5b6bc",
+            "#e7c48e"
+          ]
+        },
+        "spacing": {
+          "rawValueCount": 30,
+          "sampleValues": [
+            "24px",
+            "14px",
+            "28px",
+            "12px",
+            "10px",
+            "76px",
+            "42px",
+            "16px",
+            "8px",
+            "20px",
+            "18px",
+            "899px"
+          ]
+        },
+        "radius": {
+          "rawValueCount": 13,
+          "sampleValues": [
+            "24px",
+            "12px",
+            "999px",
+            "14px",
+            "16px",
+            "10px",
+            "18px"
+          ]
+        },
+        "shadow": {
+          "rawValueCount": 2,
+          "sampleValues": [
+            "0 18px 65px rgba(0, 0, 0, 0.42)",
+            "0 20px 60px rgba(0, 0, 0, 0.4)"
+          ]
+        },
+        "typography": {
+          "fontFamilyCount": 1,
+          "fontSizeCount": 11,
+          "lineHeightCount": 5,
+          "letterSpacingCount": 1,
+          "fontFamilySamples": [
+            "Segoe UI\", \"Inter\", \"Helvetica Neue\", Arial, sans-serif"
+          ],
+          "fontSizeSamples": [
+            "12px",
+            "15px",
+            "13px",
+            "27px",
+            "14px"
+          ],
+          "lineHeightSamples": [
+            "1.06",
+            "1.55",
+            "1.5",
+            "1.45",
+            "1.6"
+          ],
+          "letterSpacingSamples": [
+            "0.16em"
+          ]
+        },
+        "motion": {
+          "transitionCount": 2,
+          "animationCount": 2,
+          "durationCount": 5,
+          "durationSamples": [
+            "0.2s",
+            "0.01ms"
+          ]
+        },
+        "tailwind": {
+          "breakpointUsageCount": 0,
+          "arbitraryBreakpointCount": 0,
+          "utilityFamilyCounts": {
+            "planet": 5,
+            "app": 1,
+            "space": 1,
+            "view": 4,
+            "landing": 4,
+            "btn": 8,
+            "is": 5,
+            "ar": 1,
+            "scanner": 2,
+            "hud": 1,
+            "icon": 2,
+            "marker": 1,
+            "panel": 1,
+            "text": 1,
+            "fatal": 1,
+            "modal": 3,
+            "toast": 1
+          },
+          "utilityFamilySamples": [
+            "planet",
+            "app",
+            "space",
+            "view",
+            "landing",
+            "btn",
+            "is",
+            "ar",
+            "scanner",
+            "hud",
+            "icon",
+            "marker"
+          ]
+        },
+        "componentInventory": {
+          "componentFileCount": 0,
+          "pageFileCount": 0,
+          "layoutFileCount": 0,
+          "surfaceFileSamples": []
+        },
+        "structuredInspection": {
+          "mode": "attribute-aware-static-scan",
+          "classAttributeCount": 31,
+          "boundClassExpressionCount": 0,
+          "inlineStyleObjectCount": 0,
+          "inlineStyleBindingCount": 0,
+          "classAttributeSamples": [
+            "planet-hit-zone",
+            "app-shell",
+            "space-backdrop",
+            "view view-landing",
+            "landing-content",
+            "landing-kicker",
+            "landing-subtitle",
+            "landing-actions",
+            "btn btn-primary",
+            "btn btn-secondary",
+            "view view-scanner is-hidden",
+            "ar-mount"
+          ],
+          "inlineStyleSamples": [],
+          "utilityFamilyCounts": {
+            "planet": 5,
+            "app": 1,
+            "space": 1,
+            "view": 4,
+            "landing": 4,
+            "btn": 8,
+            "is": 5,
+            "ar": 1,
+            "scanner": 2,
+            "hud": 1,
+            "icon": 2,
+            "marker": 1,
+            "panel": 1,
+            "text": 1,
+            "fatal": 1,
+            "modal": 3,
+            "toast": 1
+          },
+          "utilityFamilySamples": [
+            "planet",
+            "app",
+            "space",
+            "view",
+            "landing",
+            "btn",
+            "is",
+            "ar",
+            "scanner",
+            "hud",
+            "icon",
+            "marker"
+          ],
+          "inlineTokenBypassSignals": {
+            "hardcodedColorCount": 0,
+            "rawSpacingCount": 0,
+            "rawRadiusCount": 0,
+            "rawShadowCount": 0,
+            "cssVariableReferenceCount": 0
+          }
+        },
+        "tokenBypassSignals": {
+          "hardcodedColorCount": 68,
+          "rawSpacingCount": 30,
+          "rawRadiusCount": 13,
+          "rawShadowCount": 2,
+          "inlineHardcodedColorCount": 0,
+          "inlineRawSpacingCount": 0,
+          "inlineRawRadiusCount": 0,
+          "inlineRawShadowCount": 0,
+          "inlineCssVariableReferenceCount": 0
+        }
+      }
+    }
+  }
+}
