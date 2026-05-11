@@ -166,6 +166,7 @@ function showLanding(): void {
   ui.landingPage.classList.remove("is-hidden");
   ui.scannerPage.classList.add("is-hidden");
   ui.howToModal.classList.add("is-hidden");
+  enableLandingInteraction();
   resetLandingViewport();
 }
 
@@ -174,6 +175,7 @@ function showScanner(): void {
   document.body.classList.add("is-ar-active");
   ui.landingPage.classList.add("is-hidden");
   ui.scannerPage.classList.remove("is-hidden");
+  enableScannerInteraction();
 }
 
 function openHowToModal(): void {
@@ -248,6 +250,24 @@ function cleanupAFrameArtifacts(): void {
   document.body.classList.remove("is-ar-active");
 }
 
+function enableLandingInteraction(): void {
+  ui.landingPage.style.pointerEvents = "auto";
+  ui.landingPage.style.visibility = "visible";
+  ui.landingPage.style.zIndex = "20";
+  ui.scannerPage.style.pointerEvents = "none";
+  ui.scannerPage.style.zIndex = "0";
+  ui.arMount.style.pointerEvents = "none";
+}
+
+function enableScannerInteraction(): void {
+  ui.landingPage.style.pointerEvents = "none";
+  ui.landingPage.style.removeProperty("visibility");
+  ui.landingPage.style.removeProperty("z-index");
+  ui.scannerPage.style.pointerEvents = "auto";
+  ui.scannerPage.style.removeProperty("z-index");
+  ui.arMount.style.pointerEvents = "auto";
+}
+
 function resetLandingViewport(): void {
   setupVhVariable();
   ui.app.style.width = "100vw";
@@ -276,6 +296,7 @@ function restoreLandingShellLayout(): void {
   ui.scannerPage.classList.add("is-hidden");
   document.body.classList.remove("is-ar-active", "a-body", "aframe-inspector-opened");
   document.documentElement.classList.remove("a-html", "a-fullscreen");
+  enableLandingInteraction();
   resetLandingViewport();
 }
 

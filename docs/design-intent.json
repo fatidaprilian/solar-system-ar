@@ -1,6 +1,6 @@
 {
   "mode": "dynamic",
-  "status": "refined-mobile-ar-scanner-v3-controlled-solar-row",
+  "status": "refined-mobile-ar-scanner-v4-scale-and-close-tap-guard",
   "seedPolicy": {
     "mode": "structure-first-scaffold",
     "requiresProjectSpecificRefinement": true,

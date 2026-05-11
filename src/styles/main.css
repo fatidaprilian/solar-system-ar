@@ -88,6 +88,25 @@ a {
   padding: 24px;
 }
 
+body:not(.is-ar-active) .view-landing {
+  z-index: 20;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+body:not(.is-ar-active) .view-scanner,
+body:not(.is-ar-active) .ar-mount,
+body:not(.is-ar-active) .scanner-overlay {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+body:not(.is-ar-active) .landing-content,
+body:not(.is-ar-active) .landing-actions,
+body:not(.is-ar-active) .landing-actions * {
+  pointer-events: auto;
+}
+
 body.is-ar-active #app,
 body.is-ar-active .app-shell {
   height: var(--app-height, 100svh);
