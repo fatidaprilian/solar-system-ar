@@ -46,5 +46,5 @@ Do not force fullscreen, do not rotate-lock orientation, do not block the camera
 
 ## 14. Implementation Notes for Future UI Tasks
 When planet tap calibration drifts, tune `hitZonePosition` and `hitZoneRadius` in `src/data/planets.ts`. Use `DEBUG_HIT_ZONES` in `src/ar/scene.ts` during calibration and disable it for production.
-Current mobile-safe baseline: use the controlled mini solar row as the primary marker view, keep `DEBUG_HIT_ZONES` disabled for production, set fallback row scale to `0.28 0.28 0.28`, and fit detail GLB planets at runtime to a marker-space target size of about `0.18` (`0.22` for Jupiter and Saturn).
+Current baseline: base scales live in `src/ar/scene.ts` (`SOLAR_SYSTEM_MODEL_SCALE = 0.01`, `SOLAR_FALLBACK_SCALE = 0.28`) with a mobile multiplier in `src/main.ts` (`getSolarScaleMultiplier` ~ 1.25-1.55). Detail model sizing uses `DETAIL_MODEL_TARGET_SIZE` / `DETAIL_MODEL_LARGE_TARGET_SIZE` plus per-planet `detailScale` in `src/data/planets.ts`.
 Close/reopen stability depends on the `visualViewport`-driven `--app-height` path, repeated post-close AR artifact cleanup, and explicit landing/scanner pointer-event restoration in `src/main.ts`.

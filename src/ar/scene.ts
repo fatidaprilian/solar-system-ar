@@ -40,10 +40,21 @@ function buildHitZones(): string {
   ).join("\n      ");
 }
 
-export function createArSceneMarkup(facingMode: FacingMode = "environment"): string {
-  const solarScaleValue = formatUniformScale(SOLAR_SYSTEM_MODEL_SCALE);
-  const fallbackScaleValue = formatUniformScale(SOLAR_FALLBACK_SCALE);
-  const hitZoneScaleFactor = Math.max(SOLAR_SYSTEM_MODEL_SCALE / LEGACY_SOLAR_SYSTEM_SCALE, SOLAR_FALLBACK_SCALE);
+export function createArSceneMarkup(
+  facingMode: FacingMode = "environment",
+  scaleMultiplier = 1
+): string {
+  const safeMultiplier = Number.isFinite(scaleMultiplier)
+    ? Math.min(Math.max(scaleMultiplier, 0.9), 1.7)
+    : 1;
+  const scaledSolarScale = SOLAR_SYSTEM_MODEL_SCALE * safeMultiplier;
+  const scaledFallbackScale = SOLAR_FALLBACK_SCALE * safeMultiplier;
+  const solarScaleValue = formatUniformScale(scaledSolarScale);
+  const fallbackScaleValue = formatUniformScale(scaledFallbackScale);
+  const hitZoneScaleFactor = Math.max(
+    scaledSolarScale / LEGACY_SOLAR_SYSTEM_SCALE,
+    scaledFallbackScale
+  );
   const hitZoneScaleValue = formatUniformScale(hitZoneScaleFactor);
 
   return `

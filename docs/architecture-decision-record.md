@@ -1,32 +1,28 @@
 # Architecture Decision Record
 
-## ADR-001: Mobile-Safe Marker-Based WebAR Runtime
+## ADR-001: Arsitektur Web AR statis berbasis Vite + A-Frame + AR.js
 
-Status: Accepted
+- Status: Accepted
+- Tanggal: 2026-05-12
 
-Date: 2026-05-12
+### Context
+Proyek ini adalah Web AR berbasis Vite + TypeScript yang menggunakan A-Frame, AR.js, GSAP, tracking marker Hiro, serta asset GLB lokal. Target demo utama adalah browser mobile di Android, iOS, dan tablet dengan hosting statis.
 
-## Context
+Scene AR harus menjaga feed kamera tetap stabil, menampilkan tata surya dengan ukuran terbaca di layar kecil, memungkinkan tap planet untuk detail, dan kembali ke landing dengan bersih setelah scanner ditutup.
 
-The project is a Vite and TypeScript WebAR application using A-Frame, AR.js, GSAP, Hiro marker tracking, and local GLB assets. The primary demo target is mobile browsers on Android, iOS, and tablets through Vercel.
+### Decision
+- Menggunakan tata surya mini berbasis marker yang terkontrol untuk tampilan utama, bukan menampilkan `solar_system.glb` penuh di mobile.
+- Detail planet tetap memakai GLB individual, dengan ukuran disesuaikan otomatis berdasarkan bounding box.
+- Cleanup lifecycle AR dipusatkan di `src/main.ts`: mematikan stream, menghapus artefak A-Frame, reset state scanner, dan cleanup berulang setelah close.
+- Menggunakan `visualViewport` untuk menjaga stabilitas tinggi tampilan mobile (`--app-height`).
 
-The AR scene must keep the camera feed stable, keep the solar-system model small enough for phone screens, allow planet taps for detail information, and return cleanly to the landing page after closing the scanner.
+### Rationale
+Model `solar_system.glb` penuh punya skala internal yang tidak konsisten di berbagai perangkat. Mini row terkontrol memberi posisi dan ukuran yang lebih stabil, serta memudahkan tap pada hit zone. Penyesuaian bounding box mencegah model detail planet menutup kamera saat skala asli asset tidak seragam.
 
-## Decision
+AR.js kadang meninggalkan elemen video/canvas dan kelas fullscreen setelah close. Cleanup berulang dan reset landing mencegah UI glitch pada siklus buka-tutup berulang.
 
-Use a controlled marker-anchored mini solar row for the main AR view instead of showing the imported `solar_system.glb` directly on mobile. Keep individual planet GLBs for the detail view, but fit their rendered bounding boxes at runtime to a fixed marker-space target size.
-
-Keep AR lifecycle cleanup centralized in `src/main.ts`, including stream shutdown, A-Frame artifact removal, scanner state reset, and repeated post-close cleanup passes. Use `visualViewport`-derived `--app-height` for mobile viewport stability.
-
-## Rationale
-
-The imported full solar-system GLB can have inconsistent internal scale and layout for phone marker tracking. A controlled mini row gives predictable placement, tap zones, and visual size across devices. Runtime bounding-box fitting prevents individual planet GLBs from covering the camera view when their source asset scale differs.
-
-AR.js can leave video, canvas, and fullscreen classes after scanner teardown, especially during repeated open/close cycles. Repeated cleanup and explicit landing shell restoration reduce stale viewport state.
-
-## Consequences
-
-- Main marker view prioritizes stable educational layout over preserving the exact imported solar-system GLB composition.
-- Planet detail still uses GLB assets where practical.
-- Hit-zone calibration remains data-driven in `src/data/planets.ts`.
-- Final visual confirmation still requires real-device testing on Android Chrome, iOS Safari, and tablet browsers.
+### Consequences
+- Tampilan utama fokus pada keterbacaan edukasi, bukan komposisi penuh GLB.
+- Detail planet tetap memakai asset 3D individual.
+- Kalibrasi hit zone tetap dikendalikan dari `src/data/planets.ts`.
+- Verifikasi visual wajib di perangkat nyata (Android Chrome, iOS Safari, tablet).

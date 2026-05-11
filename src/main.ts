@@ -61,6 +61,25 @@ const USE_CONTROLLED_SOLAR_ROW = true;
 const DETAIL_MODEL_TARGET_SIZE = 0.18;
 const DETAIL_MODEL_LARGE_TARGET_SIZE = 0.22;
 
+function getSolarScaleMultiplier(): number {
+  const isTouch = window.matchMedia("(pointer: coarse)").matches;
+  if (!isTouch) {
+    return 1;
+  }
+
+  const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
+  if (viewportWidth <= 360) {
+    return 1.55;
+  }
+  if (viewportWidth <= 420) {
+    return 1.45;
+  }
+  if (viewportWidth <= 520) {
+    return 1.35;
+  }
+  return 1.25;
+}
+
 function getRequiredElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
   if (!element) {
@@ -678,6 +697,10 @@ function isScannerSessionActive(sessionId: number): boolean {
   return sessionId === activeScannerSession && !ui.scannerPage.classList.contains("is-hidden");
 }
 
+function isSessionCurrent(sessionId: number): boolean {
+  return sessionId === activeScannerSession;
+}
+
 function resetSolarTransforms(): void {
   if (!solarRootEl) {
     return;
@@ -1071,9 +1094,19 @@ async function bootScene(forceRebuild = false, sessionId = activeScannerSession)
       throw new Error("A-Frame tidak tersedia.");
     }
 
+    if (!isSessionCurrent(sessionId)) {
+      return false;
+    }
+
     clearFatalError();
-    ui.arMount.innerHTML = createArSceneMarkup(currentFacingMode);
+    const scaleMultiplier = getSolarScaleMultiplier();
+    ui.arMount.innerHTML = createArSceneMarkup(currentFacingMode, scaleMultiplier);
     bindSceneReferences();
+    if (!isSessionCurrent(sessionId)) {
+      ui.arMount.innerHTML = "";
+      cleanupAFrameArtifacts();
+      return false;
+    }
     bindArVideoLoadedEvent();
     resetSolarTransforms();
     bindMarkerEvents();
@@ -1097,10 +1130,17 @@ async function bootScene(forceRebuild = false, sessionId = activeScannerSession)
 
     syncArViewportLayout();
     window.requestAnimationFrame(() => {
+      if (!isScannerSessionActive(sessionId)) {
+        return;
+      }
       setupVhVariable();
       syncArViewportLayout();
       window.dispatchEvent(new Event("resize"));
     });
+
+    if (!isScannerSessionActive(sessionId)) {
+      return false;
+    }
 
     console.log("[AR LAYER]", {
       videos: document.querySelectorAll("video").length,
@@ -1202,6 +1242,8 @@ async function startArFlow(): Promise<void> {
 function stopArFlow(): void {
   activeScannerSession += 1;
   const stoppedSession = activeScannerSession;
+  cancelDelayedArtifactCleanups();
+  closeHowToModal();
   ui.scannerPage.classList.add("is-hidden");
   document.body.classList.remove("is-ar-active");
 

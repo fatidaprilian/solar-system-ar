@@ -8,38 +8,32 @@
                      },
     "project":  {
                     "name":  "TUGAS-AKHIR-VAR-TATA-SURYA",
-                    "currentFocus":  "Stabilize mobile AR solar-system marker layout, planet detail scale, and close/reopen lifecycle for Android, iOS, and tablet browsers.",
+                    "currentFocus":  "Increase mobile solar-system scale and prevent close/reopen UI glitches across Android, iOS, and tablet browsers.",
                     "durableFacts":  [
 
                                      ]
                 },
     "progress":  {
                      "lastAchievements":  [
-                                              "Changed the main marker view to a controlled mini solar row instead of showing the unstable imported solar_system.glb layout directly.",
-                                              "Increased the controlled mini solar row scale from 0.18 to 0.28 because the mobile marker view was too small on real-device testing.",
-                                              "Disabled visible debug hit-zones so blue calibration spheres no longer appear over the Hiro marker in production.",
-                                              "Aligned invisible planet hit-zones with the controlled mini solar row positions in src/data/planets.ts.",
-                                              "Added runtime bounding-box fitting for individual detail planet GLBs so opened planets target a small marker-space size instead of covering phone screens.",
-                                              "Strengthened scanner close cleanup by forcing landing shell layout restoration and adding longer repeated post-close AR artifact cleanup passes.",
-                                              "Added explicit landing/scanner pointer-event restoration so the landing buttons can receive taps after closing AR.",
-                                              "Kept visualViewport-driven app-height and added a touch viewport aspect clamp to reduce Android Chrome huge-height regressions."
+                                              "Added device-based solar-system scale multiplier for mobile by passing a computed multiplier into createArSceneMarkup.",
+                                              "Added session guards in bootScene so late AR boot steps do not mutate the UI after closing the scanner.",
+                                              "Closed the how-to modal and canceled delayed cleanup timers when stopping AR to avoid landing UI glitches.",
+                                              "Added Indonesian project docs (project brief, flow overview, API contract) and updated the architecture decision record and DESIGN scaling notes."
                                           ],
                      "pendingIssues":  [
-                                           "Real-device verification is still required on Infinix Note 40, Android Chrome, iOS Safari, and tablets after Vercel deploy.",
-                                           "If the controlled mini solar row is still too small or too large on the physical marker, tune SOLAR_FALLBACK_SCALE in src/ar/scene.ts by small increments from the current 0.28 baseline.",
-                                           "If planet taps feel offset after real-device testing, tune hitZonePosition and hitZoneRadius in src/data/planets.ts.",
+                                           "Real-device verification is still required on Android Chrome, iOS Safari, and tablets after the new scale multiplier change.",
+                                           "If the solar row is still too small or too large, adjust getSolarScaleMultiplier or SOLAR_FALLBACK_SCALE in src/ar/scene.ts.",
+                                           "If planet taps feel offset after scale changes, tune hitZonePosition and hitZoneRadius in src/data/planets.ts.",
                                            "If close still fails on a specific browser, capture DevTools source dimensions and class list after close to decide whether a full AR remount/reload fallback is needed."
                                        ],
                      "nextBestActions":  [
-                                             "Deploy to Vercel and test open AR -\u003e scan Hiro -\u003e tap planet -\u003e close detail -\u003e close scanner -\u003e reopen AR.",
-                                             "Confirm the blue hit-zone spheres are no longer visible over the marker.",
-                                             "Confirm the main solar row appears small and ordered, and planet detail models do not block the camera.",
-                                             "Confirm closing scanner repeatedly returns to the full-size landing page and both landing buttons are tappable."
+                                             "Deploy and test open AR -\u003e scan Hiro -\u003e tap planet -\u003e close detail -\u003e close scanner -\u003e reopen AR on iOS and Android.",
+                                             "Verify the landing page and modal remain centered and tappable after closing AR.",
+                                             "Verify the solar row feels large enough on iPhone-sized viewports without clipping."
                                          ],
                      "validationState":  [
-                                             "npm run build after scale and close tap-guard patch: PASS",
+                                             "npm run build after scale multiplier and close-session guard: PASS",
                                              "docs/design-intent.json and active-memory JSON parse after documentation sync: PASS",
-                                             "git diff --check after patch: PASS with Git line-ending warnings only",
                                              "Manual real-device verification remains pending."
                                          ]
                  },
@@ -58,5 +52,5 @@
                     "redactSensitiveTextBeforeWriting":  true
                 },
     "generatedAt":  "2026-05-10T17:34:50.825Z",
-    "lastUpdatedAt":  "2026-05-12T01:14:13+07:00"
+    "lastUpdatedAt":  "2026-05-12T01:42:00+07:00"
 }
