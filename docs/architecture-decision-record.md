@@ -6,22 +6,26 @@
 - Tanggal: 2026-05-12
 
 ### Context
+
 Proyek ini adalah Web AR berbasis Vite + TypeScript yang menggunakan A-Frame, AR.js, GSAP, tracking marker Hiro, serta asset GLB lokal. Target demo utama adalah browser mobile di Android, iOS, dan tablet dengan hosting statis.
 
 Scene AR harus menjaga feed kamera tetap stabil, menampilkan tata surya dengan ukuran terbaca di layar kecil, memungkinkan tap planet untuk detail, dan kembali ke landing dengan bersih setelah scanner ditutup.
 
 ### Decision
+
 - Menggunakan tata surya mini berbasis marker yang terkontrol untuk tampilan utama, bukan menampilkan `solar_system.glb` penuh di mobile.
 - Detail planet tetap memakai GLB individual, dengan ukuran disesuaikan otomatis berdasarkan bounding box.
 - Cleanup lifecycle AR dipusatkan di `src/main.ts`: mematikan stream, menghapus artefak A-Frame, reset state scanner, dan cleanup berulang setelah close.
 - Menggunakan `visualViewport` untuk menjaga stabilitas tinggi tampilan mobile (`--app-height`).
 
 ### Rationale
+
 Model `solar_system.glb` penuh punya skala internal yang tidak konsisten di berbagai perangkat. Mini row terkontrol memberi posisi dan ukuran yang lebih stabil, serta memudahkan tap pada hit zone. Penyesuaian bounding box mencegah model detail planet menutup kamera saat skala asli asset tidak seragam.
 
 AR.js kadang meninggalkan elemen video/canvas dan kelas fullscreen setelah close. Cleanup berulang dan reset landing mencegah UI glitch pada siklus buka-tutup berulang.
 
 ### Consequences
+
 - Tampilan utama fokus pada keterbacaan edukasi, bukan komposisi penuh GLB.
 - Detail planet tetap memakai asset 3D individual.
 - Kalibrasi hit zone tetap dikendalikan dari `src/data/planets.ts`.
