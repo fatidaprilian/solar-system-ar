@@ -9,6 +9,7 @@
   --accent: #69c6ff;
   --danger: #ff8d8d;
   --vh: 1vh;
+  --app-height: 100svh;
 }
 
 * {
@@ -89,13 +90,13 @@ a {
 
 body.is-ar-active #app,
 body.is-ar-active .app-shell {
-  height: calc(var(--vh, 1vh) * 100);
-  min-height: 100dvh;
+  height: var(--app-height, 100svh);
+  min-height: var(--app-height, 100svh);
 }
 
 body.is-ar-active .view {
-  height: calc(var(--vh, 1vh) * 100);
-  min-height: 100dvh;
+  height: var(--app-height, 100svh);
+  min-height: var(--app-height, 100svh);
 }
 
 body.is-ar-active .view-landing {
@@ -172,8 +173,8 @@ body.is-ar-active .view-landing {
   position: fixed;
   inset: 0;
   width: 100vw;
-  height: calc(var(--vh, 1vh) * 100);
-  min-height: 100dvh;
+  height: var(--app-height, 100svh);
+  min-height: var(--app-height, 100svh);
   overflow: hidden;
   background: #000;
   z-index: 10;
@@ -183,8 +184,8 @@ body.is-ar-active .view-landing {
   position: fixed;
   inset: 0;
   width: 100vw;
-  height: calc(var(--vh, 1vh) * 100);
-  min-height: 100dvh;
+  height: var(--app-height, 100svh);
+  min-height: var(--app-height, 100svh);
   overflow: hidden;
   background: transparent;
   z-index: 0;
@@ -194,9 +195,9 @@ body.is-ar-active .view-landing {
   position: fixed !important;
   inset: 0 !important;
   width: 100vw !important;
-  height: calc(var(--vh, 1vh) * 100) !important;
-  min-height: 100dvh !important;
-  object-fit: cover !important;
+  height: var(--app-height, 100svh) !important;
+  min-height: var(--app-height, 100svh) !important;
+  object-fit: contain !important;
   object-position: center center !important;
   margin: 0 !important;
   margin-top: 0 !important;
@@ -213,9 +214,9 @@ body.is-ar-active video.arjs-video {
   position: fixed !important;
   inset: 0 !important;
   width: 100vw !important;
-  height: calc(var(--vh, 1vh) * 100) !important;
-  min-height: 100dvh !important;
-  object-fit: cover !important;
+  height: var(--app-height, 100svh) !important;
+  min-height: var(--app-height, 100svh) !important;
+  object-fit: contain !important;
   object-position: center center !important;
   margin: 0 !important;
   margin-top: 0 !important;
@@ -254,8 +255,8 @@ body:not(.is-ar-active) .a-orientation-modal {
   position: fixed !important;
   inset: 0 !important;
   width: 100vw !important;
-  height: calc(var(--vh, 1vh) * 100) !important;
-  min-height: 100dvh !important;
+  height: var(--app-height, 100svh) !important;
+  min-height: var(--app-height, 100svh) !important;
   z-index: 1 !important;
   display: block !important;
   opacity: 1 !important;
@@ -267,8 +268,8 @@ body:not(.is-ar-active) .a-orientation-modal {
   position: fixed !important;
   inset: 0 !important;
   width: 100vw !important;
-  height: calc(var(--vh, 1vh) * 100) !important;
-  min-height: 100dvh !important;
+  height: var(--app-height, 100svh) !important;
+  min-height: var(--app-height, 100svh) !important;
   z-index: 1 !important;
   background: transparent !important;
   overflow: hidden;

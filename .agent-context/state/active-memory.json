@@ -1,68 +1,59 @@
-{
-  "schemaVersion": "active-memory-v1",
-  "snapshotPurpose": "compact-cross-session-continuity",
-  "updatePolicy": {
-    "writeWhen": "natural-task-boundary",
-    "overwriteOnlyWithCurrentRepoEvidence": true,
-    "preserveUserOwnedContent": true
-  },
-  "project": {
-    "name": "TUGAS-AKHIR-VAR-TATA-SURYA",
-    "currentFocus": "Verify mobile AR scanner after reverting harmful body-lock layout, switching video preview to portrait-fill, and shrinking the GLB Sun node.",
-    "durableFacts": []
-  },
-  "progress": {
-    "lastAchievements": [
-      "Phase 0 baseline: git worktree was clean before edits and npm run build passed before the cleanup patch.",
-      "Phase 1 cleanup: AR viewport sync now runs only while scanner is active, preventing late AR.js layout sync from affecting the landing page.",
-      "Phase 1 cleanup: scanner close now schedules repeated post-close cleanup passes to remove late AR.js video/canvas artifacts.",
-      "Phase 1 layout: landing/app/base view heights no longer depend on scanner --vh; scanner keeps the dynamic viewport behavior only while AR is active.",
-      "Reverted the Phase 1b body-lock approach after real-device feedback showed Chrome Android zoomed the page out into multiple tiled views.",
-      "Restored fixed full-viewport views to prevent mobile landing tiling after scanner close.",
-      "Changed AR video presentation from contain to cover and removed forced stream width/height/aspectRatio constraints so scanner visually fills portrait screens without imposing 16:9 constraints.",
-      "Detected a named Sun_7 node inside solar_system.glb and added runtime scaling for sun nodes to keep the sun from covering the phone camera view.",
-      "Set final super-micro model scale: solar root 0.010, fallback 0.055, root Y 0.025 for very small marker appearance on phones.",
-      "Adjusted planet detail scales into requested 0.008-0.010 range across all planets.",
-      "Improved tap usability while model is tiny by increasing hit-zone radii and raising minimum hit-zone wrapper scale to 0.22.",
-      "Applied portrait-first camera constraints preset (9:16, 720x1280 ideal) plus fallback landscape preset on rotation.",
-      "Kept viewport layer sync and zoom-min reset path so mobile preview stays upright and less over-zoomed."
-    ],
-    "pendingIssues": [
-      "Current patch needs real-device confirmation on Infinix Note 40 because layout and camera behavior differ from desktop preview.",
-      "If the camera still feels visually zoomed, choose between object-fit cover (portrait fill) and contain (no crop but black bars); mobile AR.js cannot guarantee a true 9:16 camera stream on every browser.",
-      "Final visual calibration still requires real-device check on Infinix Note 40 and iPhone Safari.",
-      "If tap hit-zones drift after final marker scale, hitZonePosition/hitZoneRadius tuning is still required."
-    ],
-    "nextBestActions": [
-      "Deploy and test on phone: close scanner should no longer show tiled/9-page landing.",
-      "Scan Hiro marker and verify the Sun is no longer full-screen while other planets remain usable.",
-      "Run full on-device checklist for AR start, switch camera, close scanner, and reopen scanner cycle.",
-      "After hit-zone tuning finalizes, set DEBUG_HIT_ZONES to false for production visual cleanliness.",
-      "Capture browser-specific notes for Android Chrome vs iOS Safari camera-switch limitations."
-    ],
-    "validationState": [
-      "npm run build before Phase 1 patch: PASS",
-      "npm run build after Phase 1 patch: PASS",
-      "git diff --check after Phase 1 patch: PASS with Git line-ending warnings only",
-      "npm run build after Phase 1b patch: PASS",
-      "npm run build after reverting body-lock and adding camera/sun fixes: PASS",
-      "npm run preview probe after camera/sun fixes: PASS (200)"
-    ]
-  },
-  "designContinuity": {
-    "visualLanguageContinuity": "opt-in-only",
-    "currentConceptualAnchor": "Handheld optical instrument panel (camera-first scanner HUD).",
-    "forbiddenCarryover": [
-      "prior-project-style-memory",
-      "old-ui-visual-dna-without-user-approval",
-      "generic-dashboard-defaults"
-    ]
-  },
-  "privacy": {
-    "storeSecrets": false,
-    "storeRawChatLogs": false,
-    "redactSensitiveTextBeforeWriting": true
-  },
-  "generatedAt": "2026-05-10T17:34:50.825Z",
-  "lastUpdatedAt": "2026-05-11T23:36:59+07:00"
+﻿{
+    "schemaVersion":  "active-memory-v1",
+    "snapshotPurpose":  "compact-cross-session-continuity",
+    "updatePolicy":  {
+                         "writeWhen":  "natural-task-boundary",
+                         "overwriteOnlyWithCurrentRepoEvidence":  true,
+                         "preserveUserOwnedContent":  true
+                     },
+    "project":  {
+                    "name":  "TUGAS-AKHIR-VAR-TATA-SURYA",
+                    "currentFocus":  "Stabilize mobile AR close/reopen viewport and normalize camera preview scale using visualViewport-driven app height.",
+                    "durableFacts":  [
+
+                                     ]
+                },
+    "progress":  {
+                     "lastAchievements":  [
+                                              "Phase 0 baseline and repeated follow-up builds passed during AR viewport stabilization.",
+                                              "Phase 1 cleanup: AR viewport sync now runs only while scanner is active and delayed cleanup removes late AR.js artifacts after close.",
+                                              "Reverted harmful body-lock behavior after real-device feedback showed Android Chrome could zoom out into tiled pages.",
+                                              "Added visualViewport-driven --app-height and removed scanner 100dvh/calc(--vh) dependency so AR.js no longer inherits huge layout heights such as 375x2669.",
+                                              "Changed AR video presentation to contain for normal 1x/no-crop camera preview instead of cover-driven zoom/crop.",
+                                              "Kept zoom-min reset path and GLB Sun node downscale so camera preview and model size remain controlled on phones."
+                                          ],
+                     "pendingIssues":  [
+                                           "Current viewport/camera patch still needs real-device confirmation on Android Chrome because camera streams and visualViewport behavior differ by browser/device.",
+                                           "object-fit contain avoids camera crop/zoom but may show black bars when the browser supplies a landscape camera stream inside a portrait screen.",
+                                           "If the camera still appears digitally zoomed after this patch, the next safe step is a custom getUserMedia AR source with explicit constraints instead of relying fully on AR.js webcam setup.",
+                                           "If tap hit-zones drift after final marker scale, hitZonePosition/hitZoneRadius tuning is still required."
+                                       ],
+                     "nextBestActions":  [
+                                             "Deploy and test on phone: open AR, close scanner, and confirm landing returns full-size instead of tiny top-left.",
+                                             "Check DevTools after reopen: AR.js actual source dimensions should no longer report a huge height like 2669 for a 375px-wide viewport.",
+                                             "Scan Hiro marker and verify camera framing, Sun size, and planet tap hit-zones.",
+                                             "If the user wants full portrait fill again, add a controlled preview mode toggle instead of reverting globally to cover."
+                                         ],
+                     "validationState":  [
+                                             "npm run build after visualViewport/app-height camera patch: PASS",
+                                             "git diff --check after visualViewport/app-height camera patch: PASS with Git line-ending warnings only",
+                                             "Manual real-device verification remains pending."
+                                         ]
+                 },
+    "designContinuity":  {
+                             "visualLanguageContinuity":  "opt-in-only",
+                             "currentConceptualAnchor":  "Handheld optical instrument panel (camera-first scanner HUD).",
+                             "forbiddenCarryover":  [
+                                                        "prior-project-style-memory",
+                                                        "old-ui-visual-dna-without-user-approval",
+                                                        "generic-dashboard-defaults"
+                                                    ]
+                         },
+    "privacy":  {
+                    "storeSecrets":  false,
+                    "storeRawChatLogs":  false,
+                    "redactSensitiveTextBeforeWriting":  true
+                },
+    "generatedAt":  "2026-05-10T17:34:50.825Z",
+    "lastUpdatedAt":  "2026-05-11T23:58:20+07:00"
 }

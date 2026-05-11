@@ -54,6 +54,9 @@ let activeScannerSession = 0;
 const cleanupListeners: Array<() => void> = [];
 let delayedArtifactCleanupTimers: number[] = [];
 
+const MIN_VIEWPORT_HEIGHT = 320;
+const MAX_TOUCH_VIEWPORT_HEIGHT = 1400;
+
 function getRequiredElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
   if (!element) {
@@ -62,9 +65,22 @@ function getRequiredElement<T extends HTMLElement>(selector: string): T {
   return element;
 }
 
+function getStableViewportHeight(): number {
+  const visualHeight = window.visualViewport?.height ?? 0;
+  const layoutHeight = window.innerHeight || 0;
+  const fallbackHeight = window.screen?.height || MIN_VIEWPORT_HEIGHT;
+  const rawHeight = visualHeight > 0 ? visualHeight : layoutHeight || fallbackHeight;
+  const isTouchViewport = window.matchMedia("(pointer: coarse)").matches;
+  const maxHeight = isTouchViewport ? MAX_TOUCH_VIEWPORT_HEIGHT : rawHeight;
+
+  return Math.round(Math.min(Math.max(rawHeight, MIN_VIEWPORT_HEIGHT), maxHeight));
+}
+
 function setupVhVariable(): void {
-  const vh = window.innerHeight * 0.01;
+  const appHeight = getStableViewportHeight();
+  const vh = appHeight * 0.01;
   document.documentElement.style.setProperty("--vh", `${vh}px`);
+  document.documentElement.style.setProperty("--app-height", `${appHeight}px`);
 
   if (isScannerViewportActive()) {
     syncArViewportLayout();
@@ -225,14 +241,22 @@ function cleanupAFrameArtifacts(): void {
 
 function resetLandingViewport(): void {
   setupVhVariable();
+  ui.app.style.width = "100vw";
+  ui.app.style.height = "var(--app-height, 100svh)";
+  ui.app.style.minHeight = "var(--app-height, 100svh)";
+  ui.landingPage.style.width = "100vw";
+  ui.landingPage.style.height = "var(--app-height, 100svh)";
+  ui.landingPage.style.minHeight = "var(--app-height, 100svh)";
   window.scrollTo(0, 0);
 
   window.requestAnimationFrame(() => {
+    setupVhVariable();
     window.scrollTo(0, 0);
   });
 
   window.setTimeout(() => {
     if (!isScannerViewportActive()) {
+      setupVhVariable();
       window.scrollTo(0, 0);
     }
   }, 120);
@@ -342,9 +366,9 @@ function normalizeArVideoLayer(videoEl: HTMLVideoElement): HTMLVideoElement {
   style.top = "0px";
   style.left = "0px";
   style.width = "100vw";
-  style.height = "calc(var(--vh, 1vh) * 100)";
-  style.minHeight = "100dvh";
-  style.objectFit = "cover";
+  style.height = "var(--app-height, 100svh)";
+  style.minHeight = "var(--app-height, 100svh)";
+  style.objectFit = "contain";
   style.objectPosition = "center center";
   style.margin = "0";
   style.marginTop = "0px";
@@ -372,8 +396,8 @@ function syncArViewportLayout(): void {
     return;
   }
 
-  const targetHeight = "calc(var(--vh, 1vh) * 100)";
-  const targetMinHeight = "100dvh";
+  const targetHeight = "var(--app-height, 100svh)";
+  const targetMinHeight = targetHeight;
 
   const scene = ui.arMount.querySelector<HTMLElement>("a-scene");
   if (scene) {
