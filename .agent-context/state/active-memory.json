@@ -8,16 +8,16 @@
   },
   "project": {
     "name": "TUGAS-AKHIR-VAR-TATA-SURYA",
-    "currentFocus": "Fix dark camera preview and blank close-flow by enforcing AR layer stack, robust scanner teardown, and tighter model scale for mobile.",
+    "currentFocus": "Stabilize AR.js camera preview across mobile by normalizing #arjs-video layer placement, guarding scanner session races, and shrinking solar/planet model scales for phone markers.",
     "durableFacts": []
   },
   "progress": {
     "lastAchievements": [
-      "Implemented explicit AR layer stack: video z0, canvas/scene z1, HUD z30, modal/toast z50+ to prevent dark/covered camera preview.",
-      "Added cleanupAFrameArtifacts and reordered teardown to remove residual AR.js video/canvas/loader nodes before returning to landing.",
-      "Reduced solar root model scale to 0.05 and fallback scale to 0.15 with root position 0 0.04 0 for smartphone-safe marker rendering.",
-      "Updated detail planet scales to 0.035-0.045 and lowered detail wrapper y-position to 0.14 for non-dominant AR detail view.",
-      "Improved camera switch flow: facingMode toggle, switch-in-progress toast, scanner-stay fallback warning, and post-switch marker reset."
+      "Found root cause in vendor AR.js: webcam preview uses #arjs-video appended to document.body with z-index -2, so scanner container background can hide live camera feed.",
+      "Added normalizeArVideoLayer + arjs-video-loaded listener to move/force-style AR video inside #arMount and preserve z-index stack on Android/iOS browsers.",
+      "Added scanner session guard (activeScannerSession) so close/reopen does not leave stale async boot writes that cause blank return-to-landing state.",
+      "Switched camera fallback from stream replacement to track applyConstraints flow to reduce AR.js source conflicts during front/back toggle.",
+      "Reduced marker model scales again for phones: solar system 0.03, fallback 0.12, and planet detail scales down to 0.022-0.032 range."
     ],
     "pendingIssues": [
       "Final visual calibration still requires real-device check on Infinix Note 40 and iPhone Safari.",
@@ -48,5 +48,5 @@
     "redactSensitiveTextBeforeWriting": true
   },
   "generatedAt": "2026-05-10T17:34:50.825Z",
-  "lastUpdatedAt": "2026-05-11T12:59:57.023Z"
+  "lastUpdatedAt": "2026-05-11T13:49:00.000Z"
 }

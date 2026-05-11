@@ -48,8 +48,8 @@ let toastTimer = 0;
 type CameraFacingMode = "environment" | "user";
 
 let currentFacingMode: CameraFacingMode = "environment";
-let activeCameraStream: MediaStream | null = null;
 let manualFacingModeApplied = false;
+let activeScannerSession = 0;
 
 const cleanupListeners: Array<() => void> = [];
 
@@ -132,12 +132,14 @@ function clearFatalError(): void {
 }
 
 function showLanding(): void {
+  document.body.classList.remove("is-ar-active");
   ui.landingPage.classList.remove("is-hidden");
   ui.scannerPage.classList.add("is-hidden");
   ui.howToModal.classList.add("is-hidden");
 }
 
 function showScanner(): void {
+  document.body.classList.add("is-ar-active");
   ui.landingPage.classList.add("is-hidden");
   ui.scannerPage.classList.remove("is-hidden");
 }
@@ -188,7 +190,7 @@ function cleanupAFrameArtifacts(): void {
     video.remove();
   });
 
-  document.querySelectorAll<HTMLCanvasElement>("canvas.a-canvas, canvas").forEach((canvas) => {
+  document.querySelectorAll<HTMLCanvasElement>("canvas.a-canvas, canvas[data-aframe-canvas]").forEach((canvas) => {
     if (ui.arMount.contains(canvas) || canvas.classList.contains("a-canvas")) {
       canvas.remove();
     }
@@ -198,8 +200,10 @@ function cleanupAFrameArtifacts(): void {
     el.remove();
   });
 
+  document.documentElement.classList.remove("a-html");
   document.body.classList.remove("a-body", "aframe-inspector-opened");
   document.documentElement.classList.remove("a-fullscreen");
+  document.body.classList.remove("is-ar-active");
 }
 
 function stopMediaStream(stream: MediaStream | null): void {
@@ -214,13 +218,52 @@ function getFacingModeLabel(mode: CameraFacingMode): string {
   return mode === "environment" ? "Belakang" : "Depan";
 }
 
+function normalizeArVideoLayer(videoEl: HTMLVideoElement): HTMLVideoElement {
+  if (!videoEl.id) {
+    videoEl.id = "arjs-video";
+  }
+  videoEl.classList.add("arjs-video");
+  videoEl.setAttribute("playsinline", "true");
+  videoEl.setAttribute("autoplay", "true");
+  videoEl.muted = true;
+
+  if (videoEl.parentElement !== ui.arMount) {
+    ui.arMount.appendChild(videoEl);
+  }
+
+  const style = videoEl.style;
+  style.position = "fixed";
+  style.inset = "0";
+  style.top = "0px";
+  style.left = "0px";
+  style.width = "100vw";
+  style.height = "calc(var(--vh, 1vh) * 100)";
+  style.minHeight = "100dvh";
+  style.objectFit = "cover";
+  style.display = "block";
+  style.opacity = "1";
+  style.background = "#000";
+  style.zIndex = "0";
+
+  return videoEl;
+}
+
+function findArVideoElement(): HTMLVideoElement | null {
+  const inMount = ui.arMount.querySelector<HTMLVideoElement>("video#arjs-video, video.arjs-video, video");
+  if (inMount) {
+    return inMount;
+  }
+
+  return document.querySelector<HTMLVideoElement>("video#arjs-video, video.arjs-video");
+}
+
 async function waitForArVideoElement(timeoutMs = 3500): Promise<HTMLVideoElement | null> {
   const startedAt = window.performance.now();
 
   while (window.performance.now() - startedAt < timeoutMs) {
-    const videoEl = ui.arMount.querySelector<HTMLVideoElement>("video");
+    const videoEl = findArVideoElement();
     if (videoEl) {
-      return videoEl;
+      return normalizeArVideoLayer(videoEl);
     }
 
     await new Promise((resolve) => {
@@ -232,7 +275,7 @@ async function waitForArVideoElement(timeoutMs = 3500): Promise<HTMLVideoElement
 }
 
 async function applyFacingModeStream(): Promise<boolean> {
-  if (!navigator.mediaDevices?.getUserMedia) {
+  if (!navigator.mediaDevices) {
     return false;
   }
 
@@ -241,36 +284,54 @@ async function applyFacingModeStream(): Promise<boolean> {
     return false;
   }
 
+  if (!(videoEl.srcObject instanceof MediaStream)) {
+    return false;
+  }
+
+  const [videoTrack] = videoEl.srcObject.getVideoTracks();
+  if (!videoTrack) {
+    return false;
+  }
+
   try {
-    const requestedStream = await navigator.mediaDevices.getUserMedia({
-      video: {
+    if (typeof videoTrack.applyConstraints === "function") {
+      await videoTrack.applyConstraints({
         facingMode: { ideal: currentFacingMode },
         width: { ideal: 1280 },
         height: { ideal: 720 }
-      },
-      audio: false
-    });
-
-    const previousStream = videoEl.srcObject instanceof MediaStream ? videoEl.srcObject : null;
-    if (previousStream) {
-      stopMediaStream(previousStream);
+      });
     }
 
-    stopMediaStream(activeCameraStream);
+    const settingsFacingMode = videoTrack.getSettings?.().facingMode;
+    if (settingsFacingMode && settingsFacingMode !== currentFacingMode) {
+      return false;
+    }
 
-    videoEl.srcObject = requestedStream;
-    videoEl.setAttribute("playsinline", "true");
-    videoEl.setAttribute("autoplay", "true");
-    videoEl.muted = true;
-
-    void videoEl.play().catch(() => undefined);
-
-    activeCameraStream = requestedStream;
     return true;
   } catch (error) {
-    console.error("[CAMERA] facingMode override failed", error);
+    console.error("[CAMERA] facingMode constraint failed", error);
     return false;
   }
+}
+
+function bindArVideoLoadedEvent(): void {
+  const handler = (event: Event) => {
+    const customEvent = event as CustomEvent<{ component?: EventTarget | null }>;
+    const fromEvent = customEvent.detail?.component;
+
+    if (fromEvent instanceof HTMLVideoElement) {
+      normalizeArVideoLayer(fromEvent);
+      return;
+    }
+
+    const fallbackVideo = findArVideoElement();
+    if (fallbackVideo) {
+      normalizeArVideoLayer(fallbackVideo);
+    }
+  };
+
+  window.addEventListener("arjs-video-loaded", handler as EventListener);
+  cleanupListeners.push(() => window.removeEventListener("arjs-video-loaded", handler as EventListener));
 }
 
 function clearSceneReferences(): void {
@@ -301,8 +362,6 @@ function teardownScene(): void {
   activeScene?.pause?.();
   activeScene?.remove();
 
-  stopMediaStream(activeCameraStream);
-  activeCameraStream = null;
   manualFacingModeApplied = false;
 
   ui.arMount.innerHTML = "";
@@ -314,6 +373,10 @@ function teardownScene(): void {
   currentPlanet = null;
   hidePlanetPanel();
   clearFatalError();
+}
+
+function isScannerSessionActive(sessionId: number): boolean {
+  return sessionId === activeScannerSession && !ui.scannerPage.classList.contains("is-hidden");
 }
 
 function resetSolarTransforms(): void {
@@ -342,7 +405,7 @@ function renderDetailModel(planet: PlanetData): void {
   }
 
   planetDetailRootEl.innerHTML = `
-    <a-entity id="planetDetailWrapper" position="0 0.14 0" scale="0.01 0.01 0.01">
+    <a-entity id="planetDetailWrapper" position="0 0.12 0" scale="0.01 0.01 0.01">
       <a-entity
         id="planetDetailModel"
         gltf-model="#${planet.modelId}"
@@ -670,7 +733,7 @@ function updateCameraButtonLabel(): void {
   ui.switchCameraBtn.setAttribute("aria-label", `Kamera ${cameraLabel}`);
 }
 
-async function bootScene(forceRebuild = false): Promise<boolean> {
+async function bootScene(forceRebuild = false, sessionId = activeScannerSession): Promise<boolean> {
   if (pendingSceneBoot) {
     return false;
   }
@@ -690,17 +753,31 @@ async function bootScene(forceRebuild = false): Promise<boolean> {
     clearFatalError();
     ui.arMount.innerHTML = createArSceneMarkup(currentFacingMode);
     bindSceneReferences();
+    bindArVideoLoadedEvent();
     resetSolarTransforms();
     bindMarkerEvents();
     bindHitZoneEvents();
     bindSolarModelFallback();
     bindTouchFallbackRaycast();
-    manualFacingModeApplied = await applyFacingModeStream();
+
+    const videoEl = await waitForArVideoElement(4500);
+    if (!isScannerSessionActive(sessionId)) {
+      return false;
+    }
+    manualFacingModeApplied = videoEl ? await applyFacingModeStream() : false;
+    if (!isScannerSessionActive(sessionId)) {
+      return false;
+    }
+
+    if (!videoEl) {
+      showToast("Preview kamera belum siap. Coba arahkan ulang atau tekan switch kamera.", "warning");
+    }
 
     console.log("[AR LAYER]", {
       videos: document.querySelectorAll("video").length,
       canvases: document.querySelectorAll("canvas").length,
-      arMountChildren: ui.arMount.children.length
+      arMountChildren: ui.arMount.children.length,
+      hasArjsVideoInMount: Boolean(ui.arMount.querySelector("#arjs-video"))
     });
 
     updateCameraButtonLabel();
@@ -741,7 +818,7 @@ async function switchCamera(event: Event): Promise<void> {
     "info"
   );
 
-  const didBoot = await bootScene(true);
+  const didBoot = await bootScene(true, activeScannerSession);
   if (!didBoot) {
     currentFacingMode = previousMode;
     updateCameraButtonLabel();
@@ -761,24 +838,30 @@ async function switchCamera(event: Event): Promise<void> {
 }
 
 async function startArFlow(): Promise<void> {
+  activeScannerSession += 1;
+  const sessionId = activeScannerSession;
+
   currentFacingMode = "environment";
   updateCameraButtonLabel();
   setupVhVariable();
   showScanner();
   hidePlanetPanel();
 
-  const didBoot = await bootScene();
+  const didBoot = await bootScene(false, sessionId);
   if (!didBoot) {
+    if (!isScannerSessionActive(sessionId)) {
+      return;
+    }
     showToast("Gagal memulai scanner AR.", "error");
   }
 }
 
 function stopArFlow(): void {
+  activeScannerSession += 1;
   teardownScene();
-  ui.scannerPage.classList.add("is-hidden");
-  ui.landingPage.classList.remove("is-hidden");
-  ui.howToModal.classList.add("is-hidden");
+  showLanding();
   setMarkerStatus("Mencari marker...", false);
+  ui.toast.classList.add("is-hidden");
 }
 
 function bindStaticUiEvents(): void {

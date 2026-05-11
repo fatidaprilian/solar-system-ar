@@ -173,6 +173,20 @@ a {
   background: #000 !important;
 }
 
+body.is-ar-active video#arjs-video,
+body.is-ar-active video.arjs-video {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: calc(var(--vh, 1vh) * 100) !important;
+  min-height: 100dvh !important;
+  object-fit: cover !important;
+  z-index: 0 !important;
+  display: block !important;
+  opacity: 1 !important;
+  background: #000 !important;
+}
+
 .ar-mount canvas,
 .ar-mount .a-canvas {
   position: fixed !important;

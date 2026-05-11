@@ -3,8 +3,8 @@ import { PLANETS } from "../data/planets";
 type FacingMode = "environment" | "user";
 
 const LEGACY_SOLAR_SYSTEM_SCALE = 0.35;
-const SOLAR_SYSTEM_MODEL_SCALE = 0.05;
-const SOLAR_FALLBACK_SCALE = 0.15;
+const SOLAR_SYSTEM_MODEL_SCALE = 0.03;
+const SOLAR_FALLBACK_SCALE = 0.12;
 const SOLAR_ROOT_Y_POSITION = 0.04;
 const DEBUG_HIT_ZONES = true;
 
