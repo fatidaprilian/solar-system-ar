@@ -16,6 +16,7 @@ type RequiredElements = {
   markerStatus: HTMLElement;
   scannerHint: HTMLElement;
   planetPanel: HTMLElement;
+  planetPreview: HTMLElement;
   planetName: HTMLElement;
   planetDescription: HTMLElement;
   planetDiameter: HTMLElement;
@@ -44,6 +45,7 @@ let isMarkerDetected = false;
 let isTransitioning = false;
 let pendingSceneBoot = false;
 let toastTimer = 0;
+let activePlanetTimeline: ReturnType<typeof gsap.timeline> | null = null;
 
 type CameraFacingMode = "environment" | "user";
 
@@ -62,6 +64,8 @@ const MAX_TOUCH_VIEWPORT_ASPECT = 2.35;
 const USE_CONTROLLED_SOLAR_ROW = true;
 const DETAIL_MODEL_TARGET_SIZE = 0.18;
 const DETAIL_MODEL_LARGE_TARGET_SIZE = 0.22;
+const PANEL_PREVIEW_TARGET_SIZE = 1.4;
+const PANEL_PREVIEW_LARGE_TARGET_SIZE = 1.65;
 
 function getSolarScaleMultiplier(): number {
   const isTouch = window.matchMedia("(pointer: coarse)").matches;
@@ -71,15 +75,15 @@ function getSolarScaleMultiplier(): number {
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 1.75;
+    return 2.45;
   }
   if (viewportWidth <= 420) {
-    return 1.68;
+    return 2.35;
   }
   if (viewportWidth <= 520) {
-    return 1.58;
+    return 2.15;
   }
-  return 1.45;
+  return 1.95;
 }
 
 function getRequiredElement<T extends HTMLElement>(selector: string): T {
@@ -149,6 +153,7 @@ function buildUi(): RequiredElements {
     markerStatus: getRequiredElement<HTMLElement>("#markerStatus"),
     scannerHint: getRequiredElement<HTMLElement>("#scannerHint"),
     planetPanel: getRequiredElement<HTMLElement>("#planetPanel"),
+    planetPreview: getRequiredElement<HTMLElement>("#planetPreview"),
     planetName: getRequiredElement<HTMLElement>("#planetName"),
     planetDescription: getRequiredElement<HTMLElement>("#planetDescription"),
     planetDiameter: getRequiredElement<HTMLElement>("#planetDiameter"),
@@ -224,7 +229,96 @@ function closeHowToModal(): void {
   ui.howToModal.classList.add("is-hidden");
 }
 
+function getPanelPreviewTargetSize(planet: PlanetData): number {
+  const baseSize = planet.id === "jupiter" || planet.id === "saturn"
+    ? PANEL_PREVIEW_LARGE_TARGET_SIZE
+    : PANEL_PREVIEW_TARGET_SIZE;
+
+  return baseSize * planet.previewScale;
+}
+
+function clearPlanetPanelPreview(): void {
+  const previewScene = ui.planetPreview.querySelector<HTMLElement & { pause?: () => void }>("a-scene");
+  previewScene?.pause?.();
+  ui.planetPreview.innerHTML = "";
+  delete ui.planetPreview.dataset.state;
+}
+
+function renderPlanetPanelPreview(planet: PlanetData): void {
+  clearPlanetPanelPreview();
+
+  const assetId = `panel-${planet.id}-model`;
+  ui.planetPreview.dataset.state = "loading";
+  ui.planetPreview.innerHTML = `
+    <div class="planet-preview-status">Memuat model ${planet.name}...</div>
+    <a-scene
+      class="planet-preview-scene"
+      embedded
+      renderer="alpha: true; antialias: true; logarithmicDepthBuffer: true"
+      vr-mode-ui="enabled: false"
+      loading-screen="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+    >
+      <a-assets timeout="15000">
+        <a-asset-item id="${assetId}" src="${planet.modelPath}"></a-asset-item>
+      </a-assets>
+      <a-entity
+        id="planetPreviewModel"
+        gltf-model="#${assetId}"
+        visible="false"
+        position="0 0 0"
+        rotation="0 -22 0"
+        scale="${planet.detailScale}"
+      ></a-entity>
+      <a-light type="ambient" intensity="1.2"></a-light>
+      <a-light type="directional" intensity="1.25" position="1.5 1.5 2"></a-light>
+      <a-camera
+        position="0 0 3"
+        look-controls="enabled: false"
+        wasd-controls="enabled: false"
+      ></a-camera>
+    </a-scene>
+  `;
+
+  const model = ui.planetPreview.querySelector<HTMLElement>("#planetPreviewModel");
+  const status = ui.planetPreview.querySelector<HTMLElement>(".planet-preview-status");
+  if (!model) {
+    ui.planetPreview.dataset.state = "error";
+    ui.planetPreview.innerHTML = `<div class="planet-preview-status">Model ${planet.name} belum bisa ditampilkan.</div>`;
+    return;
+  }
+
+  const revealModel = () => {
+    window.requestAnimationFrame(() => {
+      const didFit = fitModelToMarkerSize(model, getPanelPreviewTargetSize(planet));
+      if (!didFit) {
+        ui.planetPreview.dataset.state = "error";
+        if (status) {
+          status.textContent = `Model ${planet.name} belum bisa ditampilkan.`;
+        }
+        model.setAttribute("visible", "false");
+        return;
+      }
+
+      ui.planetPreview.dataset.state = "ready";
+      model.setAttribute("visible", "true");
+    });
+  };
+
+  const showPreviewError = () => {
+    ui.planetPreview.dataset.state = "error";
+    if (status) {
+      status.textContent = `Model ${planet.name} gagal dimuat dari file GLB.`;
+    }
+    model.setAttribute("visible", "false");
+  };
+
+  model.addEventListener("model-loaded", revealModel, { once: true });
+  model.addEventListener("model-error", showPreviewError, { once: true });
+}
+
 function fillPlanetPanel(planet: PlanetData): void {
+  clearPlanetPanelPreview();
   ui.planetPanel.style.setProperty("--planet-theme", planet.themeColor);
   ui.planetPanel.style.setProperty("--planet-preview-scale", `${planet.previewScale}`);
   ui.planetPanel.dataset.planet = planet.id;
@@ -236,9 +330,11 @@ function fillPlanetPanel(planet: PlanetData): void {
   ui.planetRotation.textContent = planet.rotationPeriod;
   ui.planetFact.textContent = planet.funFact;
   ui.planetPanel.classList.remove("is-hidden");
+  renderPlanetPanelPreview(planet);
 }
 
 function hidePlanetPanel(): void {
+  clearPlanetPanelPreview();
   ui.planetPanel.classList.add("is-hidden");
   ui.planetPanel.style.setProperty("--planet-preview-scale", "1");
   delete ui.planetPanel.dataset.planet;
@@ -295,10 +391,18 @@ function cleanupAFrameArtifacts(): void {
 
 function clearArDocumentSideEffects(): void {
   document.documentElement.classList.remove("a-html", "a-fullscreen");
-  document.body.classList.remove("is-ar-active", "a-body", "aframe-inspector-opened");
+  document.body.classList.remove(
+    "is-ar-active",
+    "a-body",
+    "aframe-inspector-opened",
+    "a-grab-cursor",
+    "a-mouse-cursor-hover",
+    "a-pointer-lock"
+  );
 
   const layoutProps = [
     "bottom",
+    "display",
     "height",
     "left",
     "margin",
@@ -308,7 +412,9 @@ function clearArDocumentSideEffects(): void {
     "position",
     "right",
     "top",
+    "touch-action",
     "transform",
+    "visibility",
     "width"
   ];
 
@@ -316,6 +422,8 @@ function clearArDocumentSideEffects(): void {
     document.documentElement.style.removeProperty(prop);
     document.body.style.removeProperty(prop);
   });
+
+  document.body.removeAttribute("data-aframe-inspector");
 }
 
 function enableLandingInteraction(): void {
@@ -418,6 +526,7 @@ function schedulePostCloseArtifactCleanup(sessionId: number): void {
 
 function prepareScannerForFreshBoot(): void {
   cancelDelayedArtifactCleanups();
+  killPlanetTransition();
   runCleanupListeners();
   stopVideoStreams(document);
   ui.arMount.innerHTML = "";
@@ -738,7 +847,19 @@ function runCleanupListeners(): void {
   }
 }
 
+function killPlanetTransition(): void {
+  activePlanetTimeline?.kill();
+  activePlanetTimeline = null;
+  gsap.killTweensOf([
+    solarRootEl,
+    planetDetailRootEl,
+    solarSystemEl,
+    solarFallbackEl
+  ].filter(Boolean));
+}
+
 function teardownScene(): void {
+  killPlanetTransition();
   runCleanupListeners();
   stopVideoStreams(document);
 
@@ -892,20 +1013,22 @@ function openPlanetDetail(planetId: PlanetId): void {
   isTransitioning = true;
   const detailWrapperTarget = detailWrapperScale ?? detailScale;
 
-  gsap
-    .timeline({
-      defaults: { ease: "power2.inOut" },
-      onComplete: () => {
-        const activeDetailModel = planetDetailRootEl?.querySelector<HTMLElement>("#planetDetailModel");
-        const activeDetailFallback = planetDetailRootEl?.querySelector<HTMLElement>("#planetDetailFallback");
-        if (activeDetailModel && activeDetailFallback) {
-          revealFittedDetailModel(planet, activeDetailModel, activeDetailFallback);
-        }
-        currentPlanet = planet;
-        fillPlanetPanel(planet);
-        isTransitioning = false;
+  activePlanetTimeline = gsap.timeline({
+    defaults: { ease: "power2.inOut" },
+    onComplete: () => {
+      const activeDetailModel = planetDetailRootEl?.querySelector<HTMLElement>("#planetDetailModel");
+      const activeDetailFallback = planetDetailRootEl?.querySelector<HTMLElement>("#planetDetailFallback");
+      if (activeDetailModel && activeDetailFallback) {
+        revealFittedDetailModel(planet, activeDetailModel, activeDetailFallback);
       }
-    })
+      currentPlanet = planet;
+      fillPlanetPanel(planet);
+      isTransitioning = false;
+      activePlanetTimeline = null;
+    }
+  });
+
+  activePlanetTimeline
     .to(solarScale, { x: 0.01, y: 0.01, z: 0.01, duration: 0.85 })
     .add(() => {
       solarRootEl?.setAttribute("visible", "false");
@@ -933,32 +1056,34 @@ function closePlanetDetail(): void {
 
   hidePlanetPanel();
 
-  gsap
-    .timeline({
-      defaults: { ease: "power2.inOut" },
-      onComplete: () => {
-        currentPlanet = null;
-        if (planetDetailRootEl) {
-          planetDetailRootEl.setAttribute("visible", "false");
-          planetDetailRootEl.innerHTML = "";
-        }
-        if (solarSystemEl) {
-          solarSystemEl.setAttribute("visible", USE_CONTROLLED_SOLAR_ROW ? "false" : "true");
-        }
-        if (USE_CONTROLLED_SOLAR_ROW && solarFallbackEl) {
-          solarFallbackEl.setAttribute("visible", "true");
-        } else if (solarFallbackEl?.getAttribute("visible") === "true" && solarSystemEl) {
-          solarSystemEl.setAttribute("visible", "false");
-        }
-        solarScale.x = 1;
-        solarScale.y = 1;
-        solarScale.z = 1;
-        detailScale.x = 1;
-        detailScale.y = 1;
-        detailScale.z = 1;
-        isTransitioning = false;
+  activePlanetTimeline = gsap.timeline({
+    defaults: { ease: "power2.inOut" },
+    onComplete: () => {
+      currentPlanet = null;
+      if (planetDetailRootEl) {
+        planetDetailRootEl.setAttribute("visible", "false");
+        planetDetailRootEl.innerHTML = "";
       }
-    })
+      if (solarSystemEl) {
+        solarSystemEl.setAttribute("visible", USE_CONTROLLED_SOLAR_ROW ? "false" : "true");
+      }
+      if (USE_CONTROLLED_SOLAR_ROW && solarFallbackEl) {
+        solarFallbackEl.setAttribute("visible", "true");
+      } else if (solarFallbackEl?.getAttribute("visible") === "true" && solarSystemEl) {
+        solarSystemEl.setAttribute("visible", "false");
+      }
+      solarScale.x = 1;
+      solarScale.y = 1;
+      solarScale.z = 1;
+      detailScale.x = 1;
+      detailScale.y = 1;
+      detailScale.z = 1;
+      isTransitioning = false;
+      activePlanetTimeline = null;
+    }
+  });
+
+  activePlanetTimeline
     .to(detailScale, { x: 0.01, y: 0.01, z: 0.01, duration: 0.85 })
     .to(solarScale, { x: 1, y: 1, z: 1, duration: 0.85 });
 }

@@ -32,10 +32,8 @@
         <h2 id="planetName">Planet</h2>
         <button id="closePlanetBtn" class="text-btn" type="button">Kembali ke Tata Surya</button>
       </div>
-      <div class="planet-preview" aria-hidden="true">
-        <div class="planet-preview-orb">
-          <span class="planet-preview-ring"></span>
-        </div>
+      <div id="planetPreview" class="planet-preview" aria-hidden="true">
+        <div class="planet-preview-status">Memuat model planet...</div>
       </div>
       <p id="planetDescription" class="planet-description"></p>
       <dl class="planet-meta">

@@ -1,6 +1,6 @@
 {
   "mode": "dynamic",
-  "status": "refined-mobile-ar-scanner-v5-scale-close-remount-static-detail-preview",
+  "status": "refined-mobile-ar-scanner-v6-larger-scale-glb-detail-preview-clean-close",
   "seedPolicy": {
     "mode": "structure-first-scaffold",
     "requiresProjectSpecificRefinement": true,
@@ -209,7 +209,7 @@
       "camera-first fixed scanner viewport",
       "marker-status capsule with detected/lost state language",
       "planet detail bottom sheet tied to AR tap flow",
-      "static GLB-like planet preview orb above the detail content"
+      "embedded selected-planet GLB preview above the detail content"
     ],
     "paletteExplorationRule": "Use a visually exploratory product-derived palette with WCAG contrast and status clarity.",
     "backgroundPatternRule": "Lines, grids, scanlines, noise, glows, blobs, logos, calibration marks, and geometry must serve a named product function; never use grid, line, or calibration-mark backgrounds as first-output filler. Measurement and inspection marks belong to task overlays or controls, not page wallpaper.",
@@ -424,10 +424,10 @@
   "designExecutionHandoff": {
     "version": "ui-handoff-v1",
     "location": "inline-design-intent",
-    "status": "refined-for-mobile-ar-scanner-v2",
+    "status": "refined-for-mobile-ar-scanner-v3",
     "seedMode": "structure-first-scaffold",
     "requiresTaskSpecificRefinement": true,
-    "primaryExperienceGoal": "Camera preview must stay visible, scanner close must return to landing safely, and AR model scale must stay mobile-safe across devices.",
+    "primaryExperienceGoal": "Camera preview must stay visible, scanner close must return to landing safely, AR model scale must be readable on mobile devices, and planet detail must display the selected local GLB asset.",
     "surfacePlan": [
       {
         "surfaceId": "landing-entry",
@@ -450,7 +450,7 @@
       {
         "surfaceId": "planet-detail-sheet",
         "role": "contextual-information",
-        "goal": "Reveal planet data in a bottom sheet on small viewports.",
+        "goal": "Reveal planet data and the selected local GLB preview in a bottom sheet on small viewports.",
         "antiPatterns": [
           "full-screen-modal-takeover"
         ]
@@ -485,7 +485,7 @@
         "switch and close controls"
       ],
       "deferred": [
-        "planet metadata until user taps hit zone"
+        "planet metadata and selected local GLB preview until user taps hit zone"
       ]
     },
     "viewportMutationPlan": {
@@ -543,6 +543,15 @@
           "success"
         ],
         "notes": "Status text toggles between searching and detected."
+      },
+      {
+        "componentId": "planet-glb-preview",
+        "states": [
+          "loading",
+          "ready",
+          "error"
+        ],
+        "notes": "Detail sheet preview loads the selected local GLB model and falls back to an error message instead of generated planet art."
       }
     ],
     "expressionFlexibility": {

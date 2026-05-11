@@ -8,39 +8,40 @@
                      },
     "project":  {
                     "name":  "TUGAS-AKHIR-VAR-TATA-SURYA",
-                    "currentFocus":  "Validate larger mobile AR solar scale, static detail preview, and clean close-to-landing remount across devices.",
+                    "currentFocus":  "Validate enlarged mobile AR solar scale, selected-planet GLB detail preview, and clean close-to-landing remount across devices.",
                     "durableFacts":  [
 
                                      ]
                 },
     "progress":  {
                      "lastAchievements":  [
-                                              "Increased SOLAR_FALLBACK_SCALE to 0.34 and raised mobile solar scale multipliers so the solar row appears larger on small touch viewports.",
-                                              "Changed the detail panel preview to a static GLB-like orb and removed the spinning CSS animation.",
-                                              "Changed scanner close recovery to remount a clean landing shell after AR teardown so stale A-Frame/AR.js layout side effects do not leave duplicate landing panels.",
-                                              "Hardened landing viewport recovery on close with repeated reset timers.",
-                                              "Added device-based solar-system scale multiplier for mobile by passing a computed multiplier into createArSceneMarkup.",
-                                              "Added session guards in bootScene so late AR boot steps do not mutate the UI after closing the scanner.",
-                                              "Closed the how-to modal and canceled delayed cleanup timers when stopping AR to avoid landing UI glitches.",
-                                              "Added Indonesian project docs (project brief, flow overview, API contract) and updated the architecture decision record and DESIGN scaling notes."
+                                              "Raised mobile AR solar scale again: SOLAR_FALLBACK_SCALE is now 0.42 and touch multipliers are 1.95-2.45 with a 2.7 clamp.",
+                                              "Replaced the CSS-drawn detail preview with an embedded static A-Frame preview that loads the selected planet model from planet.modelPath under public/assets/models/planets.",
+                                              "Added GLB preview loading/ready/error states so panel fallback is text-only instead of generated planet art.",
+                                              "Stored active GSAP planet timelines and killed them during scanner boot/teardown so late onComplete callbacks cannot mutate the landing page after close.",
+                                              "Expanded AR document side-effect cleanup for A-Frame body classes and inline layout/touch/visibility styles.",
+                                              "Kept scanner close recovery as a clean landing shell remount plus delayed artifact cleanup timers.",
+                                              "Updated DESIGN, design-intent, flow overview, and ADR to match larger mobile scale, GLB detail preview, and close cleanup behavior."
                                           ],
                      "pendingIssues":  [
-                                           "Real-device verification is still required on Android Chrome, iOS Safari, and tablets after the latest scale multiplier changes.",
-                                           "If the solar row is still too small or too large, adjust getSolarScaleMultiplier or SOLAR_FALLBACK_SCALE in src/ar/scene.ts from the current 0.34 baseline.",
+                                           "Real-device verification is still required on Android Chrome, iOS Safari, and tablets after the latest larger scale changes.",
+                                           "If the solar row is still too small or too large, adjust getSolarScaleMultiplier or SOLAR_FALLBACK_SCALE from the current 0.42 baseline.",
                                            "If planet taps feel offset after scale changes, tune hitZonePosition and hitZoneRadius in src/data/planets.ts.",
-                                           "Verify the static planet preview orb sizing across planets; tweak previewScale values if any appear too large or too small.",
-                                           "If close still fails on a specific browser, capture DevTools source dimensions, body/html class list, and app DOM after close to decide whether a full page reload fallback is needed."
+                                           "Verify embedded GLB preview sizing across planets; tweak previewScale or PANEL_PREVIEW_TARGET_SIZE values if any appear too large or too small.",
+                                           "If close still fails on a specific browser, capture DevTools source dimensions, body/html class list, app DOM after close, and whether a killed timeline callback still fires."
                                        ],
                      "nextBestActions":  [
-                                             "Deploy and test open AR -\u003e scan Hiro -\u003e tap planet -\u003e confirm static preview orb -\u003e close detail -\u003e close scanner -\u003e reopen AR on iOS and Android.",
+                                             "Deploy and test open AR -\u003e scan Hiro -\u003e tap planet -\u003e confirm selected local GLB preview -\u003e close detail -\u003e close scanner -\u003e reopen AR on iOS and Android.",
                                              "Verify the landing page and modal remain centered and tappable after closing AR and after reopening AR.",
-                                             "Verify the solar row feels large enough on iPhone-sized viewports without clipping."
+                                             "Verify the enlarged solar row feels readable on iPhone-sized and Infinix Note 40-sized viewports without unacceptable clipping."
                                          ],
                      "validationState":  [
-                                             "npm run build after larger solar scale, close remount, and static detail preview patch: PASS",
+                                             "npm run build after enlarged solar scale, embedded GLB detail preview, and close cleanup patch: PASS",
                                              "docs/design-intent.json and active-memory JSON parse after documentation sync: PASS",
+                                             "git diff --check after latest UI changes: PASS with CRLF conversion warnings only",
+                                             "Local Vite dev server http://127.0.0.1:5173 responded HTTP 200.",
                                              "Manual real-device verification remains pending.",
-                                             "npm run validate after latest UI changes: NOT RUN"
+                                             "npm run validate after latest UI changes: NOT AVAILABLE in package.json"
                                          ]
                  },
     "designContinuity":  {
@@ -58,5 +59,5 @@
                     "redactSensitiveTextBeforeWriting":  true
                 },
     "generatedAt":  "2026-05-10T17:34:50.825Z",
-    "lastUpdatedAt":  "2026-05-12T02:51:15+07:00"
+    "lastUpdatedAt":  "2026-05-12T03:20:25+07:00"
 }

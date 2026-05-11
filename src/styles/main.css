@@ -425,44 +425,60 @@ body:not(.is-ar-active) .a-orientation-modal {
   place-items: center;
   margin: 12px 0 16px;
   pointer-events: none;
-}
-
-.planet-preview-orb {
-  width: calc(var(--planet-preview-base) * var(--planet-preview-scale));
-  height: calc(var(--planet-preview-base) * var(--planet-preview-scale));
-  border-radius: 999px;
+  min-height: calc(var(--planet-preview-base) * var(--planet-preview-scale));
   position: relative;
   overflow: hidden;
-  background-image:
+}
+
+.planet-preview-scene {
+  width: calc(var(--planet-preview-base) * var(--planet-preview-scale));
+  height: calc(var(--planet-preview-base) * var(--planet-preview-scale));
+  border-radius: 14px;
+  overflow: hidden;
+  background:
     radial-gradient(
-      circle at 30% 30%,
-      color-mix(in srgb, var(--planet-theme), #ffffff 55%) 0%,
-      var(--planet-theme) 52%,
-      color-mix(in srgb, var(--planet-theme), #000000 40%) 100%
+      circle at 50% 42%,
+      color-mix(in srgb, var(--planet-theme), transparent 74%) 0%,
+      transparent 58%
     ),
-    repeating-linear-gradient(
-      95deg,
-      color-mix(in srgb, var(--planet-theme), #ffffff 25%) 0 10%,
-      color-mix(in srgb, var(--planet-theme), #000000 18%) 10% 20%
-    );
-  background-blend-mode: soft-light;
-  box-shadow:
-    0 14px 32px rgba(0, 0, 0, 0.35),
-    inset -18px -24px 40px rgba(0, 0, 0, 0.45);
-}
-
-.planet-preview-ring {
-  position: absolute;
-  inset: -14%;
-  border-radius: 50%;
-  border: 2px solid color-mix(in srgb, var(--planet-theme), #ffffff 65%);
-  transform: rotate(-18deg);
+    transparent;
   opacity: 0;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+  transition: opacity 0.2s ease;
 }
 
-.planet-panel[data-planet="saturn"] .planet-preview-ring {
-  opacity: 0.85;
+.planet-preview-scene canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  background: transparent !important;
+  pointer-events: none !important;
+}
+
+.planet-preview[data-state="ready"] .planet-preview-scene {
+  opacity: 1;
+}
+
+.planet-preview-status {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 2;
+  margin: auto;
+  color: var(--text-1);
+  font-size: 12px;
+  text-align: center;
+}
+
+.planet-preview[data-state="ready"] .planet-preview-status {
+  display: none;
+}
+
+.planet-preview[data-state="error"] .planet-preview-status {
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border: 1px dashed color-mix(in srgb, var(--planet-theme), #ffffff 45%);
+  border-radius: 14px;
+  padding: 12px;
 }
 
 .panel-head {

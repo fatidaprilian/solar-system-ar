@@ -14,8 +14,8 @@ Scene AR harus menjaga feed kamera tetap stabil, menampilkan tata surya dengan u
 ### Decision
 
 - Menggunakan tata surya mini berbasis marker yang terkontrol untuk tampilan utama, bukan menampilkan `solar_system.glb` penuh di mobile.
-- Detail planet tetap memakai GLB individual, dengan ukuran disesuaikan otomatis berdasarkan bounding box.
-- Cleanup lifecycle AR dipusatkan di `src/main.ts`: mematikan stream, menghapus artefak A-Frame, reset state scanner, dan cleanup berulang setelah close.
+- Detail planet tetap memakai GLB individual, dengan ukuran disesuaikan otomatis berdasarkan bounding box di scene AR dan di preview panel informasi.
+- Cleanup lifecycle AR dipusatkan di `src/main.ts`: mematikan stream, membatalkan timeline GSAP, membersihkan preview GLB panel, menghapus artefak A-Frame, reset state scanner, dan cleanup berulang setelah close.
 - Menggunakan `visualViewport` untuk menjaga stabilitas tinggi tampilan mobile (`--app-height`).
 
 ### Rationale

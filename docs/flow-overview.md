@@ -13,7 +13,7 @@
 1. Marker Hiro terlihat di kamera.
 2. Status berubah menjadi “Marker terdeteksi”.
 3. User tap planet (hit zone) di model tata surya.
-4. Panel detail planet muncul dengan data utama.
+4. Panel detail planet muncul dengan data utama dan preview model `.glb` planet yang dipilih.
 5. User tap “Kembali ke Tata Surya” untuk kembali.
 
 ## 3. Cara Pakai (Modal)
@@ -31,7 +31,7 @@
 ## 5. Close AR (Tombol X)
 
 1. User tap tombol X.
-2. Scanner AR ditutup.
+2. Scanner AR ditutup, stream kamera dihentikan, animasi aktif dibatalkan, dan artefak A-Frame dibersihkan.
 3. Kembali ke landing, UI reset normal.
 
 ## 6. Error & Empty States
