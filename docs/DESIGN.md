@@ -44,6 +44,7 @@ Motion is utilitarian: short button hover transitions and GSAP model transitions
 - Scanner controls: rounded pill buttons with 44px minimum touch height.
 - Marker status: centered capsule at top.
 - Planet detail: fixed bottom sheet on smaller viewports, side panel on larger viewports.
+- Planet detail preview: rotating planet orb above the description with per-planet scale normalization.
 
 ## 11. Context Hygiene and Source Boundaries
 

@@ -53,6 +53,7 @@ let activeScannerSession = 0;
 
 const cleanupListeners: Array<() => void> = [];
 let delayedArtifactCleanupTimers: number[] = [];
+let landingResetTimers: number[] = [];
 
 const MIN_VIEWPORT_HEIGHT = 320;
 const MAX_TOUCH_VIEWPORT_HEIGHT = 1400;
@@ -69,15 +70,15 @@ function getSolarScaleMultiplier(): number {
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 1.55;
+    return 1.65;
   }
   if (viewportWidth <= 420) {
-    return 1.45;
+    return 1.55;
   }
   if (viewportWidth <= 520) {
-    return 1.35;
+    return 1.45;
   }
-  return 1.25;
+  return 1.35;
 }
 
 function getRequiredElement<T extends HTMLElement>(selector: string): T {
@@ -113,6 +114,22 @@ function setupVhVariable(): void {
   if (isScannerViewportActive()) {
     syncArViewportLayout();
   }
+}
+
+function applyLandingViewportStyles(): void {
+  ui.app.style.width = "100vw";
+  ui.app.style.height = "var(--app-height, 100svh)";
+  ui.app.style.minHeight = "var(--app-height, 100svh)";
+  ui.landingPage.style.width = "100vw";
+  ui.landingPage.style.height = "var(--app-height, 100svh)";
+  ui.landingPage.style.minHeight = "var(--app-height, 100svh)";
+}
+
+function cancelLandingResetTimers(): void {
+  landingResetTimers.forEach((timerId) => {
+    window.clearTimeout(timerId);
+  });
+  landingResetTimers = [];
 }
 
 function buildUi(): RequiredElements {
@@ -191,6 +208,7 @@ function showLanding(): void {
 
 function showScanner(): void {
   cancelDelayedArtifactCleanups();
+  cancelLandingResetTimers();
   document.body.classList.add("is-ar-active");
   ui.landingPage.classList.add("is-hidden");
   ui.scannerPage.classList.remove("is-hidden");
@@ -207,6 +225,8 @@ function closeHowToModal(): void {
 
 function fillPlanetPanel(planet: PlanetData): void {
   ui.planetPanel.style.setProperty("--planet-theme", planet.themeColor);
+  ui.planetPanel.style.setProperty("--planet-preview-scale", `${planet.previewScale}`);
+  ui.planetPanel.dataset.planet = planet.id;
   ui.planetName.textContent = planet.name;
   ui.planetDescription.textContent = planet.description;
   ui.planetDiameter.textContent = planet.diameter;
@@ -219,6 +239,8 @@ function fillPlanetPanel(planet: PlanetData): void {
 
 function hidePlanetPanel(): void {
   ui.planetPanel.classList.add("is-hidden");
+  ui.planetPanel.style.setProperty("--planet-preview-scale", "1");
+  delete ui.planetPanel.dataset.planet;
 }
 
 function stopVideoStreams(root: ParentNode): void {
@@ -289,25 +311,29 @@ function enableScannerInteraction(): void {
 
 function resetLandingViewport(): void {
   setupVhVariable();
-  ui.app.style.width = "100vw";
-  ui.app.style.height = "var(--app-height, 100svh)";
-  ui.app.style.minHeight = "var(--app-height, 100svh)";
-  ui.landingPage.style.width = "100vw";
-  ui.landingPage.style.height = "var(--app-height, 100svh)";
-  ui.landingPage.style.minHeight = "var(--app-height, 100svh)";
+  applyLandingViewportStyles();
   window.scrollTo(0, 0);
 
   window.requestAnimationFrame(() => {
+    if (isScannerViewportActive()) {
+      return;
+    }
     setupVhVariable();
+    applyLandingViewportStyles();
     window.scrollTo(0, 0);
   });
 
-  window.setTimeout(() => {
-    if (!isScannerViewportActive()) {
+  cancelLandingResetTimers();
+  landingResetTimers = [140, 360, 780, 1200].map((delay) => {
+    return window.setTimeout(() => {
+      if (isScannerViewportActive()) {
+        return;
+      }
       setupVhVariable();
+      applyLandingViewportStyles();
       window.scrollTo(0, 0);
-    }
-  }, 120);
+    }, delay);
+  });
 }
 
 function restoreLandingShellLayout(): void {

@@ -373,6 +373,8 @@ body:not(.is-ar-active) .a-orientation-modal {
 
 .planet-panel {
   --planet-theme: #69c6ff;
+  --planet-preview-scale: 1;
+  --planet-preview-base: clamp(120px, 26vw, 180px);
   position: fixed;
   z-index: 42;
   right: max(16px, env(safe-area-inset-right));
@@ -387,6 +389,58 @@ body:not(.is-ar-active) .a-orientation-modal {
   padding: 16px;
   pointer-events: auto;
   backdrop-filter: blur(8px);
+}
+
+.planet-preview {
+  display: grid;
+  place-items: center;
+  margin: 12px 0 16px;
+  pointer-events: none;
+}
+
+.planet-preview-orb {
+  width: calc(var(--planet-preview-base) * var(--planet-preview-scale));
+  height: calc(var(--planet-preview-base) * var(--planet-preview-scale));
+  border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+  background-image:
+    radial-gradient(
+      circle at 30% 30%,
+      color-mix(in srgb, var(--planet-theme), #ffffff 55%) 0%,
+      var(--planet-theme) 52%,
+      color-mix(in srgb, var(--planet-theme), #000000 40%) 100%
+    ),
+    repeating-linear-gradient(
+      95deg,
+      color-mix(in srgb, var(--planet-theme), #ffffff 25%) 0 10%,
+      color-mix(in srgb, var(--planet-theme), #000000 18%) 10% 20%
+    );
+  background-blend-mode: soft-light;
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.35),
+    inset -18px -24px 40px rgba(0, 0, 0, 0.45);
+  animation: planetSpin 14s linear infinite;
+}
+
+.planet-preview-ring {
+  position: absolute;
+  inset: -14%;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--planet-theme), #ffffff 65%);
+  transform: rotate(-18deg);
+  opacity: 0;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+.planet-panel[data-planet="saturn"] .planet-preview-ring {
+  opacity: 0.85;
+}
+
+@keyframes planetSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .panel-head {
@@ -552,6 +606,7 @@ body:not(.is-ar-active) .a-orientation-modal {
     width: auto;
     max-height: min(58vh, 460px);
     border-radius: 16px;
+    --planet-preview-base: clamp(110px, 34vw, 160px);
   }
 
   .planet-meta {
