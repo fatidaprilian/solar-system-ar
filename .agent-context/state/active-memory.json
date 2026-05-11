@@ -8,11 +8,15 @@
   },
   "project": {
     "name": "TUGAS-AKHIR-VAR-TATA-SURYA",
-    "currentFocus": "Apply super-micro AR scale (solar 0.010, detail 0.008-0.010), keep hit-zones tappable, and enforce portrait camera constraints for 9:16 mobile scanning.",
+    "currentFocus": "Stabilize AR scanner close/landing cleanup first, then continue to camera preview split/blank and model-scale verification.",
     "durableFacts": []
   },
   "progress": {
     "lastAchievements": [
+      "Phase 0 baseline: git worktree was clean before edits and npm run build passed before the cleanup patch.",
+      "Phase 1 cleanup: AR viewport sync now runs only while scanner is active, preventing late AR.js layout sync from affecting the landing page.",
+      "Phase 1 cleanup: scanner close now schedules repeated post-close cleanup passes to remove late AR.js video/canvas artifacts.",
+      "Phase 1 layout: landing/app/base view heights no longer depend on scanner --vh; scanner keeps the dynamic viewport behavior only while AR is active.",
       "Set final super-micro model scale: solar root 0.010, fallback 0.055, root Y 0.025 for very small marker appearance on phones.",
       "Adjusted planet detail scales into requested 0.008-0.010 range across all planets.",
       "Improved tap usability while model is tiny by increasing hit-zone radii and raising minimum hit-zone wrapper scale to 0.22.",
@@ -20,17 +24,21 @@
       "Kept viewport layer sync and zoom-min reset path so mobile preview stays upright and less over-zoomed."
     ],
     "pendingIssues": [
+      "Camera preview split/blank still needs Phase 2 patch: remove harmful portrait/aspect constraints and normalize video/canvas layering while scanner is active.",
       "Final visual calibration still requires real-device check on Infinix Note 40 and iPhone Safari.",
       "If tap hit-zones drift after final marker scale, hitZonePosition/hitZoneRadius tuning is still required."
     ],
     "nextBestActions": [
+      "Test Phase 1 on phone by opening AR, pressing X, confirming landing returns to normal size, then repeating the open/close cycle three times.",
+      "Patch Phase 2 camera preview after close/landing is confirmed stable.",
       "Run full on-device checklist for AR start, switch camera, close scanner, and reopen scanner cycle.",
       "After hit-zone tuning finalizes, set DEBUG_HIT_ZONES to false for production visual cleanliness.",
       "Capture browser-specific notes for Android Chrome vs iOS Safari camera-switch limitations."
     ],
     "validationState": [
-      "npm run build: PASS",
-      "npm run preview startup + HTTP probe (127.0.0.1:4173): PASS (200)"
+      "npm run build before Phase 1 patch: PASS",
+      "npm run build after Phase 1 patch: PASS",
+      "git diff --check after Phase 1 patch: PASS with Git line-ending warnings only"
     ]
   },
   "designContinuity": {
@@ -48,5 +56,5 @@
     "redactSensitiveTextBeforeWriting": true
   },
   "generatedAt": "2026-05-10T17:34:50.825Z",
-  "lastUpdatedAt": "2026-05-11T14:38:00.000Z"
+  "lastUpdatedAt": "2026-05-11T22:50:10+07:00"
 }

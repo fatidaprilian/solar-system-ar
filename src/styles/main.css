@@ -32,16 +32,20 @@ a {
 
 #app {
   width: 100vw;
-  height: calc(var(--vh, 1vh) * 100);
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100svh;
+  min-height: 100vh;
+  min-height: 100svh;
   overflow: hidden;
 }
 
 .app-shell {
   position: relative;
   width: 100vw;
-  height: calc(var(--vh, 1vh) * 100);
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100svh;
+  min-height: 100vh;
+  min-height: 100svh;
   overflow: hidden;
 }
 
@@ -60,8 +64,10 @@ a {
   inset: 0;
   z-index: 1;
   width: 100vw;
-  height: calc(var(--vh, 1vh) * 100);
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100svh;
+  min-height: 100vh;
+  min-height: 100svh;
   overflow: hidden;
 }
 
@@ -72,7 +78,29 @@ a {
 .view-landing {
   display: grid;
   place-items: center;
+  height: 100vh;
+  height: 100svh;
+  min-height: 100vh;
+  min-height: 100svh;
   padding: 24px;
+}
+
+body.is-ar-active #app,
+body.is-ar-active .app-shell {
+  height: calc(var(--vh, 1vh) * 100);
+  min-height: 100dvh;
+}
+
+body.is-ar-active .view {
+  height: calc(var(--vh, 1vh) * 100);
+  min-height: 100dvh;
+}
+
+body.is-ar-active .view-landing {
+  height: 100vh;
+  height: 100svh;
+  min-height: 100vh;
+  min-height: 100svh;
 }
 
 .landing-content {
@@ -193,6 +221,19 @@ body.is-ar-active video.arjs-video {
   display: block !important;
   opacity: 1 !important;
   background: #000 !important;
+}
+
+body:not(.is-ar-active) video#arjs-video,
+body:not(.is-ar-active) video.arjs-video,
+body:not(.is-ar-active) canvas.a-canvas,
+body:not(.is-ar-active) canvas[data-aframe-canvas],
+body:not(.is-ar-active) .arjs-loader,
+body:not(.is-ar-active) .a-enter-vr,
+body:not(.is-ar-active) .a-enter-ar,
+body:not(.is-ar-active) .a-orientation-modal {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .ar-mount canvas,

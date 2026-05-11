@@ -52,6 +52,7 @@ let manualFacingModeApplied = false;
 let activeScannerSession = 0;
 
 const cleanupListeners: Array<() => void> = [];
+let delayedArtifactCleanupTimers: number[] = [];
 
 function getRequiredElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -64,7 +65,10 @@ function getRequiredElement<T extends HTMLElement>(selector: string): T {
 function setupVhVariable(): void {
   const vh = window.innerHeight * 0.01;
   document.documentElement.style.setProperty("--vh", `${vh}px`);
-  syncArViewportLayout();
+
+  if (isScannerViewportActive()) {
+    syncArViewportLayout();
+  }
 }
 
 function buildUi(): RequiredElements {
@@ -137,9 +141,11 @@ function showLanding(): void {
   ui.landingPage.classList.remove("is-hidden");
   ui.scannerPage.classList.add("is-hidden");
   ui.howToModal.classList.add("is-hidden");
+  window.scrollTo(0, 0);
 }
 
 function showScanner(): void {
+  cancelDelayedArtifactCleanups();
   document.body.classList.add("is-ar-active");
   ui.landingPage.classList.add("is-hidden");
   ui.scannerPage.classList.remove("is-hidden");
@@ -191,8 +197,12 @@ function cleanupAFrameArtifacts(): void {
     video.remove();
   });
 
-  document.querySelectorAll<HTMLCanvasElement>("canvas.a-canvas, canvas[data-aframe-canvas]").forEach((canvas) => {
-    if (ui.arMount.contains(canvas) || canvas.classList.contains("a-canvas")) {
+  document.querySelectorAll<HTMLCanvasElement>("canvas").forEach((canvas) => {
+    if (
+      ui.arMount.contains(canvas) ||
+      canvas.classList.contains("a-canvas") ||
+      canvas.hasAttribute("data-aframe-canvas")
+    ) {
       canvas.remove();
     }
   });
@@ -205,6 +215,47 @@ function cleanupAFrameArtifacts(): void {
   document.body.classList.remove("a-body", "aframe-inspector-opened");
   document.documentElement.classList.remove("a-fullscreen");
   document.body.classList.remove("is-ar-active");
+}
+
+function cancelDelayedArtifactCleanups(): void {
+  delayedArtifactCleanupTimers.forEach((timerId) => {
+    window.clearTimeout(timerId);
+  });
+  delayedArtifactCleanupTimers = [];
+}
+
+function isScannerViewportActive(): boolean {
+  return document.body.classList.contains("is-ar-active") && !ui.scannerPage.classList.contains("is-hidden");
+}
+
+function runPostCloseArtifactCleanup(sessionId: number): void {
+  if (sessionId !== activeScannerSession || isScannerViewportActive()) {
+    return;
+  }
+
+  ui.arMount.innerHTML = "";
+  cleanupAFrameArtifacts();
+  clearSceneReferences();
+  document.body.classList.remove("is-ar-active", "a-body", "aframe-inspector-opened");
+  document.documentElement.classList.remove("a-html", "a-fullscreen");
+}
+
+function schedulePostCloseArtifactCleanup(sessionId: number): void {
+  cancelDelayedArtifactCleanups();
+
+  window.requestAnimationFrame(() => runPostCloseArtifactCleanup(sessionId));
+  delayedArtifactCleanupTimers = [80, 250, 600].map((delay) => {
+    return window.setTimeout(() => runPostCloseArtifactCleanup(sessionId), delay);
+  });
+}
+
+function prepareScannerForFreshBoot(): void {
+  cancelDelayedArtifactCleanups();
+  runCleanupListeners();
+  stopVideoStreams(document);
+  ui.arMount.innerHTML = "";
+  cleanupAFrameArtifacts();
+  clearSceneReferences();
 }
 
 function stopMediaStream(stream: MediaStream | null): void {
@@ -301,6 +352,10 @@ function findArVideoElement(): HTMLVideoElement | null {
 }
 
 function syncArViewportLayout(): void {
+  if (!isScannerViewportActive()) {
+    return;
+  }
+
   const targetHeight = "calc(var(--vh, 1vh) * 100)";
   const targetMinHeight = "100dvh";
 
@@ -413,6 +468,11 @@ async function applyFacingModeStream(): Promise<boolean> {
 
 function bindArVideoLoadedEvent(): void {
   const handler = (event: Event) => {
+    if (!isScannerViewportActive()) {
+      cleanupAFrameArtifacts();
+      return;
+    }
+
     const customEvent = event as CustomEvent<{ component?: EventTarget | null }>;
     const fromEvent = customEvent.detail?.component;
 
@@ -953,6 +1013,7 @@ async function startArFlow(): Promise<void> {
   activeScannerSession += 1;
   const sessionId = activeScannerSession;
 
+  prepareScannerForFreshBoot();
   currentFacingMode = "environment";
   updateCameraButtonLabel();
   setupVhVariable();
@@ -980,6 +1041,8 @@ async function startArFlow(): Promise<void> {
 
 function stopArFlow(): void {
   activeScannerSession += 1;
+  const stoppedSession = activeScannerSession;
+
   try {
     teardownScene();
   } catch (error) {
@@ -1002,7 +1065,7 @@ function stopArFlow(): void {
     document.body.classList.remove("is-ar-active", "a-body", "aframe-inspector-opened");
     document.documentElement.classList.remove("a-html", "a-fullscreen");
     setupVhVariable();
-    syncArViewportLayout();
+    schedulePostCloseArtifactCleanup(stoppedSession);
   }
 }
 
@@ -1035,7 +1098,6 @@ function bindStaticUiEvents(): void {
 
   const onViewportChange = () => {
     setupVhVariable();
-    syncArViewportLayout();
   };
 
   window.addEventListener("resize", onViewportChange);
