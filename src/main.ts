@@ -45,8 +45,11 @@ let isTransitioning = false;
 let pendingSceneBoot = false;
 let toastTimer = 0;
 
-let currentDeviceId: string | null = null;
-let availableCameras: MediaDeviceInfo[] = [];
+type CameraFacingMode = "environment" | "user";
+
+let currentFacingMode: CameraFacingMode = "environment";
+let activeCameraStream: MediaStream | null = null;
+let manualFacingModeApplied = false;
 
 const cleanupListeners: Array<() => void> = [];
 
@@ -168,10 +171,81 @@ function stopVideoStreams(root: ParentNode): void {
   videos.forEach((videoEl) => {
     const stream = videoEl.srcObject;
     if (stream instanceof MediaStream) {
-      stream.getTracks().forEach((track) => track.stop());
+      stopMediaStream(stream);
       videoEl.srcObject = null;
     }
   });
+}
+
+function stopMediaStream(stream: MediaStream | null): void {
+  if (!stream) {
+    return;
+  }
+
+  stream.getTracks().forEach((track) => track.stop());
+}
+
+function getFacingModeLabel(mode: CameraFacingMode): string {
+  return mode === "environment" ? "Kamera Belakang" : "Kamera Depan";
+}
+
+async function waitForArVideoElement(timeoutMs = 3500): Promise<HTMLVideoElement | null> {
+  const startedAt = window.performance.now();
+
+  while (window.performance.now() - startedAt < timeoutMs) {
+    const videoEl = ui.arMount.querySelector<HTMLVideoElement>("video");
+    if (videoEl) {
+      return videoEl;
+    }
+
+    await new Promise((resolve) => {
+      window.setTimeout(resolve, 80);
+    });
+  }
+
+  return null;
+}
+
+async function applyFacingModeStream(): Promise<boolean> {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    return false;
+  }
+
+  const videoEl = await waitForArVideoElement();
+  if (!videoEl) {
+    return false;
+  }
+
+  try {
+    const requestedStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: currentFacingMode },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      },
+      audio: false
+    });
+
+    const previousStream = videoEl.srcObject instanceof MediaStream ? videoEl.srcObject : null;
+    if (previousStream) {
+      stopMediaStream(previousStream);
+    }
+
+    stopMediaStream(activeCameraStream);
+
+    videoEl.srcObject = requestedStream;
+    videoEl.setAttribute("playsinline", "true");
+    videoEl.setAttribute("autoplay", "true");
+    videoEl.muted = true;
+
+    void videoEl.play().catch(() => undefined);
+
+    activeCameraStream = requestedStream;
+    return true;
+  } catch (error) {
+    console.error("[CAMERA] facingMode override failed", error);
+    return false;
+  }
 }
 
 function clearSceneReferences(): void {
@@ -200,6 +274,9 @@ function teardownScene(): void {
     stopVideoStreams(sceneEl);
     sceneEl.remove();
   }
+  stopMediaStream(activeCameraStream);
+  activeCameraStream = null;
+  manualFacingModeApplied = false;
   ui.arMount.innerHTML = "";
   clearSceneReferences();
   isMarkerDetected = false;
@@ -520,11 +597,13 @@ function bindSolarModelFallback(): void {
   }
 
   const onSolarLoaded = () => {
+    console.log("[MODEL] solar_system.glb loaded");
     solarSystemEl?.setAttribute("visible", "true");
     solarFallbackEl?.setAttribute("visible", "false");
   };
 
-  const onSolarError = () => {
+  const onSolarError = (error: Event) => {
+    console.error("[MODEL] solar_system.glb failed", error);
     solarSystemEl?.setAttribute("visible", "false");
     solarFallbackEl?.setAttribute("visible", "true");
     showToast("solar_system.glb gagal dimuat. Fallback tata surya sphere diaktifkan.", "warning");
@@ -554,32 +633,15 @@ function bindSceneReferences(): void {
   }
 }
 
-async function refreshCameraDevices(): Promise<void> {
-  if (!navigator.mediaDevices?.enumerateDevices) {
-    availableCameras = [];
-    return;
-  }
-
-  const devices = await navigator.mediaDevices.enumerateDevices();
-  availableCameras = devices.filter((device) => device.kind === "videoinput");
-
-  if (!currentDeviceId && availableCameras.length > 0) {
-    const preferred = availableCameras.find((device) => /back|rear|environment/i.test(device.label));
-    currentDeviceId = preferred?.deviceId ?? availableCameras[0].deviceId;
-  }
-}
-
 function updateCameraButtonLabel(): void {
-  if (availableCameras.length > 1) {
-    ui.switchCameraBtn.textContent = "Ganti";
-  } else {
-    ui.switchCameraBtn.textContent = "Kamera";
-  }
+  const cameraLabel = getFacingModeLabel(currentFacingMode);
+  ui.switchCameraBtn.textContent = cameraLabel;
+  ui.switchCameraBtn.setAttribute("aria-label", cameraLabel);
 }
 
-async function bootScene(forceRebuild = false): Promise<void> {
+async function bootScene(forceRebuild = false): Promise<boolean> {
   if (pendingSceneBoot) {
-    return;
+    return false;
   }
 
   pendingSceneBoot = true;
@@ -595,59 +657,76 @@ async function bootScene(forceRebuild = false): Promise<void> {
     }
 
     clearFatalError();
-    ui.arMount.innerHTML = createArSceneMarkup(currentDeviceId ?? undefined);
+    ui.arMount.innerHTML = createArSceneMarkup(currentFacingMode);
     bindSceneReferences();
     resetSolarTransforms();
     bindMarkerEvents();
     bindHitZoneEvents();
     bindSolarModelFallback();
     bindTouchFallbackRaycast();
-    await refreshCameraDevices();
+    manualFacingModeApplied = await applyFacingModeStream();
     updateCameraButtonLabel();
 
     setMarkerStatus("Mencari marker...", false);
     showToast("Scanner AR siap. Izinkan akses kamera jika diminta.");
+
+    return true;
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     showFatalError(
       `AR.js gagal dijalankan: ${message}. Cek file /vendor/aframe.min.js dan /vendor/aframe-ar.js.`
     );
+    return false;
   } finally {
     pendingSceneBoot = false;
   }
 }
 
-async function switchCamera(): Promise<void> {
-  if (!navigator.mediaDevices?.enumerateDevices) {
+async function switchCamera(event: Event): Promise<void> {
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (pendingSceneBoot) {
+    return;
+  }
+
+  if (!navigator.mediaDevices?.getUserMedia) {
     showToast("Browser ini tidak mendukung switch kamera langsung.", "error");
     return;
   }
 
-  try {
-    await refreshCameraDevices();
+  const previousMode = currentFacingMode;
+  currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
 
-    if (availableCameras.length < 2) {
-      showToast("Perangkat hanya mendeteksi satu kamera aktif.", "warning");
-      return;
-    }
-
-    const currentIndex = availableCameras.findIndex((camera) => camera.deviceId === currentDeviceId);
-    const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % availableCameras.length : 0;
-    currentDeviceId = availableCameras[nextIndex].deviceId;
-
-    await bootScene(true);
-
-    const label = availableCameras[nextIndex].label.trim();
-    showToast(label ? `Kamera aktif: ${label}` : `Kamera aktif: #${nextIndex + 1}`);
-  } catch {
+  const didBoot = await bootScene(true);
+  if (!didBoot) {
+    currentFacingMode = previousMode;
+    updateCameraButtonLabel();
     showToast("Switch kamera gagal. Browser mungkin membatasi pergantian kamera saat runtime.", "error");
+    return;
   }
+
+  updateCameraButtonLabel();
+
+  if (!manualFacingModeApplied) {
+    showToast("Switch kamera dibatasi browser. Tetap gunakan izin kamera aktif saat ini.", "warning");
+    return;
+  }
+
+  showToast(`${getFacingModeLabel(currentFacingMode)} aktif.`);
 }
 
 async function startArFlow(): Promise<void> {
+  currentFacingMode = "environment";
+  updateCameraButtonLabel();
+  setupVhVariable();
   showScanner();
   hidePlanetPanel();
-  await bootScene();
+
+  const didBoot = await bootScene();
+  if (!didBoot) {
+    showToast("Gagal memulai scanner AR.", "error");
+  }
 }
 
 function stopArFlow(): void {
@@ -657,7 +736,9 @@ function stopArFlow(): void {
 }
 
 function bindStaticUiEvents(): void {
-  ui.startArBtn.addEventListener("click", () => {
+  ui.startArBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     void startArFlow();
   });
 
@@ -673,15 +754,18 @@ function bindStaticUiEvents(): void {
   ui.closeScannerBtn.addEventListener("click", stopArFlow);
   ui.closePlanetBtn.addEventListener("click", closePlanetDetail);
 
-  ui.switchCameraBtn.addEventListener("click", () => {
-    void switchCamera();
+  ui.switchCameraBtn.addEventListener("click", (event) => {
+    void switchCamera(event);
   });
 
   window.addEventListener("resize", setupVhVariable);
+  window.addEventListener("orientationchange", setupVhVariable);
+  window.visualViewport?.addEventListener("resize", setupVhVariable);
 }
 
 function bootstrap(): void {
   setupVhVariable();
+  updateCameraButtonLabel();
   bindStaticUiEvents();
   showLanding();
   setMarkerStatus("Mencari marker...", false);

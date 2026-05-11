@@ -63,6 +63,10 @@ Masih di `src/data/planets.ts`, ubah:
 - `hitZonePosition` (format: `x y z`)
 - `hitZoneRadius` (angka radius sphere)
 
+Untuk kalibrasi visual hit zone saat testing, atur flag `DEBUG_HIT_ZONES` di `src/ar/scene.ts`:
+- `true`: hit zone terlihat semi-transparan (`opacity: 0.18`)
+- `false`: hit zone transparan penuh (`opacity: 0`)
+
 Rekomendasi tuning cepat:
 1. Naikkan/turunkan `y` jika klik terasa meleset di atas/bawah planet.
 2. Geser `x` untuk kiri/kanan, `z` untuk depan/belakang marker.

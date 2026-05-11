@@ -8,18 +8,33 @@
   },
   "project": {
     "name": "TUGAS-AKHIR-VAR-TATA-SURYA",
-    "currentFocus": "",
+    "currentFocus": "Mobile AR scanner stabilization: remove fullscreen behavior, enforce fixed viewport layers, facingMode camera switch, and smaller solar model scale.",
     "durableFacts": []
   },
   "progress": {
-    "lastAchievements": [],
-    "pendingIssues": [],
-    "nextBestActions": [],
-    "validationState": []
+    "lastAchievements": [
+      "Replaced camera switching from deviceId enumeration to facingMode toggle with scene rebuild and manual stream override.",
+      "Stabilized scanner viewport with fixed full-screen layers, dynamic --vh usage, and safe-area-aware HUD controls.",
+      "Reduced solar model scale by device class, added debug hit-zone material flag, and added fallback-first model loading behavior.",
+      "Updated planet detail scales for mobile-safe rendering and synchronized docs (DESIGN and design-intent)."
+    ],
+    "pendingIssues": [
+      "Manual validation on real iOS Safari hardware is still required.",
+      "Final hit-zone offsets may need per-device tuning after on-device tap calibration."
+    ],
+    "nextBestActions": [
+      "Run on-device smoke test on Android Chrome (Infinix Note 40) and iOS Safari.",
+      "Set DEBUG_HIT_ZONES to false after hit-zone calibration is accepted.",
+      "Retest marker detection distance and camera switch behavior across portrait and landscape usage."
+    ],
+    "validationState": [
+      "npm run build: PASS",
+      "npm run preview startup + HTTP probe (127.0.0.1:4173): PASS (200)"
+    ]
   },
   "designContinuity": {
     "visualLanguageContinuity": "opt-in-only",
-    "currentConceptualAnchor": "",
+    "currentConceptualAnchor": "Handheld optical instrument panel (camera-first scanner HUD).",
     "forbiddenCarryover": [
       "prior-project-style-memory",
       "old-ui-visual-dna-without-user-approval",
@@ -32,5 +47,5 @@
     "redactSensitiveTextBeforeWriting": true
   },
   "generatedAt": "2026-05-10T17:34:50.825Z",
-  "lastUpdatedAt": null
+  "lastUpdatedAt": "2026-05-10T18:31:38.348Z"
 }

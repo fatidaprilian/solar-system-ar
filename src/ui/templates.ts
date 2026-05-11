@@ -19,9 +19,9 @@
 
     <div class="scanner-overlay">
       <div class="hud-top">
-        <button id="closeScannerBtn" class="icon-btn" type="button" aria-label="Tutup Scanner">Tutup</button>
+        <button id="closeScannerBtn" class="icon-btn icon-btn-close" type="button" aria-label="Tutup Scanner">X</button>
         <div id="markerStatus" class="marker-status">Mencari marker...</div>
-        <button id="switchCameraBtn" class="icon-btn" type="button" aria-label="Ganti Kamera">Kamera</button>
+        <button id="switchCameraBtn" class="icon-btn icon-btn-camera" type="button" aria-label="Kamera Belakang">Kamera Belakang</button>
       </div>
 
       <div id="scannerHint" class="scanner-hint">Arahkan kamera ke Hiro marker</div>

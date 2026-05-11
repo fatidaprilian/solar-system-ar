@@ -1,6 +1,6 @@
 {
   "mode": "dynamic",
-  "status": "seed-generated-during-init",
+  "status": "refined-mobile-ar-scanner-v1",
   "seedPolicy": {
     "mode": "structure-first-scaffold",
     "requiresProjectSpecificRefinement": true,
@@ -62,9 +62,9 @@
     "literalAnchorPolicy": "Translate anchors into workflow, hierarchy, density, typography, material behavior, state language, and interaction grammar before requiring literal props, marks, or chrome."
   },
   "conceptualAnchor": {
-    "mode": "required-when-no-external-research",
+    "mode": "active",
     "seedMode": "selection-policy-only",
-    "anchorReference": "agent-defined-anchor-reference",
+    "anchorReference": "Compact handheld optical finder interface with unobtrusive controls",
     "requiresAgentSelectionBeforeUiImplementation": true,
     "userResearchAbsencePolicy": {
       "userSuppliedResearchOnly": true,
@@ -108,10 +108,9 @@
       "premium-interactive-web-experiences"
     ],
     "visualRiskBudget": {
-      "mode": "high-distinctiveness-with-accessibility-and-performance-guardrails",
-      "allowRichMotionAndMicroInteraction": true,
-      "rejectTimidDefaultWhenAnchorSupportsExpressiveUi": true,
-      "rejectDependencyFearAsDownshiftReason": true,
+      "mode": "high-clarity-camera-first",
+      "allowRichMotionAndMicroInteraction": false,
+      "rejectTimidDefaultWhenAnchorSupportsExpressiveUi": false,
       "requireReducedMotionFallback": true
     },
     "literalTranslationPolicy": {
@@ -148,27 +147,42 @@
         "no-dashboard-mental-model",
         "motion-derived-from-anchor"
       ]
-    }
+    },
+    "name": "Handheld Optical Instrument Panel",
+    "agentResearchMode": "repo-evidence-and-brief-driven",
+    "sourceDomain": "scientific-instrumentation",
+    "specificReferencePoint": "Top utility strip and bottom calibration hint that never blocks the lens center",
+    "rationale": "Marker tracking needs a clean camera field with minimal fixed overlays and clear action controls.",
+    "signatureMotion": "Fast utility transitions and marker state shifts without fullscreen or orientation forcing.",
+    "typographicDecision": "Scanner HUD uses compact 12-14px labels while landing keeps large headline contrast.",
+    "motionRiskBudget": {
+      "mode": "low-amplitude-utility-motion",
+      "maxDurationMs": 250,
+      "prefersReducedMotionFallback": true
+    },
+    "cohesionChecks": [
+      "camera-feed-remains-primary-surface",
+      "overlay-controls-safe-area-aware",
+      "no-force-fullscreen-or-orientation-lock"
+    ]
   },
   "derivedTokenLogic": {
-    "anchorReference": "agent-defined-anchor-reference",
-    "colorDerivationSource": "Explain semantic color roles from anchorReference; reject generic palettes without anchor evidence.",
-    "spacingDerivationSource": "Explain spacing rhythm, density, and exceptions from anchorReference. Spacing grids are layout math, not decorative background lines.",
-    "typographyDerivationSource": "Explain display, body, metadata, and data roles from anchorReference.",
-    "motionDerivationSource": "Explain duration, easing, choreography, and reduced-motion from anchorReference.",
-    "validationRule": "Every semantic token role must trace to anchorReference; keep exact primitive values flexible unless locked by repo evidence, accessibility validation, implementation constraints, or explicit user approval."
+    "anchorReference": "Handheld Optical Instrument Panel",
+    "colorDerivationSource": "Dark camera-first base with cool utility controls and high-contrast status roles.",
+    "spacingDerivationSource": "Safe-area aware compact HUD spacing that protects center marker visibility.",
+    "typographyDerivationSource": "Compact utility labels for scanner; large display role for landing hero only.",
+    "motionDerivationSource": "Utility-first short transitions and GSAP focus flow without fullscreen choreography.",
+    "validationRule": "Tokens must protect marker visibility, touch target size, and AR scanning readability."
   },
   "motionPaletteDecision": {
-    "productCategorySignal": "agent-inferred-starting-heuristic",
-    "densityDecisionSource": "Choose motion density from task, content, brand, device, performance, and accessibility. Categories are heuristics.",
+    "productCategorySignal": "mobile-web-ar-scanner",
+    "densityDecisionSource": "Camera usability and marker readability on mobile devices.",
     "requiredInteractionStates": [
       "default",
-      "hover",
       "focus-visible",
       "active",
       "disabled",
       "loading",
-      "empty",
       "error",
       "success",
       "transition"
@@ -185,16 +199,16 @@
       "soft-glow-ai-template-default",
       "cyber-neon-terminal-default"
     ],
-    "spatialDecision": "State 3D/canvas/WebGL fit. If omitted, name product-fit reason and replacement interaction quality."
+    "spatialDecision": "Keep scanner full viewport with fixed overlays and no fullscreen mode."
   },
   "aiSafeUiAudit": {
-    "status": "agent-must-complete-before-ui-implementation",
+    "status": "completed-for-mobile-ar-scanner-phase",
     "failureDefinition": "AI-safe UI uses template cards, generic marks, decorative grid or line wallpaper, calibration-mark wallpaper, test/demo/placeholder copy, terminal-only user paths, safe palettes, glow backgrounds, or copied scaffold composition.",
     "interchangeabilityTest": "If this UI can be renamed from tugas-akhir-var-tata-surya to another product category without changing composition, palette, iconography, and motion, revise it.",
     "requiredProductSpecificSignals": [
-      "agent-defined-product-specific-data-treatment",
-      "agent-defined-product-specific-motion-or-state-behavior",
-      "agent-defined-product-specific-morphology-iconography-or-spatial-structure"
+      "camera-first fixed scanner viewport",
+      "marker-status capsule with detected/lost state language",
+      "planet detail bottom sheet tied to AR tap flow"
     ],
     "paletteExplorationRule": "Use a visually exploratory product-derived palette with WCAG contrast and status clarity.",
     "backgroundPatternRule": "Lines, grids, scanlines, noise, glows, blobs, logos, calibration marks, and geometry must serve a named product function; never use grid, line, or calibration-mark backgrounds as first-output filler. Measurement and inspection marks belong to task overlays or controls, not page wallpaper.",
@@ -231,7 +245,7 @@
     "blockingByDefault": true
   },
   "productionContentPolicy": {
-    "status": "agent-must-complete-before-ui-implementation",
+    "status": "completed-for-mobile-ar-scanner-phase",
     "userFacingCopyRule": "Visible UI copy must be product-ready and task-specific. Do not ship testing, demo, sample, placeholder, lorem, TODO, coming soon, or scaffold labels unless they are real product states.",
     "terminalDependencyRule": "User-facing workflows must be operable through the UI unless the product is explicitly a CLI, developer tool, or operational runbook. Terminal commands belong in setup and deployment docs, not as the only path for core user tasks.",
     "allowedExceptions": [
@@ -246,13 +260,13 @@
   "libraryResearchStatus": "pending-verification",
   "libraryDecisions": [
     {
-      "library": "agent-defined-or-none",
-      "purpose": "Select UI-related libraries dynamically from product fit, accessibility, interaction quality, maintenance, and current official docs before imports.",
+      "library": "none-new-for-this-phase",
+      "purpose": "This phase uses existing A-Frame, AR.js, and GSAP stack only.",
       "verifiedAt": null,
       "sourceUrl": null,
       "stableVersion": null,
-      "fallbackIfUnavailable": "Use native CSS, browser APIs, or existing dependencies.",
-      "selectionPolicy": "Do not default to shadcn, native-only, Tailwind-only, or dependency avoidance by habit."
+      "fallbackIfUnavailable": "N/A",
+      "selectionPolicy": "No new UI dependency added during mobile scanner stabilization."
     }
   ],
   "mathSystems": {
@@ -409,18 +423,35 @@
   "designExecutionHandoff": {
     "version": "ui-handoff-v1",
     "location": "inline-design-intent",
-    "status": "seed-needs-refinement",
+    "status": "refined-for-mobile-ar-scanner-phase",
     "seedMode": "structure-first-scaffold",
     "requiresTaskSpecificRefinement": true,
-    "primaryExperienceGoal": "Define the main web application journey for tugas-akhir-var-tata-surya from repo evidence, brief, and docs.",
+    "primaryExperienceGoal": "Start AR quickly, keep scanner stable across mobile devices, and open planet details without breaking camera flow.",
     "surfacePlan": [
       {
-        "surfaceId": "agent-defined-primary-experience",
-        "role": "primary-context-synthesized-by-agent",
-        "goal": "Choose the first task path from product evidence; reject template shells.",
+        "surfaceId": "landing-entry",
+        "role": "ar-entry",
+        "goal": "Launch scanner without fullscreen or orientation forcing.",
         "antiPatterns": [
-          "dashboard-default",
-          "scale-only-responsive-layout"
+          "fullscreen-lock",
+          "camera-layer-overlap"
+        ]
+      },
+      {
+        "surfaceId": "scanner-hud",
+        "role": "camera-utility-overlay",
+        "goal": "Provide close/status/switch controls without blocking marker center.",
+        "antiPatterns": [
+          "oversized-control-bars",
+          "center-screen-overlay"
+        ]
+      },
+      {
+        "surfaceId": "planet-detail-sheet",
+        "role": "contextual-information",
+        "goal": "Reveal planet data in a bottom sheet on small viewports.",
+        "antiPatterns": [
+          "full-screen-modal-takeover"
         ]
       }
     ],
@@ -447,61 +478,70 @@
     },
     "contentPriorityMap": {
       "primary": [
-        "agent-defined-core-task-or-reading-path"
+        "camera feed and marker state"
       ],
       "secondary": [
-        "agent-defined-supporting-context"
+        "switch and close controls"
       ],
       "deferred": [
-        "agent-defined-deferred-or-hidden-content"
+        "planet metadata until user taps hit zone"
       ]
     },
     "viewportMutationPlan": {
       "mobile": {
-        "primaryOperation": "agent-defined-mobile-recomposition",
+        "primaryOperation": "fixed-full-viewport-scanner",
         "requiredSurfaceActions": [
-          "choose-mobile-task-order",
-          "disclose-or-remove-low-priority-content"
+          "compact-top-hud",
+          "bottom-hint-safe-area",
+          "bottom-sheet-info"
         ],
         "forbiddenPatterns": [
-          "scale-only-shrink"
+          "scale-only-shrink",
+          "fullscreen-lock"
         ],
-        "rationale": "Reorder, merge, or disclose content for mobile. Reject scale-only shrink."
+        "rationale": "Mobile scanner requires strict viewport control and minimal occlusion."
       },
       "tablet": {
-        "primaryOperation": "agent-defined-tablet-regrouping",
+        "primaryOperation": "wider-hud-and-panel-balance",
         "requiredSurfaceActions": [
-          "define-medium-width-grouping",
-          "preserve-task-clarity"
+          "retain-fixed-scanner",
+          "expand-info-surface-without-camera-loss"
         ],
         "forbiddenPatterns": [
-          "uniform-module-grid-without-role-change"
+          "desktop-layout-clone-with-overflow"
         ],
-        "rationale": "Regroup for tablet instead of width-only desktop reduction."
+        "rationale": "Tablet can expose more context while keeping camera feed dominant."
       },
       "desktop": {
-        "primaryOperation": "agent-defined-desktop-composition",
+        "primaryOperation": "stable-camera-preview-with-side-context",
         "requiredSurfaceActions": [
-          "use-space-to-improve-hierarchy",
-          "avoid-equalizing-unrelated-content"
+          "preserve-camera-fit",
+          "side-panel-readable-metadata"
         ],
         "forbiddenPatterns": [
-          "interchangeable-dashboard-or-landing-chrome"
+          "mobile-sheet-forced-on-large-screen"
         ],
-        "rationale": "Use space intentionally; avoid equal-weight modules without evidence."
+        "rationale": "Desktop supports wider detail surfaces without hiding the scanner field."
       }
     },
     "interactionStateMatrix": [
       {
-        "componentId": "primary-interaction",
+        "componentId": "scanner-controls",
         "states": [
           "default",
-          "hover",
-          "focus",
-          "loading",
-          "error"
+          "focus-visible",
+          "active",
+          "disabled"
         ],
-        "notes": "Refine states from project language and anchor; reject anonymous panels."
+        "notes": "Buttons keep minimum 44px touch size and high contrast."
+      },
+      {
+        "componentId": "marker-status",
+        "states": [
+          "default",
+          "success"
+        ],
+        "notes": "Status text toggles between searching and detected."
       }
     ],
     "expressionFlexibility": {
@@ -654,8 +694,7 @@
     "allowedSources": [
       "current-repo-evidence",
       "current-user-brief",
-      "current-project-docs",
-      "explicitly-approved-current-task-constraints"
+      "current-project-docs"
     ],
     "taintedSources": [
       "prior-chat-visual-memory",

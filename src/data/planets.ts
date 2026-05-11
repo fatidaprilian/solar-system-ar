@@ -40,7 +40,7 @@ export const PLANETS: PlanetData[] = [
     themeColor: "#b5b6bc",
     hitZonePosition: "-1.26 0.2 -0.08",
     hitZoneRadius: 0.19,
-    detailScale: "0.55 0.55 0.55"
+    detailScale: "0.12 0.12 0.12"
   },
   {
     id: "venus",
@@ -56,7 +56,7 @@ export const PLANETS: PlanetData[] = [
     themeColor: "#e7c48e",
     hitZonePosition: "-0.94 0.2 -0.04",
     hitZoneRadius: 0.22,
-    detailScale: "0.58 0.58 0.58"
+    detailScale: "0.12 0.12 0.12"
   },
   {
     id: "earth",
@@ -72,7 +72,7 @@ export const PLANETS: PlanetData[] = [
     themeColor: "#58a6ff",
     hitZonePosition: "-0.62 0.2 -0.02",
     hitZoneRadius: 0.22,
-    detailScale: "0.6 0.6 0.6"
+    detailScale: "0.12 0.12 0.12"
   },
   {
     id: "mars",
@@ -88,7 +88,7 @@ export const PLANETS: PlanetData[] = [
     themeColor: "#d88a6d",
     hitZonePosition: "-0.3 0.2 0",
     hitZoneRadius: 0.2,
-    detailScale: "0.56 0.56 0.56"
+    detailScale: "0.12 0.12 0.12"
   },
   {
     id: "jupiter",
@@ -104,7 +104,7 @@ export const PLANETS: PlanetData[] = [
     themeColor: "#d7b497",
     hitZonePosition: "0.18 0.2 0.04",
     hitZoneRadius: 0.32,
-    detailScale: "0.68 0.68 0.68"
+    detailScale: "0.08 0.08 0.08"
   },
   {
     id: "saturn",
@@ -120,7 +120,7 @@ export const PLANETS: PlanetData[] = [
     themeColor: "#d3c18a",
     hitZonePosition: "0.62 0.2 0.06",
     hitZoneRadius: 0.36,
-    detailScale: "0.66 0.66 0.66"
+    detailScale: "0.08 0.08 0.08"
   },
   {
     id: "uranus",
@@ -136,7 +136,7 @@ export const PLANETS: PlanetData[] = [
     themeColor: "#8fd7e8",
     hitZonePosition: "1.02 0.2 0.08",
     hitZoneRadius: 0.28,
-    detailScale: "0.62 0.62 0.62"
+    detailScale: "0.1 0.1 0.1"
   },
   {
     id: "neptune",
@@ -152,7 +152,7 @@ export const PLANETS: PlanetData[] = [
     themeColor: "#5783e1",
     hitZonePosition: "1.38 0.2 0.1",
     hitZoneRadius: 0.28,
-    detailScale: "0.62 0.62 0.62"
+    detailScale: "0.1 0.1 0.1"
   }
 ];
 
