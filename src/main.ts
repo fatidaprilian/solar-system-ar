@@ -53,6 +53,7 @@ let activeScannerSession = 0;
 
 const cleanupListeners: Array<() => void> = [];
 let delayedArtifactCleanupTimers: number[] = [];
+let savedScrollY = 0;
 
 function getRequiredElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -137,16 +138,18 @@ function clearFatalError(): void {
 }
 
 function showLanding(): void {
+  unlockDocumentAfterScanner();
   document.body.classList.remove("is-ar-active");
   ui.landingPage.classList.remove("is-hidden");
   ui.scannerPage.classList.add("is-hidden");
   ui.howToModal.classList.add("is-hidden");
-  window.scrollTo(0, 0);
+  resetLandingViewport();
 }
 
 function showScanner(): void {
   cancelDelayedArtifactCleanups();
   document.body.classList.add("is-ar-active");
+  lockDocumentForScanner();
   ui.landingPage.classList.add("is-hidden");
   ui.scannerPage.classList.remove("is-hidden");
 }
@@ -211,10 +214,61 @@ function cleanupAFrameArtifacts(): void {
     el.remove();
   });
 
+  document.querySelectorAll<HTMLElement>("a-scene").forEach((scene) => {
+    if (scene.id === "arScene" || ui.arMount.contains(scene)) {
+      scene.remove();
+    }
+  });
+
   document.documentElement.classList.remove("a-html");
   document.body.classList.remove("a-body", "aframe-inspector-opened");
   document.documentElement.classList.remove("a-fullscreen");
   document.body.classList.remove("is-ar-active");
+  unlockDocumentAfterScanner();
+}
+
+function lockDocumentForScanner(): void {
+  savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  document.documentElement.classList.add("is-scanner-locked");
+  document.body.classList.add("is-scanner-locked");
+
+  document.documentElement.style.overflow = "hidden";
+  document.body.style.position = "fixed";
+  document.body.style.inset = "0";
+  document.body.style.top = `-${savedScrollY}px`;
+  document.body.style.width = "100%";
+  document.body.style.height = "calc(var(--vh, 1vh) * 100)";
+  document.body.style.overflow = "hidden";
+  document.body.style.touchAction = "none";
+}
+
+function unlockDocumentAfterScanner(): void {
+  document.documentElement.classList.remove("is-scanner-locked");
+  document.body.classList.remove("is-scanner-locked");
+
+  document.documentElement.style.overflow = "";
+  document.body.style.position = "";
+  document.body.style.inset = "";
+  document.body.style.top = "";
+  document.body.style.width = "";
+  document.body.style.height = "";
+  document.body.style.overflow = "";
+  document.body.style.touchAction = "";
+}
+
+function resetLandingViewport(): void {
+  setupVhVariable();
+  window.scrollTo(0, 0);
+
+  window.requestAnimationFrame(() => {
+    window.scrollTo(0, 0);
+  });
+
+  window.setTimeout(() => {
+    if (!isScannerViewportActive()) {
+      window.scrollTo(0, 0);
+    }
+  }, 120);
 }
 
 function cancelDelayedArtifactCleanups(): void {
@@ -238,6 +292,8 @@ function runPostCloseArtifactCleanup(sessionId: number): void {
   clearSceneReferences();
   document.body.classList.remove("is-ar-active", "a-body", "aframe-inspector-opened");
   document.documentElement.classList.remove("a-html", "a-fullscreen");
+  unlockDocumentAfterScanner();
+  window.scrollTo(0, 0);
 }
 
 function schedulePostCloseArtifactCleanup(sessionId: number): void {
