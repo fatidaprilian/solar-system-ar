@@ -54,6 +54,7 @@ let activeScannerSession = 0;
 const cleanupListeners: Array<() => void> = [];
 let delayedArtifactCleanupTimers: number[] = [];
 let landingResetTimers: number[] = [];
+let viewportListenersBound = false;
 
 const MIN_VIEWPORT_HEIGHT = 320;
 const MAX_TOUCH_VIEWPORT_HEIGHT = 1400;
@@ -70,15 +71,15 @@ function getSolarScaleMultiplier(): number {
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 1.65;
+    return 1.75;
   }
   if (viewportWidth <= 420) {
-    return 1.55;
+    return 1.68;
   }
   if (viewportWidth <= 520) {
-    return 1.45;
+    return 1.58;
   }
-  return 1.35;
+  return 1.45;
 }
 
 function getRequiredElement<T extends HTMLElement>(selector: string): T {
@@ -163,7 +164,7 @@ function buildUi(): RequiredElements {
   };
 }
 
-const ui = buildUi();
+let ui = buildUi();
 
 function setMarkerStatus(text: string, detected: boolean): void {
   ui.markerStatus.textContent = text;
@@ -289,6 +290,32 @@ function cleanupAFrameArtifacts(): void {
   document.body.classList.remove("a-body", "aframe-inspector-opened");
   document.documentElement.classList.remove("a-fullscreen");
   document.body.classList.remove("is-ar-active");
+  clearArDocumentSideEffects();
+}
+
+function clearArDocumentSideEffects(): void {
+  document.documentElement.classList.remove("a-html", "a-fullscreen");
+  document.body.classList.remove("is-ar-active", "a-body", "aframe-inspector-opened");
+
+  const layoutProps = [
+    "bottom",
+    "height",
+    "left",
+    "margin",
+    "min-height",
+    "overflow",
+    "padding",
+    "position",
+    "right",
+    "top",
+    "transform",
+    "width"
+  ];
+
+  layoutProps.forEach((prop) => {
+    document.documentElement.style.removeProperty(prop);
+    document.body.style.removeProperty(prop);
+  });
 }
 
 function enableLandingInteraction(): void {
@@ -296,15 +323,17 @@ function enableLandingInteraction(): void {
   ui.landingPage.style.visibility = "visible";
   ui.landingPage.style.zIndex = "20";
   ui.scannerPage.style.pointerEvents = "none";
+  ui.scannerPage.style.visibility = "hidden";
   ui.scannerPage.style.zIndex = "0";
   ui.arMount.style.pointerEvents = "none";
 }
 
 function enableScannerInteraction(): void {
   ui.landingPage.style.pointerEvents = "none";
-  ui.landingPage.style.removeProperty("visibility");
+  ui.landingPage.style.visibility = "hidden";
   ui.landingPage.style.removeProperty("z-index");
   ui.scannerPage.style.pointerEvents = "auto";
+  ui.scannerPage.style.visibility = "visible";
   ui.scannerPage.style.removeProperty("z-index");
   ui.arMount.style.pointerEvents = "auto";
 }
@@ -339,10 +368,21 @@ function resetLandingViewport(): void {
 function restoreLandingShellLayout(): void {
   ui.landingPage.classList.remove("is-hidden");
   ui.scannerPage.classList.add("is-hidden");
-  document.body.classList.remove("is-ar-active", "a-body", "aframe-inspector-opened");
-  document.documentElement.classList.remove("a-html", "a-fullscreen");
+  clearArDocumentSideEffects();
   enableLandingInteraction();
   resetLandingViewport();
+}
+
+function remountCleanLandingShell(): void {
+  cancelLandingResetTimers();
+  clearArDocumentSideEffects();
+  ui = buildUi();
+  bindStaticUiEvents();
+  showLanding();
+  setMarkerStatus("Mencari marker...", false);
+  clearFatalError();
+  hidePlanetPanel();
+  ui.toast.classList.add("is-hidden");
 }
 
 function cancelDelayedArtifactCleanups(): void {
@@ -762,7 +802,7 @@ function renderDetailModel(planet: PlanetData): void {
         id="planetDetailModel"
         gltf-model="#${planet.modelId}"
         visible="false"
-        rotation="0 25 0"
+        rotation="0 0 0"
         scale="${planet.detailScale}"
       ></a-entity>
       <a-sphere
@@ -1282,17 +1322,12 @@ function stopArFlow(): void {
     clearSceneReferences();
     cleanupAFrameArtifacts();
   } finally {
-    showLanding();
-    setMarkerStatus("Mencari marker...", false);
-    ui.toast.classList.add("is-hidden");
-    clearFatalError();
-    hidePlanetPanel();
     manualFacingModeApplied = false;
     isMarkerDetected = false;
     isTransitioning = false;
     currentPlanet = null;
     pendingSceneBoot = false;
-    restoreLandingShellLayout();
+    remountCleanLandingShell();
     schedulePostCloseArtifactCleanup(stoppedSession);
   }
 }
@@ -1324,13 +1359,16 @@ function bindStaticUiEvents(): void {
     void switchCamera(event);
   });
 
-  const onViewportChange = () => {
-    setupVhVariable();
-  };
+  if (!viewportListenersBound) {
+    const onViewportChange = () => {
+      setupVhVariable();
+    };
 
-  window.addEventListener("resize", onViewportChange);
-  window.addEventListener("orientationchange", onViewportChange);
-  window.visualViewport?.addEventListener("resize", onViewportChange);
+    window.addEventListener("resize", onViewportChange);
+    window.addEventListener("orientationchange", onViewportChange);
+    window.visualViewport?.addEventListener("resize", onViewportChange);
+    viewportListenersBound = true;
+  }
 }
 
 function bootstrap(): void {

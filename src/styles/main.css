@@ -132,10 +132,19 @@ body.is-ar-active .view {
 }
 
 body.is-ar-active .view-landing {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
   height: 100vh;
   height: 100svh;
   min-height: 100vh;
   min-height: 100svh;
+}
+
+body.is-ar-active .view-scanner,
+body.is-ar-active .ar-mount,
+body.is-ar-active .scanner-overlay {
+  visibility: visible !important;
 }
 
 .landing-content {
@@ -440,7 +449,6 @@ body:not(.is-ar-active) .a-orientation-modal {
   box-shadow:
     0 14px 32px rgba(0, 0, 0, 0.35),
     inset -18px -24px 40px rgba(0, 0, 0, 0.45);
-  animation: planetSpin 14s linear infinite;
 }
 
 .planet-preview-ring {
@@ -455,12 +463,6 @@ body:not(.is-ar-active) .a-orientation-modal {
 
 .planet-panel[data-planet="saturn"] .planet-preview-ring {
   opacity: 0.85;
-}
-
-@keyframes planetSpin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .panel-head {

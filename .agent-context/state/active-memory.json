@@ -8,15 +8,16 @@
                      },
     "project":  {
                     "name":  "TUGAS-AKHIR-VAR-TATA-SURYA",
-                    "currentFocus":  "Validate larger mobile AR solar scale, rotating planet preview, and stable close-to-landing reset across devices.",
+                    "currentFocus":  "Validate larger mobile AR solar scale, static detail preview, and clean close-to-landing remount across devices.",
                     "durableFacts":  [
 
                                      ]
                 },
     "progress":  {
                      "lastAchievements":  [
-                                              "Increased mobile solar scale multipliers so the solar row appears larger on small touch viewports.",
-                                              "Added a rotating planet preview orb in the detail panel with per-planet scale normalization.",
+                                              "Increased SOLAR_FALLBACK_SCALE to 0.34 and raised mobile solar scale multipliers so the solar row appears larger on small touch viewports.",
+                                              "Changed the detail panel preview to a static GLB-like orb and removed the spinning CSS animation.",
+                                              "Changed scanner close recovery to remount a clean landing shell after AR teardown so stale A-Frame/AR.js layout side effects do not leave duplicate landing panels.",
                                               "Hardened landing viewport recovery on close with repeated reset timers.",
                                               "Added device-based solar-system scale multiplier for mobile by passing a computed multiplier into createArSceneMarkup.",
                                               "Added session guards in bootScene so late AR boot steps do not mutate the UI after closing the scanner.",
@@ -25,18 +26,18 @@
                                           ],
                      "pendingIssues":  [
                                            "Real-device verification is still required on Android Chrome, iOS Safari, and tablets after the latest scale multiplier changes.",
-                                           "If the solar row is still too small or too large, adjust getSolarScaleMultiplier or SOLAR_FALLBACK_SCALE in src/ar/scene.ts.",
+                                           "If the solar row is still too small or too large, adjust getSolarScaleMultiplier or SOLAR_FALLBACK_SCALE in src/ar/scene.ts from the current 0.34 baseline.",
                                            "If planet taps feel offset after scale changes, tune hitZonePosition and hitZoneRadius in src/data/planets.ts.",
-                                           "Verify the planet preview orb sizing across planets; tweak previewScale values if any appear too large or too small.",
-                                           "If close still fails on a specific browser, capture DevTools source dimensions and class list after close to decide whether a full AR remount/reload fallback is needed."
+                                           "Verify the static planet preview orb sizing across planets; tweak previewScale values if any appear too large or too small.",
+                                           "If close still fails on a specific browser, capture DevTools source dimensions, body/html class list, and app DOM after close to decide whether a full page reload fallback is needed."
                                        ],
                      "nextBestActions":  [
-                                             "Deploy and test open AR -\u003e scan Hiro -\u003e tap planet -\u003e confirm preview orb -\u003e close detail -\u003e close scanner -\u003e reopen AR on iOS and Android.",
-                                             "Verify the landing page and modal remain centered and tappable after closing AR.",
+                                             "Deploy and test open AR -\u003e scan Hiro -\u003e tap planet -\u003e confirm static preview orb -\u003e close detail -\u003e close scanner -\u003e reopen AR on iOS and Android.",
+                                             "Verify the landing page and modal remain centered and tappable after closing AR and after reopening AR.",
                                              "Verify the solar row feels large enough on iPhone-sized viewports without clipping."
                                          ],
                      "validationState":  [
-                                             "npm run build after scale multiplier and close-session guard: PASS",
+                                             "npm run build after larger solar scale, close remount, and static detail preview patch: PASS",
                                              "docs/design-intent.json and active-memory JSON parse after documentation sync: PASS",
                                              "Manual real-device verification remains pending.",
                                              "npm run validate after latest UI changes: NOT RUN"
@@ -57,5 +58,5 @@
                     "redactSensitiveTextBeforeWriting":  true
                 },
     "generatedAt":  "2026-05-10T17:34:50.825Z",
-    "lastUpdatedAt":  "2026-05-12T02:05:00+07:00"
+    "lastUpdatedAt":  "2026-05-12T02:51:15+07:00"
 }

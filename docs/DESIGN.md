@@ -44,7 +44,7 @@ Motion is utilitarian: short button hover transitions and GSAP model transitions
 - Scanner controls: rounded pill buttons with 44px minimum touch height.
 - Marker status: centered capsule at top.
 - Planet detail: fixed bottom sheet on smaller viewports, side panel on larger viewports.
-- Planet detail preview: rotating planet orb above the description with per-planet scale normalization.
+- Planet detail preview: static GLB-like planet orb above the description with per-planet scale normalization; do not spin the info preview.
 
 ## 11. Context Hygiene and Source Boundaries
 
@@ -61,5 +61,5 @@ Do not force fullscreen, do not rotate-lock orientation, do not block the camera
 ## 14. Implementation Notes for Future UI Tasks
 
 When planet tap calibration drifts, tune `hitZonePosition` and `hitZoneRadius` in `src/data/planets.ts`. Use `DEBUG_HIT_ZONES` in `src/ar/scene.ts` during calibration and disable it for production.
-Current baseline: base scales live in `src/ar/scene.ts` (`SOLAR_SYSTEM_MODEL_SCALE = 0.01`, `SOLAR_FALLBACK_SCALE = 0.28`) with a mobile multiplier in `src/main.ts` (`getSolarScaleMultiplier` ~ 1.25-1.55). Detail model sizing uses `DETAIL_MODEL_TARGET_SIZE` / `DETAIL_MODEL_LARGE_TARGET_SIZE` plus per-planet `detailScale` in `src/data/planets.ts`.
-Close/reopen stability depends on the `visualViewport`-driven `--app-height` path, repeated post-close AR artifact cleanup, and explicit landing/scanner pointer-event restoration in `src/main.ts`.
+Current baseline: base scales live in `src/ar/scene.ts` (`SOLAR_SYSTEM_MODEL_SCALE = 0.01`, `SOLAR_FALLBACK_SCALE = 0.34`) with a mobile multiplier in `src/main.ts` (`getSolarScaleMultiplier` ~ 1.45-1.75). Detail model sizing uses `DETAIL_MODEL_TARGET_SIZE` / `DETAIL_MODEL_LARGE_TARGET_SIZE` plus per-planet `detailScale` in `src/data/planets.ts`.
+Close/reopen stability depends on the `visualViewport`-driven `--app-height` path, repeated post-close AR artifact cleanup, explicit landing/scanner pointer-event restoration, and a clean landing shell remount after scanner close in `src/main.ts`.

@@ -1,6 +1,6 @@
 {
   "mode": "dynamic",
-  "status": "refined-mobile-ar-scanner-v4-scale-and-close-tap-guard",
+  "status": "refined-mobile-ar-scanner-v5-scale-close-remount-static-detail-preview",
   "seedPolicy": {
     "mode": "structure-first-scaffold",
     "requiresProjectSpecificRefinement": true,
@@ -209,7 +209,7 @@
       "camera-first fixed scanner viewport",
       "marker-status capsule with detected/lost state language",
       "planet detail bottom sheet tied to AR tap flow",
-      "rotating planet preview orb above the detail content"
+      "static GLB-like planet preview orb above the detail content"
     ],
     "paletteExplorationRule": "Use a visually exploratory product-derived palette with WCAG contrast and status clarity.",
     "backgroundPatternRule": "Lines, grids, scanlines, noise, glows, blobs, logos, calibration marks, and geometry must serve a named product function; never use grid, line, or calibration-mark backgrounds as first-output filler. Measurement and inspection marks belong to task overlays or controls, not page wallpaper.",
