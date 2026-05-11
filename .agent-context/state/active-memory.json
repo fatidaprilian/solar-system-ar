@@ -8,7 +8,7 @@
   },
   "project": {
     "name": "TUGAS-AKHIR-VAR-TATA-SURYA",
-    "currentFocus": "Stabilize AR scanner close/landing cleanup first, then continue to camera preview split/blank and model-scale verification.",
+    "currentFocus": "Verify mobile AR scanner after reverting harmful body-lock layout, switching video preview to portrait-fill, and shrinking the GLB Sun node.",
     "durableFacts": []
   },
   "progress": {
@@ -17,8 +17,10 @@
       "Phase 1 cleanup: AR viewport sync now runs only while scanner is active, preventing late AR.js layout sync from affecting the landing page.",
       "Phase 1 cleanup: scanner close now schedules repeated post-close cleanup passes to remove late AR.js video/canvas artifacts.",
       "Phase 1 layout: landing/app/base view heights no longer depend on scanner --vh; scanner keeps the dynamic viewport behavior only while AR is active.",
-      "Phase 1b mobile cleanup: scanner now locks document scroll/body positioning while active and unlocks/reset scroll when returning to landing.",
-      "Phase 1b mobile layout: landing is no longer a globally fixed view; only scanner remains fixed full viewport.",
+      "Reverted the Phase 1b body-lock approach after real-device feedback showed Chrome Android zoomed the page out into multiple tiled views.",
+      "Restored fixed full-viewport views to prevent mobile landing tiling after scanner close.",
+      "Changed AR video presentation from contain to cover and removed forced stream width/height/aspectRatio constraints so scanner visually fills portrait screens without imposing 16:9 constraints.",
+      "Detected a named Sun_7 node inside solar_system.glb and added runtime scaling for sun nodes to keep the sun from covering the phone camera view.",
       "Set final super-micro model scale: solar root 0.010, fallback 0.055, root Y 0.025 for very small marker appearance on phones.",
       "Adjusted planet detail scales into requested 0.008-0.010 range across all planets.",
       "Improved tap usability while model is tiny by increasing hit-zone radii and raising minimum hit-zone wrapper scale to 0.22.",
@@ -26,14 +28,14 @@
       "Kept viewport layer sync and zoom-min reset path so mobile preview stays upright and less over-zoomed."
     ],
     "pendingIssues": [
-      "Camera preview split/blank still needs Phase 2 patch: remove harmful portrait/aspect constraints and normalize video/canvas layering while scanner is active.",
-      "Phase 1b needs real-device confirmation because the previous Phase 1 patch worked on laptop but not on smartphone.",
+      "Current patch needs real-device confirmation on Infinix Note 40 because layout and camera behavior differ from desktop preview.",
+      "If the camera still feels visually zoomed, choose between object-fit cover (portrait fill) and contain (no crop but black bars); mobile AR.js cannot guarantee a true 9:16 camera stream on every browser.",
       "Final visual calibration still requires real-device check on Infinix Note 40 and iPhone Safari.",
       "If tap hit-zones drift after final marker scale, hitZonePosition/hitZoneRadius tuning is still required."
     ],
     "nextBestActions": [
-      "Test Phase 1b on phone by opening AR, pressing X, confirming landing returns to normal size, then repeating the open/close cycle three times.",
-      "Patch Phase 2 camera preview after close/landing is confirmed stable.",
+      "Deploy and test on phone: close scanner should no longer show tiled/9-page landing.",
+      "Scan Hiro marker and verify the Sun is no longer full-screen while other planets remain usable.",
       "Run full on-device checklist for AR start, switch camera, close scanner, and reopen scanner cycle.",
       "After hit-zone tuning finalizes, set DEBUG_HIT_ZONES to false for production visual cleanliness.",
       "Capture browser-specific notes for Android Chrome vs iOS Safari camera-switch limitations."
@@ -42,7 +44,9 @@
       "npm run build before Phase 1 patch: PASS",
       "npm run build after Phase 1 patch: PASS",
       "git diff --check after Phase 1 patch: PASS with Git line-ending warnings only",
-      "npm run build after Phase 1b patch: PASS"
+      "npm run build after Phase 1b patch: PASS",
+      "npm run build after reverting body-lock and adding camera/sun fixes: PASS",
+      "npm run preview probe after camera/sun fixes: PASS (200)"
     ]
   },
   "designContinuity": {
@@ -60,5 +64,5 @@
     "redactSensitiveTextBeforeWriting": true
   },
   "generatedAt": "2026-05-10T17:34:50.825Z",
-  "lastUpdatedAt": "2026-05-11T23:11:25+07:00"
+  "lastUpdatedAt": "2026-05-11T23:36:59+07:00"
 }

@@ -4,7 +4,7 @@ type FacingMode = "environment" | "user";
 
 const LEGACY_SOLAR_SYSTEM_SCALE = 0.35;
 const SOLAR_SYSTEM_MODEL_SCALE = 0.01;
-const SOLAR_FALLBACK_SCALE = 0.055;
+const SOLAR_FALLBACK_SCALE = 0.035;
 const SOLAR_ROOT_Y_POSITION = 0.025;
 const DEBUG_HIT_ZONES = true;
 
@@ -70,7 +70,7 @@ export function createArSceneMarkup(facingMode: FacingMode = "environment"): str
       ></a-entity>
 
       <a-entity id="solarFallback" visible="true" position="0 ${SOLAR_ROOT_Y_POSITION} 0" scale="${fallbackScaleValue}">
-        <a-sphere color="#ffbe73" radius="0.2" position="0 0.12 0"></a-sphere>
+        <a-sphere color="#ffbe73" radius="0.05" position="0 0.12 0"></a-sphere>
         <a-sphere color="#afafaf" radius="0.05" position="-1.45 0.12 -0.02"></a-sphere>
         <a-sphere color="#d6b07b" radius="0.07" position="-1.05 0.12 -0.02"></a-sphere>
         <a-sphere color="#5aa6ff" radius="0.07" position="-0.65 0.12 -0.02"></a-sphere>

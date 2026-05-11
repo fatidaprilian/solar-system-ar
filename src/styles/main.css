@@ -62,9 +62,10 @@ a {
 }
 
 .view {
-  position: relative;
+  position: fixed;
+  inset: 0;
   z-index: 1;
-  width: 100%;
+  width: 100vw;
   height: 100vh;
   height: 100svh;
   min-height: 100vh;
@@ -95,11 +96,6 @@ body.is-ar-active .app-shell {
 body.is-ar-active .view {
   height: calc(var(--vh, 1vh) * 100);
   min-height: 100dvh;
-}
-
-.view-scanner {
-  position: fixed;
-  inset: 0;
 }
 
 body.is-ar-active .view-landing {
@@ -200,7 +196,8 @@ body.is-ar-active .view-landing {
   width: 100vw !important;
   height: calc(var(--vh, 1vh) * 100) !important;
   min-height: 100dvh !important;
-  object-fit: contain !important;
+  object-fit: cover !important;
+  object-position: center center !important;
   margin: 0 !important;
   margin-top: 0 !important;
   margin-left: 0 !important;
@@ -218,7 +215,8 @@ body.is-ar-active video.arjs-video {
   width: 100vw !important;
   height: calc(var(--vh, 1vh) * 100) !important;
   min-height: 100dvh !important;
-  object-fit: contain !important;
+  object-fit: cover !important;
+  object-position: center center !important;
   margin: 0 !important;
   margin-top: 0 !important;
   margin-left: 0 !important;
@@ -243,10 +241,12 @@ body:not(.is-ar-active) .a-orientation-modal {
   pointer-events: none !important;
 }
 
-html:not(.is-scanner-locked),
-body:not(.is-scanner-locked) {
-  position: static;
-  inset: auto;
+.a-enter-vr,
+.a-enter-ar,
+.a-orientation-modal {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .ar-mount canvas,

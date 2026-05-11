@@ -53,7 +53,6 @@ let activeScannerSession = 0;
 
 const cleanupListeners: Array<() => void> = [];
 let delayedArtifactCleanupTimers: number[] = [];
-let savedScrollY = 0;
 
 function getRequiredElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -138,7 +137,6 @@ function clearFatalError(): void {
 }
 
 function showLanding(): void {
-  unlockDocumentAfterScanner();
   document.body.classList.remove("is-ar-active");
   ui.landingPage.classList.remove("is-hidden");
   ui.scannerPage.classList.add("is-hidden");
@@ -149,7 +147,6 @@ function showLanding(): void {
 function showScanner(): void {
   cancelDelayedArtifactCleanups();
   document.body.classList.add("is-ar-active");
-  lockDocumentForScanner();
   ui.landingPage.classList.add("is-hidden");
   ui.scannerPage.classList.remove("is-hidden");
 }
@@ -224,36 +221,6 @@ function cleanupAFrameArtifacts(): void {
   document.body.classList.remove("a-body", "aframe-inspector-opened");
   document.documentElement.classList.remove("a-fullscreen");
   document.body.classList.remove("is-ar-active");
-  unlockDocumentAfterScanner();
-}
-
-function lockDocumentForScanner(): void {
-  savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
-  document.documentElement.classList.add("is-scanner-locked");
-  document.body.classList.add("is-scanner-locked");
-
-  document.documentElement.style.overflow = "hidden";
-  document.body.style.position = "fixed";
-  document.body.style.inset = "0";
-  document.body.style.top = `-${savedScrollY}px`;
-  document.body.style.width = "100%";
-  document.body.style.height = "calc(var(--vh, 1vh) * 100)";
-  document.body.style.overflow = "hidden";
-  document.body.style.touchAction = "none";
-}
-
-function unlockDocumentAfterScanner(): void {
-  document.documentElement.classList.remove("is-scanner-locked");
-  document.body.classList.remove("is-scanner-locked");
-
-  document.documentElement.style.overflow = "";
-  document.body.style.position = "";
-  document.body.style.inset = "";
-  document.body.style.top = "";
-  document.body.style.width = "";
-  document.body.style.height = "";
-  document.body.style.overflow = "";
-  document.body.style.touchAction = "";
 }
 
 function resetLandingViewport(): void {
@@ -292,7 +259,6 @@ function runPostCloseArtifactCleanup(sessionId: number): void {
   clearSceneReferences();
   document.body.classList.remove("is-ar-active", "a-body", "aframe-inspector-opened");
   document.documentElement.classList.remove("a-html", "a-fullscreen");
-  unlockDocumentAfterScanner();
   window.scrollTo(0, 0);
 }
 
@@ -331,37 +297,30 @@ type ZoomCapabilityRange = {
   max?: number;
 };
 
-function getViewportAspectRatio(): number {
-  const width = window.innerWidth;
-  const height = window.innerHeight;
+const SUN_MODEL_SCALE = 0.035;
 
-  if (!width || !height) {
-    return 9 / 16;
+type ScaleLike = {
+  set: (x: number, y: number, z: number) => void;
+};
+
+type Object3DLike = {
+  name?: string;
+  scale?: ScaleLike;
+  traverse?: (callback: (object: Object3DLike) => void) => void;
+};
+
+function tuneSolarSystemModelScale(): void {
+  const object3D = (solarSystemEl as HTMLElement & { object3D?: Object3DLike } | null)?.object3D;
+  if (!object3D?.traverse) {
+    return;
   }
 
-  return width / height;
-}
-
-function getCameraConstraintPreset(): {
-  aspectRatio: number;
-  width: { ideal: number };
-  height: { ideal: number };
-} {
-  const portrait = window.innerHeight >= window.innerWidth;
-
-  if (portrait) {
-    return {
-      aspectRatio: 9 / 16,
-      width: { ideal: 720 },
-      height: { ideal: 1280 }
-    };
-  }
-
-  return {
-    aspectRatio: 16 / 9,
-    width: { ideal: 1280 },
-    height: { ideal: 720 }
-  };
+  object3D.traverse((object) => {
+    if (object.name?.toLowerCase().includes("sun")) {
+      object.scale?.set(SUN_MODEL_SCALE, SUN_MODEL_SCALE, SUN_MODEL_SCALE);
+      console.log("[MODEL] sun node scaled", object.name, SUN_MODEL_SCALE);
+    }
+  });
 }
 
 function normalizeArVideoLayer(videoEl: HTMLVideoElement): HTMLVideoElement {
@@ -385,7 +344,8 @@ function normalizeArVideoLayer(videoEl: HTMLVideoElement): HTMLVideoElement {
   style.width = "100vw";
   style.height = "calc(var(--vh, 1vh) * 100)";
   style.minHeight = "100dvh";
-  style.objectFit = "contain";
+  style.objectFit = "cover";
+  style.objectPosition = "center center";
   style.margin = "0";
   style.marginTop = "0px";
   style.marginLeft = "0px";
@@ -435,8 +395,6 @@ function syncArViewportLayout(): void {
   const videoEl = findArVideoElement();
   if (videoEl) {
     normalizeArVideoLayer(videoEl);
-    const aspect = getViewportAspectRatio();
-    videoEl.style.aspectRatio = `${aspect}`;
   }
 }
 
@@ -477,15 +435,11 @@ async function applyFacingModeStream(): Promise<boolean> {
   }
 
   let facingModeApplied = false;
-  const constraintPreset = getCameraConstraintPreset();
 
   try {
     if (typeof videoTrack.applyConstraints === "function") {
       await videoTrack.applyConstraints({
-        facingMode: { ideal: currentFacingMode },
-        aspectRatio: { ideal: constraintPreset.aspectRatio },
-        width: constraintPreset.width,
-        height: constraintPreset.height
+        facingMode: { ideal: currentFacingMode }
       });
     }
 
@@ -907,6 +861,7 @@ function bindSolarModelFallback(): void {
 
   const onSolarLoaded = () => {
     console.log("[MODEL] solar_system.glb loaded");
+    tuneSolarSystemModelScale();
     solarSystemEl?.setAttribute("visible", "true");
     solarFallbackEl?.setAttribute("visible", "false");
   };
