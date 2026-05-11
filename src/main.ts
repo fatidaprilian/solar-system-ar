@@ -1,4 +1,4 @@
-﻿import { gsap } from "gsap";
+import { gsap } from "gsap";
 import { createArSceneMarkup } from "./ar/scene";
 import { PLANET_BY_ID, PLANETS, type PlanetData, type PlanetId } from "./data/planets";
 import "./styles/main.css";
@@ -64,6 +64,7 @@ function getRequiredElement<T extends HTMLElement>(selector: string): T {
 function setupVhVariable(): void {
   const vh = window.innerHeight * 0.01;
   document.documentElement.style.setProperty("--vh", `${vh}px`);
+  syncArViewportLayout();
 }
 
 function buildUi(): RequiredElements {
@@ -218,6 +219,44 @@ function getFacingModeLabel(mode: CameraFacingMode): string {
   return mode === "environment" ? "Belakang" : "Depan";
 }
 
+type ZoomCapabilityRange = {
+  min?: number;
+  max?: number;
+};
+
+function getViewportAspectRatio(): number {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  if (!width || !height) {
+    return 9 / 16;
+  }
+
+  return width / height;
+}
+
+function getCameraConstraintPreset(): {
+  aspectRatio: number;
+  width: { ideal: number };
+  height: { ideal: number };
+} {
+  const portrait = window.innerHeight >= window.innerWidth;
+
+  if (portrait) {
+    return {
+      aspectRatio: 9 / 16,
+      width: { ideal: 720 },
+      height: { ideal: 1280 }
+    };
+  }
+
+  return {
+    aspectRatio: 16 / 9,
+    width: { ideal: 1280 },
+    height: { ideal: 720 }
+  };
+}
+
 function normalizeArVideoLayer(videoEl: HTMLVideoElement): HTMLVideoElement {
   if (!videoEl.id) {
     videoEl.id = "arjs-video";
@@ -239,7 +278,11 @@ function normalizeArVideoLayer(videoEl: HTMLVideoElement): HTMLVideoElement {
   style.width = "100vw";
   style.height = "calc(var(--vh, 1vh) * 100)";
   style.minHeight = "100dvh";
-  style.objectFit = "cover";
+  style.objectFit = "contain";
+  style.margin = "0";
+  style.marginTop = "0px";
+  style.marginLeft = "0px";
+  style.transform = "none";
   style.display = "block";
   style.opacity = "1";
   style.background = "#000";
@@ -255,6 +298,35 @@ function findArVideoElement(): HTMLVideoElement | null {
   }
 
   return document.querySelector<HTMLVideoElement>("video#arjs-video, video.arjs-video");
+}
+
+function syncArViewportLayout(): void {
+  const targetHeight = "calc(var(--vh, 1vh) * 100)";
+  const targetMinHeight = "100dvh";
+
+  const scene = ui.arMount.querySelector<HTMLElement>("a-scene");
+  if (scene) {
+    scene.style.position = "fixed";
+    scene.style.inset = "0";
+    scene.style.width = "100vw";
+    scene.style.height = targetHeight;
+    scene.style.minHeight = targetMinHeight;
+  }
+
+  document.querySelectorAll<HTMLCanvasElement>("canvas.a-canvas, canvas[data-aframe-canvas]").forEach((canvas) => {
+    canvas.style.position = "fixed";
+    canvas.style.inset = "0";
+    canvas.style.width = "100vw";
+    canvas.style.height = targetHeight;
+    canvas.style.minHeight = targetMinHeight;
+  });
+
+  const videoEl = findArVideoElement();
+  if (videoEl) {
+    normalizeArVideoLayer(videoEl);
+    const aspect = getViewportAspectRatio();
+    videoEl.style.aspectRatio = `${aspect}`;
+  }
 }
 
 async function waitForArVideoElement(timeoutMs = 3500): Promise<HTMLVideoElement | null> {
@@ -293,25 +365,50 @@ async function applyFacingModeStream(): Promise<boolean> {
     return false;
   }
 
+  let facingModeApplied = false;
+  const constraintPreset = getCameraConstraintPreset();
+
   try {
     if (typeof videoTrack.applyConstraints === "function") {
       await videoTrack.applyConstraints({
         facingMode: { ideal: currentFacingMode },
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
+        aspectRatio: { ideal: constraintPreset.aspectRatio },
+        width: constraintPreset.width,
+        height: constraintPreset.height
       });
     }
 
     const settingsFacingMode = videoTrack.getSettings?.().facingMode;
-    if (settingsFacingMode && settingsFacingMode !== currentFacingMode) {
-      return false;
-    }
-
-    return true;
+    facingModeApplied = !settingsFacingMode || settingsFacingMode === currentFacingMode;
   } catch (error) {
     console.error("[CAMERA] facingMode constraint failed", error);
-    return false;
   }
+
+  try {
+    const capabilities = typeof videoTrack.getCapabilities === "function"
+      ? (videoTrack.getCapabilities() as { zoom?: number | ZoomCapabilityRange })
+      : undefined;
+    const zoomCapability = capabilities?.zoom;
+    const zoomMin = typeof zoomCapability === "number" ? zoomCapability : zoomCapability?.min;
+
+    if (typeof zoomMin === "number" && Number.isFinite(zoomMin) && typeof videoTrack.applyConstraints === "function") {
+      const advancedZoomConstraint = [{ zoom: zoomMin }] as unknown as MediaTrackConstraintSet[];
+      await videoTrack.applyConstraints({
+        advanced: advancedZoomConstraint
+      });
+    }
+  } catch (error) {
+    console.warn("[CAMERA] default zoom reset skipped", error);
+  }
+
+  syncArViewportLayout();
+  window.requestAnimationFrame(() => {
+    setupVhVariable();
+    syncArViewportLayout();
+    window.dispatchEvent(new Event("resize"));
+  });
+
+  return facingModeApplied;
 }
 
 function bindArVideoLoadedEvent(): void {
@@ -328,6 +425,8 @@ function bindArVideoLoadedEvent(): void {
     if (fallbackVideo) {
       normalizeArVideoLayer(fallbackVideo);
     }
+
+    syncArViewportLayout();
   };
 
   window.addEventListener("arjs-video-loaded", handler as EventListener);
@@ -405,7 +504,7 @@ function renderDetailModel(planet: PlanetData): void {
   }
 
   planetDetailRootEl.innerHTML = `
-    <a-entity id="planetDetailWrapper" position="0 0.12 0" scale="0.01 0.01 0.01">
+    <a-entity id="planetDetailWrapper" position="0 0.08 0" scale="0.01 0.01 0.01">
       <a-entity
         id="planetDetailModel"
         gltf-model="#${planet.modelId}"
@@ -743,6 +842,8 @@ async function bootScene(forceRebuild = false, sessionId = activeScannerSession)
   try {
     if (forceRebuild) {
       teardownScene();
+      showScanner();
+      syncArViewportLayout();
     }
 
     const maybeWindow = window as Window & { AFRAME?: Record<string, unknown> };
@@ -759,6 +860,7 @@ async function bootScene(forceRebuild = false, sessionId = activeScannerSession)
     bindHitZoneEvents();
     bindSolarModelFallback();
     bindTouchFallbackRaycast();
+    syncArViewportLayout();
 
     const videoEl = await waitForArVideoElement(4500);
     if (!isScannerSessionActive(sessionId)) {
@@ -772,6 +874,13 @@ async function bootScene(forceRebuild = false, sessionId = activeScannerSession)
     if (!videoEl) {
       showToast("Preview kamera belum siap. Coba arahkan ulang atau tekan switch kamera.", "warning");
     }
+
+    syncArViewportLayout();
+    window.requestAnimationFrame(() => {
+      setupVhVariable();
+      syncArViewportLayout();
+      window.dispatchEvent(new Event("resize"));
+    });
 
     console.log("[AR LAYER]", {
       videos: document.querySelectorAll("video").length,
@@ -812,6 +921,8 @@ async function switchCamera(event: Event): Promise<void> {
 
   const previousMode = currentFacingMode;
   currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
+  showScanner();
+  syncArViewportLayout();
 
   showToast(
     `Mengganti ke kamera ${currentFacingMode === "environment" ? "belakang" : "depan"}...`,
@@ -828,6 +939,7 @@ async function switchCamera(event: Event): Promise<void> {
 
   updateCameraButtonLabel();
   setMarkerStatus("Mencari marker...", false);
+  syncArViewportLayout();
 
   if (!manualFacingModeApplied) {
     showToast("Switch kamera tidak didukung browser ini. Gunakan kamera default.", "warning");
@@ -846,22 +958,52 @@ async function startArFlow(): Promise<void> {
   setupVhVariable();
   showScanner();
   hidePlanetPanel();
+  syncArViewportLayout();
 
-  const didBoot = await bootScene(false, sessionId);
+  let didBoot = await bootScene(false, sessionId);
+  if (!didBoot && isScannerSessionActive(sessionId)) {
+    showToast("Mengulang start kamera untuk sinkronisasi viewport...", "warning");
+    teardownScene();
+    showScanner();
+    syncArViewportLayout();
+    didBoot = await bootScene(false, sessionId);
+  }
+
   if (!didBoot) {
     if (!isScannerSessionActive(sessionId)) {
       return;
     }
     showToast("Gagal memulai scanner AR.", "error");
+    showLanding();
   }
 }
 
 function stopArFlow(): void {
   activeScannerSession += 1;
-  teardownScene();
-  showLanding();
-  setMarkerStatus("Mencari marker...", false);
-  ui.toast.classList.add("is-hidden");
+  try {
+    teardownScene();
+  } catch (error) {
+    console.error("[AR] stop flow error", error);
+    ui.arMount.innerHTML = "";
+    runCleanupListeners();
+    clearSceneReferences();
+    cleanupAFrameArtifacts();
+  } finally {
+    showLanding();
+    setMarkerStatus("Mencari marker...", false);
+    ui.toast.classList.add("is-hidden");
+    clearFatalError();
+    hidePlanetPanel();
+    manualFacingModeApplied = false;
+    isMarkerDetected = false;
+    isTransitioning = false;
+    currentPlanet = null;
+    pendingSceneBoot = false;
+    document.body.classList.remove("is-ar-active", "a-body", "aframe-inspector-opened");
+    document.documentElement.classList.remove("a-html", "a-fullscreen");
+    setupVhVariable();
+    syncArViewportLayout();
+  }
 }
 
 function bindStaticUiEvents(): void {
@@ -891,9 +1033,14 @@ function bindStaticUiEvents(): void {
     void switchCamera(event);
   });
 
-  window.addEventListener("resize", setupVhVariable);
-  window.addEventListener("orientationchange", setupVhVariable);
-  window.visualViewport?.addEventListener("resize", setupVhVariable);
+  const onViewportChange = () => {
+    setupVhVariable();
+    syncArViewportLayout();
+  };
+
+  window.addEventListener("resize", onViewportChange);
+  window.addEventListener("orientationchange", onViewportChange);
+  window.visualViewport?.addEventListener("resize", onViewportChange);
 }
 
 function bootstrap(): void {

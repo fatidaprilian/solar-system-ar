@@ -3,9 +3,9 @@ import { PLANETS } from "../data/planets";
 type FacingMode = "environment" | "user";
 
 const LEGACY_SOLAR_SYSTEM_SCALE = 0.35;
-const SOLAR_SYSTEM_MODEL_SCALE = 0.03;
-const SOLAR_FALLBACK_SCALE = 0.12;
-const SOLAR_ROOT_Y_POSITION = 0.04;
+const SOLAR_SYSTEM_MODEL_SCALE = 0.01;
+const SOLAR_FALLBACK_SCALE = 0.055;
+const SOLAR_ROOT_Y_POSITION = 0.025;
 const DEBUG_HIT_ZONES = true;
 
 function formatUniformScale(scale: number): string {
@@ -43,7 +43,8 @@ function buildHitZones(): string {
 export function createArSceneMarkup(facingMode: FacingMode = "environment"): string {
   const solarScaleValue = formatUniformScale(SOLAR_SYSTEM_MODEL_SCALE);
   const fallbackScaleValue = formatUniformScale(SOLAR_FALLBACK_SCALE);
-  const hitZoneScaleValue = formatUniformScale(SOLAR_SYSTEM_MODEL_SCALE / LEGACY_SOLAR_SYSTEM_SCALE);
+  const hitZoneScaleFactor = Math.max(SOLAR_SYSTEM_MODEL_SCALE / LEGACY_SOLAR_SYSTEM_SCALE, 0.22);
+  const hitZoneScaleValue = formatUniformScale(hitZoneScaleFactor);
 
   return `
 <a-scene
@@ -51,7 +52,7 @@ export function createArSceneMarkup(facingMode: FacingMode = "environment"): str
   embedded
   vr-mode-ui="enabled: false"
   renderer="logarithmicDepthBuffer: true; alpha: true; antialias: true"
-  arjs="sourceType: webcam; facingMode: ${facingMode}; debugUIEnabled: false; detectionMode: mono; sourceWidth: 640; sourceHeight: 480;"
+  arjs="sourceType: webcam; facingMode: ${facingMode}; debugUIEnabled: false; detectionMode: mono;"
 >
   <a-assets timeout="30000">
     ${buildAssetItems()}

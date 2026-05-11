@@ -166,7 +166,11 @@ a {
   width: 100vw !important;
   height: calc(var(--vh, 1vh) * 100) !important;
   min-height: 100dvh !important;
-  object-fit: cover !important;
+  object-fit: contain !important;
+  margin: 0 !important;
+  margin-top: 0 !important;
+  margin-left: 0 !important;
+  transform: none !important;
   z-index: 0 !important;
   display: block !important;
   opacity: 1 !important;
@@ -180,7 +184,11 @@ body.is-ar-active video.arjs-video {
   width: 100vw !important;
   height: calc(var(--vh, 1vh) * 100) !important;
   min-height: 100dvh !important;
-  object-fit: cover !important;
+  object-fit: contain !important;
+  margin: 0 !important;
+  margin-top: 0 !important;
+  margin-left: 0 !important;
+  transform: none !important;
   z-index: 0 !important;
   display: block !important;
   opacity: 1 !important;

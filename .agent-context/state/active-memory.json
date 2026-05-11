@@ -8,16 +8,16 @@
   },
   "project": {
     "name": "TUGAS-AKHIR-VAR-TATA-SURYA",
-    "currentFocus": "Stabilize AR.js camera preview across mobile by normalizing #arjs-video layer placement, guarding scanner session races, and shrinking solar/planet model scales for phone markers.",
+    "currentFocus": "Apply super-micro AR scale (solar 0.010, detail 0.008-0.010), keep hit-zones tappable, and enforce portrait camera constraints for 9:16 mobile scanning.",
     "durableFacts": []
   },
   "progress": {
     "lastAchievements": [
-      "Found root cause in vendor AR.js: webcam preview uses #arjs-video appended to document.body with z-index -2, so scanner container background can hide live camera feed.",
-      "Added normalizeArVideoLayer + arjs-video-loaded listener to move/force-style AR video inside #arMount and preserve z-index stack on Android/iOS browsers.",
-      "Added scanner session guard (activeScannerSession) so close/reopen does not leave stale async boot writes that cause blank return-to-landing state.",
-      "Switched camera fallback from stream replacement to track applyConstraints flow to reduce AR.js source conflicts during front/back toggle.",
-      "Reduced marker model scales again for phones: solar system 0.03, fallback 0.12, and planet detail scales down to 0.022-0.032 range."
+      "Set final super-micro model scale: solar root 0.010, fallback 0.055, root Y 0.025 for very small marker appearance on phones.",
+      "Adjusted planet detail scales into requested 0.008-0.010 range across all planets.",
+      "Improved tap usability while model is tiny by increasing hit-zone radii and raising minimum hit-zone wrapper scale to 0.22.",
+      "Applied portrait-first camera constraints preset (9:16, 720x1280 ideal) plus fallback landscape preset on rotation.",
+      "Kept viewport layer sync and zoom-min reset path so mobile preview stays upright and less over-zoomed."
     ],
     "pendingIssues": [
       "Final visual calibration still requires real-device check on Infinix Note 40 and iPhone Safari.",
@@ -48,5 +48,5 @@
     "redactSensitiveTextBeforeWriting": true
   },
   "generatedAt": "2026-05-10T17:34:50.825Z",
-  "lastUpdatedAt": "2026-05-11T13:49:00.000Z"
+  "lastUpdatedAt": "2026-05-11T14:38:00.000Z"
 }
