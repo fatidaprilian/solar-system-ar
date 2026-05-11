@@ -1,6 +1,6 @@
 {
   "mode": "dynamic",
-  "status": "refined-mobile-ar-scanner-v2",
+  "status": "refined-mobile-ar-scanner-v3-controlled-solar-row",
   "seedPolicy": {
     "mode": "structure-first-scaffold",
     "requiresProjectSpecificRefinement": true,

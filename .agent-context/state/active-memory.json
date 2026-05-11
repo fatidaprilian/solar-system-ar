@@ -1,4 +1,4 @@
-﻿{
+{
     "schemaVersion":  "active-memory-v1",
     "snapshotPurpose":  "compact-cross-session-continuity",
     "updatePolicy":  {
@@ -8,35 +8,36 @@
                      },
     "project":  {
                     "name":  "TUGAS-AKHIR-VAR-TATA-SURYA",
-                    "currentFocus":  "Stabilize mobile AR close/reopen viewport and normalize camera preview scale using visualViewport-driven app height.",
+                    "currentFocus":  "Stabilize mobile AR solar-system marker layout, planet detail scale, and close/reopen lifecycle for Android, iOS, and tablet browsers.",
                     "durableFacts":  [
 
                                      ]
                 },
     "progress":  {
                      "lastAchievements":  [
-                                              "Phase 0 baseline and repeated follow-up builds passed during AR viewport stabilization.",
-                                              "Phase 1 cleanup: AR viewport sync now runs only while scanner is active and delayed cleanup removes late AR.js artifacts after close.",
-                                              "Reverted harmful body-lock behavior after real-device feedback showed Android Chrome could zoom out into tiled pages.",
-                                              "Added visualViewport-driven --app-height and removed scanner 100dvh/calc(--vh) dependency so AR.js no longer inherits huge layout heights such as 375x2669.",
-                                              "Changed AR video presentation to contain for normal 1x/no-crop camera preview instead of cover-driven zoom/crop.",
-                                              "Kept zoom-min reset path and GLB Sun node downscale so camera preview and model size remain controlled on phones."
+                                              "Changed the main marker view to a controlled mini solar row instead of showing the unstable imported solar_system.glb layout directly.",
+                                              "Disabled visible debug hit-zones so blue calibration spheres no longer appear over the Hiro marker in production.",
+                                              "Aligned invisible planet hit-zones with the controlled mini solar row positions in src/data/planets.ts.",
+                                              "Added runtime bounding-box fitting for individual detail planet GLBs so opened planets target a small marker-space size instead of covering phone screens.",
+                                              "Strengthened scanner close cleanup by forcing landing shell layout restoration and adding longer repeated post-close AR artifact cleanup passes.",
+                                              "Kept visualViewport-driven app-height and added a touch viewport aspect clamp to reduce Android Chrome huge-height regressions."
                                           ],
                      "pendingIssues":  [
-                                           "Current viewport/camera patch still needs real-device confirmation on Android Chrome because camera streams and visualViewport behavior differ by browser/device.",
-                                           "object-fit contain avoids camera crop/zoom but may show black bars when the browser supplies a landscape camera stream inside a portrait screen.",
-                                           "If the camera still appears digitally zoomed after this patch, the next safe step is a custom getUserMedia AR source with explicit constraints instead of relying fully on AR.js webcam setup.",
-                                           "If tap hit-zones drift after final marker scale, hitZonePosition/hitZoneRadius tuning is still required."
+                                           "Real-device verification is still required on Infinix Note 40, Android Chrome, iOS Safari, and tablets after Vercel deploy.",
+                                           "If the controlled mini solar row is too small or too large on the physical marker, tune SOLAR_FALLBACK_SCALE in src/ar/scene.ts by small increments.",
+                                           "If planet taps feel offset after real-device testing, tune hitZonePosition and hitZoneRadius in src/data/planets.ts.",
+                                           "If close still fails on a specific browser, capture DevTools source dimensions and class list after close to decide whether a full AR remount/reload fallback is needed."
                                        ],
                      "nextBestActions":  [
-                                             "Deploy and test on phone: open AR, close scanner, and confirm landing returns full-size instead of tiny top-left.",
-                                             "Check DevTools after reopen: AR.js actual source dimensions should no longer report a huge height like 2669 for a 375px-wide viewport.",
-                                             "Scan Hiro marker and verify camera framing, Sun size, and planet tap hit-zones.",
-                                             "If the user wants full portrait fill again, add a controlled preview mode toggle instead of reverting globally to cover."
+                                             "Deploy to Vercel and test open AR -\u003e scan Hiro -\u003e tap planet -\u003e close detail -\u003e close scanner -\u003e reopen AR.",
+                                             "Confirm the blue hit-zone spheres are no longer visible over the marker.",
+                                             "Confirm the main solar row appears small and ordered, and planet detail models do not block the camera.",
+                                             "Confirm closing scanner repeatedly returns to the full-size landing page."
                                          ],
                      "validationState":  [
-                                             "npm run build after visualViewport/app-height camera patch: PASS",
-                                             "git diff --check after visualViewport/app-height camera patch: PASS with Git line-ending warnings only",
+                                             "npm run build after controlled solar row and close cleanup patch: PASS",
+                                             "docs/design-intent.json JSON parse after documentation sync: PASS",
+                                             "git diff --check after patch: PASS with Git line-ending warnings only",
                                              "Manual real-device verification remains pending."
                                          ]
                  },
@@ -55,5 +56,5 @@
                     "redactSensitiveTextBeforeWriting":  true
                 },
     "generatedAt":  "2026-05-10T17:34:50.825Z",
-    "lastUpdatedAt":  "2026-05-11T23:58:20+07:00"
+    "lastUpdatedAt":  "2026-05-12T00:50:27+07:00"
 }

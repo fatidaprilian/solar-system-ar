@@ -38,8 +38,8 @@ export const PLANETS: PlanetData[] = [
     rotationPeriod: "58.6 hari",
     funFact: "Satu hari matahari di Mercury lebih lama daripada satu tahun di Mercury.",
     themeColor: "#b5b6bc",
-    hitZonePosition: "-1.26 0.2 -0.08",
-    hitZoneRadius: 0.26,
+    hitZonePosition: "-1.45 0.12 -0.02",
+    hitZoneRadius: 0.24,
     detailScale: "0.01 0.01 0.01"
   },
   {
@@ -54,8 +54,8 @@ export const PLANETS: PlanetData[] = [
     rotationPeriod: "243 hari (retrograde)",
     funFact: "Venus berputar berlawanan arah dibanding sebagian besar planet lain.",
     themeColor: "#e7c48e",
-    hitZonePosition: "-0.94 0.2 -0.04",
-    hitZoneRadius: 0.28,
+    hitZonePosition: "-1.05 0.12 -0.02",
+    hitZoneRadius: 0.26,
     detailScale: "0.01 0.01 0.01"
   },
   {
@@ -70,8 +70,8 @@ export const PLANETS: PlanetData[] = [
     rotationPeriod: "23 jam 56 menit",
     funFact: "Sekitar 71% permukaan Bumi tertutup air.",
     themeColor: "#58a6ff",
-    hitZonePosition: "-0.62 0.2 -0.02",
-    hitZoneRadius: 0.28,
+    hitZonePosition: "-0.65 0.12 -0.02",
+    hitZoneRadius: 0.26,
     detailScale: "0.01 0.01 0.01"
   },
   {
@@ -86,8 +86,8 @@ export const PLANETS: PlanetData[] = [
     rotationPeriod: "24 jam 37 menit",
     funFact: "Olympus Mons di Mars tingginya hampir 22 km.",
     themeColor: "#d88a6d",
-    hitZonePosition: "-0.3 0.2 0",
-    hitZoneRadius: 0.26,
+    hitZonePosition: "-0.25 0.12 -0.02",
+    hitZoneRadius: 0.24,
     detailScale: "0.01 0.01 0.01"
   },
   {
@@ -102,8 +102,8 @@ export const PLANETS: PlanetData[] = [
     rotationPeriod: "9 jam 56 menit",
     funFact: "Jupiter punya medan magnet terkuat di antara planet tata surya.",
     themeColor: "#d7b497",
-    hitZonePosition: "0.18 0.2 0.04",
-    hitZoneRadius: 0.38,
+    hitZonePosition: "0.34 0.12 0",
+    hitZoneRadius: 0.34,
     detailScale: "0.008 0.008 0.008"
   },
   {
@@ -118,8 +118,8 @@ export const PLANETS: PlanetData[] = [
     rotationPeriod: "10 jam 33 menit",
     funFact: "Kepadatan Saturn lebih rendah daripada air.",
     themeColor: "#d3c18a",
-    hitZonePosition: "0.62 0.2 0.06",
-    hitZoneRadius: 0.42,
+    hitZonePosition: "0.88 0.12 0.01",
+    hitZoneRadius: 0.38,
     detailScale: "0.008 0.008 0.008"
   },
   {
@@ -134,8 +134,8 @@ export const PLANETS: PlanetData[] = [
     rotationPeriod: "17 jam 14 menit (retrograde)",
     funFact: "Uranus tampak berputar seperti berguling di orbitnya.",
     themeColor: "#8fd7e8",
-    hitZonePosition: "1.02 0.2 0.08",
-    hitZoneRadius: 0.34,
+    hitZonePosition: "1.31 0.12 0.02",
+    hitZoneRadius: 0.3,
     detailScale: "0.009 0.009 0.009"
   },
   {
@@ -150,8 +150,8 @@ export const PLANETS: PlanetData[] = [
     rotationPeriod: "16 jam 6 menit",
     funFact: "Kecepatan angin Neptune dapat melebihi 2,000 km/jam.",
     themeColor: "#5783e1",
-    hitZonePosition: "1.38 0.2 0.1",
-    hitZoneRadius: 0.34,
+    hitZonePosition: "1.69 0.12 0.03",
+    hitZoneRadius: 0.3,
     detailScale: "0.009 0.009 0.009"
   }
 ];

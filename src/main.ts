@@ -56,6 +56,10 @@ let delayedArtifactCleanupTimers: number[] = [];
 
 const MIN_VIEWPORT_HEIGHT = 320;
 const MAX_TOUCH_VIEWPORT_HEIGHT = 1400;
+const MAX_TOUCH_VIEWPORT_ASPECT = 2.35;
+const USE_CONTROLLED_SOLAR_ROW = true;
+const DETAIL_MODEL_TARGET_SIZE = 0.18;
+const DETAIL_MODEL_LARGE_TARGET_SIZE = 0.22;
 
 function getRequiredElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -67,11 +71,16 @@ function getRequiredElement<T extends HTMLElement>(selector: string): T {
 
 function getStableViewportHeight(): number {
   const visualHeight = window.visualViewport?.height ?? 0;
+  const visualWidth = window.visualViewport?.width ?? 0;
   const layoutHeight = window.innerHeight || 0;
+  const layoutWidth = window.innerWidth || 0;
   const fallbackHeight = window.screen?.height || MIN_VIEWPORT_HEIGHT;
+  const fallbackWidth = window.screen?.width || layoutWidth || 1;
   const rawHeight = visualHeight > 0 ? visualHeight : layoutHeight || fallbackHeight;
+  const viewportWidth = visualWidth > 0 ? visualWidth : layoutWidth || fallbackWidth;
   const isTouchViewport = window.matchMedia("(pointer: coarse)").matches;
-  const maxHeight = isTouchViewport ? MAX_TOUCH_VIEWPORT_HEIGHT : rawHeight;
+  const aspectHeightLimit = Math.max(MIN_VIEWPORT_HEIGHT, viewportWidth * MAX_TOUCH_VIEWPORT_ASPECT);
+  const maxHeight = isTouchViewport ? Math.min(MAX_TOUCH_VIEWPORT_HEIGHT, aspectHeightLimit) : rawHeight;
 
   return Math.round(Math.min(Math.max(rawHeight, MIN_VIEWPORT_HEIGHT), maxHeight));
 }
@@ -262,6 +271,14 @@ function resetLandingViewport(): void {
   }, 120);
 }
 
+function restoreLandingShellLayout(): void {
+  ui.landingPage.classList.remove("is-hidden");
+  ui.scannerPage.classList.add("is-hidden");
+  document.body.classList.remove("is-ar-active", "a-body", "aframe-inspector-opened");
+  document.documentElement.classList.remove("a-html", "a-fullscreen");
+  resetLandingViewport();
+}
+
 function cancelDelayedArtifactCleanups(): void {
   delayedArtifactCleanupTimers.forEach((timerId) => {
     window.clearTimeout(timerId);
@@ -281,16 +298,14 @@ function runPostCloseArtifactCleanup(sessionId: number): void {
   ui.arMount.innerHTML = "";
   cleanupAFrameArtifacts();
   clearSceneReferences();
-  document.body.classList.remove("is-ar-active", "a-body", "aframe-inspector-opened");
-  document.documentElement.classList.remove("a-html", "a-fullscreen");
-  window.scrollTo(0, 0);
+  restoreLandingShellLayout();
 }
 
 function schedulePostCloseArtifactCleanup(sessionId: number): void {
   cancelDelayedArtifactCleanups();
 
   window.requestAnimationFrame(() => runPostCloseArtifactCleanup(sessionId));
-  delayedArtifactCleanupTimers = [80, 250, 600].map((delay) => {
+  delayedArtifactCleanupTimers = [80, 250, 600, 1200, 2000].map((delay) => {
     return window.setTimeout(() => runPostCloseArtifactCleanup(sessionId), delay);
   });
 }
@@ -325,12 +340,32 @@ const SUN_MODEL_SCALE = 0.035;
 
 type ScaleLike = {
   set: (x: number, y: number, z: number) => void;
+  x?: number;
+  y?: number;
+  z?: number;
 };
 
 type Object3DLike = {
   name?: string;
   scale?: ScaleLike;
   traverse?: (callback: (object: Object3DLike) => void) => void;
+  updateMatrixWorld?: (force?: boolean) => void;
+};
+
+type Vector3Like = {
+  x: number;
+  y: number;
+  z: number;
+};
+
+type Box3Like = {
+  setFromObject: (object: unknown) => Box3Like;
+  getSize: (target: Vector3Like) => Vector3Like;
+};
+
+type ThreeSizingLike = {
+  Box3: new () => Box3Like;
+  Vector3: new () => Vector3Like;
 };
 
 function tuneSolarSystemModelScale(): void {
@@ -345,6 +380,56 @@ function tuneSolarSystemModelScale(): void {
       console.log("[MODEL] sun node scaled", object.name, SUN_MODEL_SCALE);
     }
   });
+}
+
+function getDetailTargetSize(planet: PlanetData): number {
+  return planet.id === "jupiter" || planet.id === "saturn"
+    ? DETAIL_MODEL_LARGE_TARGET_SIZE
+    : DETAIL_MODEL_TARGET_SIZE;
+}
+
+function fitModelToMarkerSize(entity: HTMLElement, targetSize: number): boolean {
+  const maybeWindow = window as Window & { THREE?: ThreeSizingLike };
+  const object3D = (entity as HTMLElement & { object3D?: Object3DLike }).object3D;
+  const currentScale = object3D?.scale;
+
+  if (!maybeWindow.THREE || !object3D || !currentScale) {
+    return false;
+  }
+
+  object3D.updateMatrixWorld?.(true);
+
+  const box = new maybeWindow.THREE.Box3().setFromObject(object3D);
+  const size = box.getSize(new maybeWindow.THREE.Vector3());
+  const maxAxis = Math.max(size.x, size.y, size.z);
+
+  if (!Number.isFinite(maxAxis) || maxAxis <= 0) {
+    return false;
+  }
+
+  const correction = targetSize / maxAxis;
+  const nextX = (currentScale.x ?? 1) * correction;
+  const nextY = (currentScale.y ?? 1) * correction;
+  const nextZ = (currentScale.z ?? 1) * correction;
+  currentScale.set(nextX, nextY, nextZ);
+
+  return true;
+}
+
+function revealFittedDetailModel(
+  planet: PlanetData,
+  detailModel: HTMLElement,
+  detailFallback: HTMLElement
+): boolean {
+  const didFit = fitModelToMarkerSize(detailModel, getDetailTargetSize(planet));
+
+  if (!didFit) {
+    return false;
+  }
+
+  detailModel.setAttribute("visible", "true");
+  detailFallback.setAttribute("visible", "false");
+  return true;
 }
 
 function normalizeArVideoLayer(videoEl: HTMLVideoElement): HTMLVideoElement {
@@ -588,7 +673,11 @@ function resetSolarTransforms(): void {
   }
 
   if (solarSystemEl) {
-    solarSystemEl.setAttribute("visible", "true");
+    solarSystemEl.setAttribute("visible", USE_CONTROLLED_SOLAR_ROW ? "false" : "true");
+  }
+
+  if (solarFallbackEl && USE_CONTROLLED_SOLAR_ROW) {
+    solarFallbackEl.setAttribute("visible", "true");
   }
 }
 
@@ -602,13 +691,14 @@ function renderDetailModel(planet: PlanetData): void {
       <a-entity
         id="planetDetailModel"
         gltf-model="#${planet.modelId}"
+        visible="false"
         rotation="0 25 0"
         scale="${planet.detailScale}"
       ></a-entity>
       <a-sphere
         id="planetDetailFallback"
-        visible="false"
-        radius="0.22"
+        visible="true"
+        radius="0.12"
         color="${planet.themeColor}"
         position="0 0 0"
       ></a-sphere>
@@ -623,8 +713,9 @@ function renderDetailModel(planet: PlanetData): void {
   }
 
   const onModelLoaded = () => {
-    detailModel.setAttribute("visible", "true");
-    detailFallback.setAttribute("visible", "false");
+    if (!isTransitioning) {
+      revealFittedDetailModel(planet, detailModel, detailFallback);
+    }
   };
 
   const onModelError = () => {
@@ -695,6 +786,11 @@ function openPlanetDetail(planetId: PlanetId): void {
     .timeline({
       defaults: { ease: "power2.inOut" },
       onComplete: () => {
+        const activeDetailModel = planetDetailRootEl?.querySelector<HTMLElement>("#planetDetailModel");
+        const activeDetailFallback = planetDetailRootEl?.querySelector<HTMLElement>("#planetDetailFallback");
+        if (activeDetailModel && activeDetailFallback) {
+          revealFittedDetailModel(planet, activeDetailModel, activeDetailFallback);
+        }
         currentPlanet = planet;
         fillPlanetPanel(planet);
         isTransitioning = false;
@@ -737,9 +833,11 @@ function closePlanetDetail(): void {
           planetDetailRootEl.innerHTML = "";
         }
         if (solarSystemEl) {
-          solarSystemEl.setAttribute("visible", "true");
+          solarSystemEl.setAttribute("visible", USE_CONTROLLED_SOLAR_ROW ? "false" : "true");
         }
-        if (solarFallbackEl?.getAttribute("visible") === "true" && solarSystemEl) {
+        if (USE_CONTROLLED_SOLAR_ROW && solarFallbackEl) {
+          solarFallbackEl.setAttribute("visible", "true");
+        } else if (solarFallbackEl?.getAttribute("visible") === "true" && solarSystemEl) {
           solarSystemEl.setAttribute("visible", "false");
         }
         solarScale.x = 1;
@@ -885,6 +983,12 @@ function bindSolarModelFallback(): void {
 
   const onSolarLoaded = () => {
     console.log("[MODEL] solar_system.glb loaded");
+    if (USE_CONTROLLED_SOLAR_ROW) {
+      solarSystemEl?.setAttribute("visible", "false");
+      solarFallbackEl?.setAttribute("visible", "true");
+      return;
+    }
+
     tuneSolarSystemModelScale();
     solarSystemEl?.setAttribute("visible", "true");
     solarFallbackEl?.setAttribute("visible", "false");
@@ -1077,6 +1181,8 @@ async function startArFlow(): Promise<void> {
 function stopArFlow(): void {
   activeScannerSession += 1;
   const stoppedSession = activeScannerSession;
+  ui.scannerPage.classList.add("is-hidden");
+  document.body.classList.remove("is-ar-active");
 
   try {
     teardownScene();
@@ -1097,9 +1203,7 @@ function stopArFlow(): void {
     isTransitioning = false;
     currentPlanet = null;
     pendingSceneBoot = false;
-    document.body.classList.remove("is-ar-active", "a-body", "aframe-inspector-opened");
-    document.documentElement.classList.remove("a-html", "a-fullscreen");
-    setupVhVariable();
+    restoreLandingShellLayout();
     schedulePostCloseArtifactCleanup(stoppedSession);
   }
 }
