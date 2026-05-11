@@ -8,24 +8,25 @@
   },
   "project": {
     "name": "TUGAS-AKHIR-VAR-TATA-SURYA",
-    "currentFocus": "Mobile AR scanner stabilization: remove fullscreen behavior, enforce fixed viewport layers, facingMode camera switch, and smaller solar model scale.",
+    "currentFocus": "Fix dark camera preview and blank close-flow by enforcing AR layer stack, robust scanner teardown, and tighter model scale for mobile.",
     "durableFacts": []
   },
   "progress": {
     "lastAchievements": [
-      "Replaced camera switching from deviceId enumeration to facingMode toggle with scene rebuild and manual stream override.",
-      "Stabilized scanner viewport with fixed full-screen layers, dynamic --vh usage, and safe-area-aware HUD controls.",
-      "Reduced solar model scale by device class, added debug hit-zone material flag, and added fallback-first model loading behavior.",
-      "Updated planet detail scales for mobile-safe rendering and synchronized docs (DESIGN and design-intent)."
+      "Implemented explicit AR layer stack: video z0, canvas/scene z1, HUD z30, modal/toast z50+ to prevent dark/covered camera preview.",
+      "Added cleanupAFrameArtifacts and reordered teardown to remove residual AR.js video/canvas/loader nodes before returning to landing.",
+      "Reduced solar root model scale to 0.05 and fallback scale to 0.15 with root position 0 0.04 0 for smartphone-safe marker rendering.",
+      "Updated detail planet scales to 0.035-0.045 and lowered detail wrapper y-position to 0.14 for non-dominant AR detail view.",
+      "Improved camera switch flow: facingMode toggle, switch-in-progress toast, scanner-stay fallback warning, and post-switch marker reset."
     ],
     "pendingIssues": [
-      "Manual validation on real iOS Safari hardware is still required.",
-      "Final hit-zone offsets may need per-device tuning after on-device tap calibration."
+      "Final visual calibration still requires real-device check on Infinix Note 40 and iPhone Safari.",
+      "If tap hit-zones drift after final marker scale, hitZonePosition/hitZoneRadius tuning is still required."
     ],
     "nextBestActions": [
-      "Run on-device smoke test on Android Chrome (Infinix Note 40) and iOS Safari.",
-      "Set DEBUG_HIT_ZONES to false after hit-zone calibration is accepted.",
-      "Retest marker detection distance and camera switch behavior across portrait and landscape usage."
+      "Run full on-device checklist for AR start, switch camera, close scanner, and reopen scanner cycle.",
+      "After hit-zone tuning finalizes, set DEBUG_HIT_ZONES to false for production visual cleanliness.",
+      "Capture browser-specific notes for Android Chrome vs iOS Safari camera-switch limitations."
     ],
     "validationState": [
       "npm run build: PASS",
@@ -47,5 +48,5 @@
     "redactSensitiveTextBeforeWriting": true
   },
   "generatedAt": "2026-05-10T17:34:50.825Z",
-  "lastUpdatedAt": "2026-05-10T18:31:38.348Z"
+  "lastUpdatedAt": "2026-05-11T12:59:57.023Z"
 }

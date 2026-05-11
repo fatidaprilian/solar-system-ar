@@ -152,30 +152,56 @@ a {
 .ar-mount {
   position: fixed;
   inset: 0;
-  z-index: 0;
   width: 100vw;
   height: calc(var(--vh, 1vh) * 100);
   min-height: 100dvh;
-  background: #000;
   overflow: hidden;
+  background: transparent;
+  z-index: 0;
 }
 
-.ar-mount > a-scene,
-.ar-mount video,
-.ar-mount canvas {
+.ar-mount video {
   position: fixed !important;
   inset: 0 !important;
   width: 100vw !important;
   height: calc(var(--vh, 1vh) * 100) !important;
   min-height: 100dvh !important;
   object-fit: cover !important;
+  z-index: 0 !important;
   display: block !important;
+  opacity: 1 !important;
+  background: #000 !important;
+}
+
+.ar-mount canvas,
+.ar-mount .a-canvas {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: calc(var(--vh, 1vh) * 100) !important;
+  min-height: 100dvh !important;
+  z-index: 1 !important;
+  display: block !important;
+  opacity: 1 !important;
+  background: transparent !important;
+  pointer-events: auto !important;
+}
+
+.ar-mount > a-scene {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: calc(var(--vh, 1vh) * 100) !important;
+  min-height: 100dvh !important;
+  z-index: 1 !important;
+  background: transparent !important;
+  overflow: hidden;
 }
 
 .scanner-overlay {
   position: fixed;
   inset: 0;
-  z-index: 20;
+  z-index: 30;
   pointer-events: none;
   padding-top: env(safe-area-inset-top);
   padding-right: env(safe-area-inset-right);
@@ -252,7 +278,7 @@ a {
 .planet-panel {
   --planet-theme: #69c6ff;
   position: fixed;
-  z-index: 26;
+  z-index: 42;
   right: max(16px, env(safe-area-inset-right));
   top: calc(max(12px, env(safe-area-inset-top)) + 60px);
   width: min(420px, calc(100vw - 32px));
@@ -347,7 +373,7 @@ a {
   transform: translateX(-50%);
   bottom: max(72px, calc(env(safe-area-inset-bottom) + 56px));
   width: min(92vw, 640px);
-  z-index: 9;
+  z-index: 52;
   border: 1px solid rgba(255, 141, 141, 0.55);
   background: rgba(52, 8, 12, 0.85);
   border-radius: 12px;
@@ -360,7 +386,7 @@ a {
 .modal {
   position: absolute;
   inset: 0;
-  z-index: 12;
+  z-index: 60;
   display: grid;
   place-items: center;
   background: rgba(2, 6, 14, 0.7);
@@ -397,7 +423,7 @@ a {
   left: 50%;
   top: calc(max(12px, env(safe-area-inset-top)) + 58px);
   transform: translateX(-50%);
-  z-index: 20;
+  z-index: 55;
   border-radius: 999px;
   padding: 10px 14px;
   border: 1px solid var(--line);
@@ -459,29 +485,37 @@ a {
   }
 
   .icon-btn {
-    min-width: 52px;
+    min-width: 48px;
+    width: auto;
     min-height: 44px;
-    padding: 0 10px;
-    font-size: 12px;
+    border-radius: 999px;
+    padding: 0 12px;
+    font-size: 13px;
   }
 
-  .icon-btn-close {
-    min-width: 44px;
-    width: 44px;
-    padding: 0;
-    font-size: 15px;
+  #closeScannerBtn {
+    min-width: 48px;
+    width: 48px;
+    font-size: 0;
+  }
+
+  #closeScannerBtn::before {
+    content: "×";
+    font-size: 28px;
+    line-height: 1;
   }
 
   .marker-status {
-    max-width: 48vw;
+    max-width: 50vw;
     font-size: 12px;
-    padding: 9px 10px;
+    padding: 9px 12px;
   }
 
   .scanner-hint {
     bottom: max(12px, env(safe-area-inset-bottom));
     width: min(86vw, 360px);
     font-size: 12px;
+    padding: 10px 12px;
   }
 }
 

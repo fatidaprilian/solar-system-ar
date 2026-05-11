@@ -177,6 +177,31 @@ function stopVideoStreams(root: ParentNode): void {
   });
 }
 
+function cleanupAFrameArtifacts(): void {
+  document.querySelectorAll<HTMLVideoElement>("video").forEach((video) => {
+    const stream = video.srcObject;
+    if (stream instanceof MediaStream) {
+      stream.getTracks().forEach((track) => track.stop());
+    }
+
+    video.srcObject = null;
+    video.remove();
+  });
+
+  document.querySelectorAll<HTMLCanvasElement>("canvas.a-canvas, canvas").forEach((canvas) => {
+    if (ui.arMount.contains(canvas) || canvas.classList.contains("a-canvas")) {
+      canvas.remove();
+    }
+  });
+
+  document.querySelectorAll<HTMLElement>(".a-enter-vr, .a-enter-ar, .arjs-loader, .a-orientation-modal").forEach((el) => {
+    el.remove();
+  });
+
+  document.body.classList.remove("a-body", "aframe-inspector-opened");
+  document.documentElement.classList.remove("a-fullscreen");
+}
+
 function stopMediaStream(stream: MediaStream | null): void {
   if (!stream) {
     return;
@@ -186,7 +211,7 @@ function stopMediaStream(stream: MediaStream | null): void {
 }
 
 function getFacingModeLabel(mode: CameraFacingMode): string {
-  return mode === "environment" ? "Kamera Belakang" : "Kamera Depan";
+  return mode === "environment" ? "Belakang" : "Depan";
 }
 
 async function waitForArVideoElement(timeoutMs = 3500): Promise<HTMLVideoElement | null> {
@@ -270,19 +295,25 @@ function runCleanupListeners(): void {
 
 function teardownScene(): void {
   runCleanupListeners();
-  if (sceneEl) {
-    stopVideoStreams(sceneEl);
-    sceneEl.remove();
-  }
+  stopVideoStreams(document);
+
+  const activeScene = sceneEl as (HTMLElement & { pause?: () => void }) | null;
+  activeScene?.pause?.();
+  activeScene?.remove();
+
   stopMediaStream(activeCameraStream);
   activeCameraStream = null;
   manualFacingModeApplied = false;
+
   ui.arMount.innerHTML = "";
+  cleanupAFrameArtifacts();
+
   clearSceneReferences();
   isMarkerDetected = false;
   isTransitioning = false;
   currentPlanet = null;
   hidePlanetPanel();
+  clearFatalError();
 }
 
 function resetSolarTransforms(): void {
@@ -311,7 +342,7 @@ function renderDetailModel(planet: PlanetData): void {
   }
 
   planetDetailRootEl.innerHTML = `
-    <a-entity id="planetDetailWrapper" position="0 0.18 0" scale="0.01 0.01 0.01">
+    <a-entity id="planetDetailWrapper" position="0 0.14 0" scale="0.01 0.01 0.01">
       <a-entity
         id="planetDetailModel"
         gltf-model="#${planet.modelId}"
@@ -636,7 +667,7 @@ function bindSceneReferences(): void {
 function updateCameraButtonLabel(): void {
   const cameraLabel = getFacingModeLabel(currentFacingMode);
   ui.switchCameraBtn.textContent = cameraLabel;
-  ui.switchCameraBtn.setAttribute("aria-label", cameraLabel);
+  ui.switchCameraBtn.setAttribute("aria-label", `Kamera ${cameraLabel}`);
 }
 
 async function bootScene(forceRebuild = false): Promise<boolean> {
@@ -665,6 +696,13 @@ async function bootScene(forceRebuild = false): Promise<boolean> {
     bindSolarModelFallback();
     bindTouchFallbackRaycast();
     manualFacingModeApplied = await applyFacingModeStream();
+
+    console.log("[AR LAYER]", {
+      videos: document.querySelectorAll("video").length,
+      canvases: document.querySelectorAll("canvas").length,
+      arMountChildren: ui.arMount.children.length
+    });
+
     updateCameraButtonLabel();
 
     setMarkerStatus("Mencari marker...", false);
@@ -698,6 +736,11 @@ async function switchCamera(event: Event): Promise<void> {
   const previousMode = currentFacingMode;
   currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
 
+  showToast(
+    `Mengganti ke kamera ${currentFacingMode === "environment" ? "belakang" : "depan"}...`,
+    "info"
+  );
+
   const didBoot = await bootScene(true);
   if (!didBoot) {
     currentFacingMode = previousMode;
@@ -707,13 +750,14 @@ async function switchCamera(event: Event): Promise<void> {
   }
 
   updateCameraButtonLabel();
+  setMarkerStatus("Mencari marker...", false);
 
   if (!manualFacingModeApplied) {
-    showToast("Switch kamera dibatasi browser. Tetap gunakan izin kamera aktif saat ini.", "warning");
+    showToast("Switch kamera tidak didukung browser ini. Gunakan kamera default.", "warning");
     return;
   }
 
-  showToast(`${getFacingModeLabel(currentFacingMode)} aktif.`);
+  showToast(`Kamera ${getFacingModeLabel(currentFacingMode).toLowerCase()} aktif.`);
 }
 
 async function startArFlow(): Promise<void> {
@@ -731,7 +775,9 @@ async function startArFlow(): Promise<void> {
 
 function stopArFlow(): void {
   teardownScene();
-  showLanding();
+  ui.scannerPage.classList.add("is-hidden");
+  ui.landingPage.classList.remove("is-hidden");
+  ui.howToModal.classList.add("is-hidden");
   setMarkerStatus("Mencari marker...", false);
 }
 
@@ -751,7 +797,11 @@ function bindStaticUiEvents(): void {
     }
   });
 
-  ui.closeScannerBtn.addEventListener("click", stopArFlow);
+  ui.closeScannerBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    stopArFlow();
+  });
   ui.closePlanetBtn.addEventListener("click", closePlanetDetail);
 
   ui.switchCameraBtn.addEventListener("click", (event) => {

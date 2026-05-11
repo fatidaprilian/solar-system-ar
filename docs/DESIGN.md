@@ -17,6 +17,7 @@ Large typography is used only on landing headline. Scanner HUD uses compact 12-1
 
 ## 6. Spacing, Layout Rhythm, and Density Strategy
 Scanner overlays use safe-area aware offsets and fixed positioning. Spacing is tight in HUD rows and moderate in bottom-sheet details.
+Layer stack is fixed: camera video at `z-index: 0`, AR canvas/scene at `z-index: 1`, scanner HUD at `z-index: 30`, and modal/toast at `z-index: 50+`.
 
 ## 7. Token Architecture and Alias Strategy
 CSS variables in `:root` remain the source for semantic roles (`--accent`, `--text-*`, `--line`, `--danger`). Component styles consume semantic tokens instead of hardcoded one-off values.
@@ -45,3 +46,4 @@ Do not force fullscreen, do not rotate-lock orientation, do not block the camera
 
 ## 14. Implementation Notes for Future UI Tasks
 When planet tap calibration drifts, tune `hitZonePosition` and `hitZoneRadius` in `src/data/planets.ts`. Use `DEBUG_HIT_ZONES` in `src/ar/scene.ts` during calibration and disable it for production.
+Current mobile-safe baseline: `solar_system.glb` scale `0.05 0.05 0.05`, fallback scale `0.15 0.15 0.15`, and small-detail planet scales from `0.035` to `0.045`.

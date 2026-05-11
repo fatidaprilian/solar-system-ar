@@ -1,6 +1,6 @@
 {
   "mode": "dynamic",
-  "status": "refined-mobile-ar-scanner-v1",
+  "status": "refined-mobile-ar-scanner-v2",
   "seedPolicy": {
     "mode": "structure-first-scaffold",
     "requiresProjectSpecificRefinement": true,
@@ -199,7 +199,7 @@
       "soft-glow-ai-template-default",
       "cyber-neon-terminal-default"
     ],
-    "spatialDecision": "Keep scanner full viewport with fixed overlays and no fullscreen mode."
+    "spatialDecision": "Use fixed viewport layers with video at z0, AR canvas/scene at z1, HUD at z30, and modal/toast at z50+."
   },
   "aiSafeUiAudit": {
     "status": "completed-for-mobile-ar-scanner-phase",
@@ -423,10 +423,10 @@
   "designExecutionHandoff": {
     "version": "ui-handoff-v1",
     "location": "inline-design-intent",
-    "status": "refined-for-mobile-ar-scanner-phase",
+    "status": "refined-for-mobile-ar-scanner-v2",
     "seedMode": "structure-first-scaffold",
     "requiresTaskSpecificRefinement": true,
-    "primaryExperienceGoal": "Start AR quickly, keep scanner stable across mobile devices, and open planet details without breaking camera flow.",
+    "primaryExperienceGoal": "Camera preview must stay visible, scanner close must return to landing safely, and AR model scale must stay mobile-safe across devices.",
     "surfacePlan": [
       {
         "surfaceId": "landing-entry",
