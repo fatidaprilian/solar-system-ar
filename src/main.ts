@@ -707,8 +707,6 @@ type ZoomCapabilityRange = {
   max?: number;
 };
 
-const SUN_MODEL_SCALE = 0.32;
-
 type ScaleLike = {
   set: (x: number, y: number, z: number) => void;
   x?: number;
@@ -770,14 +768,24 @@ function tuneSolarSystemModelScale(): void {
       return;
     }
 
-    if (object.name?.toLowerCase().includes("sun")) {
-      object.scale?.set(SUN_MODEL_SCALE, SUN_MODEL_SCALE, SUN_MODEL_SCALE);
-    }
-    
     if (object.name && GLB_NODE_TO_PLANET[object.name]) {
       const meshObj = object as any;
       meshObj.userData = meshObj.userData || {};
       meshObj.userData.planetId = GLB_NODE_TO_PLANET[object.name];
+
+      if (!meshObj.userData.hasHitBox && (window as any).THREE) {
+        const THREE = (window as any).THREE;
+        if (meshObj.isMesh && meshObj.geometry) {
+          meshObj.geometry.computeBoundingSphere();
+          const radius = meshObj.geometry.boundingSphere.radius * 4;
+          const hitGeo = new THREE.SphereGeometry(radius, 12, 12);
+          const hitMat = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.0, depthWrite: false });
+          const hitMesh = new THREE.Mesh(hitGeo, hitMat);
+          hitMesh.userData = { planetId: GLB_NODE_TO_PLANET[object.name] };
+          meshObj.add(hitMesh);
+          meshObj.userData.hasHitBox = true;
+        }
+      }
     }
   });
 }
