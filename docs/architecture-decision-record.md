@@ -13,15 +13,15 @@ Scene AR harus menjaga feed kamera tetap stabil, menampilkan tata surya dengan u
 
 ### Decision
 
-- Menggunakan `solar_system.glb` sebagai tampilan utama saat marker terdeteksi, dengan sphere row hanya sebagai fallback ketika file GLB gagal dimuat.
-- Detail planet tetap memakai GLB individual, dengan ukuran disesuaikan otomatis berdasarkan bounding box dan canvas preview yang dipaksa crisp di panel informasi.
+- Menggunakan `solar_system.glb` sebagai tampilan utama saat marker terdeteksi, dengan runtime cleanup untuk menyembunyikan asteroid/dwarf clutter dan sphere row hanya sebagai fallback ketika file GLB gagal dimuat.
+- Detail planet tetap memakai GLB individual, dengan ukuran disesuaikan otomatis berdasarkan bounding box, posisi dipusatkan ulang, dan canvas preview yang dipaksa crisp di panel informasi.
 - Saat panel detail dibuka, scene AR utama menyembunyikan tata surya tanpa merender planet besar tambahan. Tombol kembali langsung mengembalikan overview tata surya secara deterministik.
 - Cleanup lifecycle AR dipusatkan di `src/main.ts`: mematikan stream, membersihkan preview GLB panel, menghapus artefak A-Frame, reset state scanner, cleanup berulang setelah close, dan reload khusus perangkat touch untuk menghapus side-effect mobile browser yang tersisa.
 - Menggunakan `visualViewport` untuk menjaga stabilitas tinggi tampilan mobile (`--app-height`).
 
 ### Rationale
 
-Model `solar_system.glb` punya skala internal besar sehingga perlu diperkecil dan sedikit dikalibrasi untuk marker mobile. Fallback sphere row tetap ada sebagai jalur recovery jika model gagal dimuat, sementara penyesuaian bounding box dan canvas preview mencegah model detail planet tampak blur atau keluar dari panel.
+Model `solar_system.glb` punya skala internal besar dan membawa objek dekoratif seperti asteroid/dwarf body yang membuat tampilan marker mobile berantakan. Runtime cleanup menjaga asset asli tetap dipakai tanpa mengedit file GLB, sementara penyesuaian bounding box, centering, dan canvas preview mencegah model detail planet tampak blur atau keluar dari panel.
 
 AR.js kadang meninggalkan elemen video/canvas dan kelas fullscreen setelah close. Cleanup berulang, reset landing, dan reload khusus perangkat touch mencegah UI glitch pada siklus buka-tutup berulang.
 

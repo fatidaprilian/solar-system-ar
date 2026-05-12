@@ -8,7 +8,7 @@
                      },
     "project":  {
                     "name":  "TUGAS-AKHIR-VAR-TATA-SURYA",
-                    "currentFocus":  "Validate GLB-first solar overview, crisp selected-planet GLB detail preview, deterministic return to solar overview, and mobile close-to-landing hard reset across devices.",
+                    "currentFocus":  "Validate tidied GLB-first solar overview, full centered selected-planet GLB detail preview, deterministic return to solar overview, and mobile close-to-landing hard reset across devices.",
                     "durableFacts":  [
 
                                      ]
@@ -16,8 +16,8 @@
     "progress":  {
                      "lastAchievements":  [
                                               "Changed the marker overview so loaded solar_system.glb is the primary visual and the sphere row is only an error fallback.",
-                                              "Recalibrated solar_system.glb scale and rotation for a smaller mobile marker fit.",
-                                              "Enlarged the embedded GLB preview slot, removed the soft radial glow, and synced the preview canvas to device pixel ratio for a crisper planet detail image.",
+                                              "Recalibrated solar_system.glb scale and rotation for a smaller mobile marker fit, then hid asteroid/dwarf clutter nodes at runtime, shrank the Sun node, and centered the fitted model over the marker.",
+                                              "Enlarged the embedded GLB preview slot, removed the soft radial glow, synced the preview canvas to device pixel ratio, reduced model target size, and centered the fitted planet so it is not cut inside the border.",
                                               "Kept Kembali ke Tata Surya deterministic: it hides the panel, clears the detail root, resets scales, and restores whichever solar overview is available.",
                                               "Added mobile/touch close fallback: after stream/artifact cleanup and landing remount, the page reloads to clear persistent AR.js browser side effects.",
                                               "Expanded cleanupAFrameArtifacts to remove all A-Frame scenes during teardown, including preview scenes.",
@@ -25,7 +25,7 @@
                                           ],
                      "pendingIssues":  [
                                            "Real-device verification is still required on Android Chrome, iOS Safari, tablets, and the user's Infinix Note 40 after the GLB-first solar patch.",
-                                           "If solar_system.glb is still too small or too large, adjust SOLAR_SYSTEM_MODEL_SCALE in src/ar/scene.ts or getSolarOverviewTargetSize in src/main.ts.",
+                                           "If solar_system.glb is still too small or too large, adjust SOLAR_SYSTEM_MODEL_SCALE in src/ar/scene.ts, SOLAR_OVERVIEW_TARGET_SIZE in src/main.ts, or SOLAR_MODEL_VERTICAL_OFFSET in src/main.ts.",
                                            "If planet taps feel offset after scale changes, tune hitZonePosition and hitZoneRadius in src/data/planets.ts.",
                                            "Verify embedded GLB preview sizing across planets; tweak previewScale, PANEL_PREVIEW_TARGET_SIZE, or PANEL_PREVIEW_LARGE_TARGET_SIZE values if any appear too large or too small.",
                                            "If deployed preview still looks soft, verify the browser is not serving a stale Vercel build or cached asset.",
@@ -33,15 +33,16 @@
                                        ],
                      "nextBestActions":  [
                                              "Deploy and test open AR -\u003e scan Hiro -\u003e confirm solar_system.glb appears as the main marker visual at a readable size.",
-                                             "Tap Jupiter/Saturn/other planets and confirm the local GLB preview is crisp, centered, and directly under the return button.",
+                                             "Tap Jupiter/Saturn/other planets and confirm the local GLB preview is full, not cut, crisp, centered, and directly under the return button.",
                                              "Tap Kembali ke Tata Surya and confirm the GLB overview returns, with fallback row only appearing if solar_system.glb fails.",
                                              "Tap close on Android/iOS and confirm the page reloads back to a normal landing page.",
                                              "Verify the landing page and modal remain centered and tappable after closing AR and after reopening AR."
                                          ],
                      "validationState":  [
-                                             "npm run build after GLB-first solar overview and crisp preview patch: PASS",
+                                             "npm run build after tidied solar_system.glb and centered preview patch: PASS",
                                              "docs/design-intent.json JSON parse after documentation sync: PASS",
                                              "git diff --check after latest patch: PASS with CRLF conversion warnings only",
+                                             "Node GLTF geometry check after runtime cleanup estimated tidied solar bbox max at 1293.57 before AR fit.",
                                              "Local Vite dev server http://127.0.0.1:5173 responded HTTP 200; solar_system.glb, jupiter.glb, and saturn.glb responded HTTP 200.",
                                              "agent-browser CLI was not available in this environment, so browser visual verification was not run.",
                                              "Manual real-device verification remains pending.",
@@ -63,5 +64,5 @@
                     "redactSensitiveTextBeforeWriting":  true
                 },
     "generatedAt":  "2026-05-10T17:34:50.825Z",
-    "lastUpdatedAt":  "2026-05-12T09:19:16+07:00"
+    "lastUpdatedAt":  "2026-05-12T09:30:45+07:00"
 }

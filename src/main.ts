@@ -60,10 +60,12 @@ let viewportListenersBound = false;
 const MIN_VIEWPORT_HEIGHT = 320;
 const MAX_TOUCH_VIEWPORT_HEIGHT = 1400;
 const MAX_TOUCH_VIEWPORT_ASPECT = 2.35;
-const SOLAR_OVERVIEW_TARGET_SIZE = 1.56;
-const PANEL_PREVIEW_TARGET_SIZE = 1.26;
-const PANEL_PREVIEW_LARGE_TARGET_SIZE = 1.42;
+const SOLAR_OVERVIEW_TARGET_SIZE = 1.3;
+const PANEL_PREVIEW_TARGET_SIZE = 0.96;
+const PANEL_PREVIEW_LARGE_TARGET_SIZE = 1.08;
 const MOBILE_CLOSE_RELOAD_DELAY_MS = 180;
+const SOLAR_MODEL_VERTICAL_OFFSET = 0.12;
+const SOLAR_MODEL_CLUTTER_NAME_PARTS = ["asteroid", "asteroidi", "ceres", "pluto", "moon"];
 
 function getSolarScaleMultiplier(): number {
   const isTouch = window.matchMedia("(pointer: coarse)").matches;
@@ -87,20 +89,20 @@ function getSolarScaleMultiplier(): number {
 function getSolarOverviewTargetSize(): number {
   const isTouch = window.matchMedia("(pointer: coarse)").matches;
   if (!isTouch) {
-    return 1.72;
+    return 1.46;
   }
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 1.48;
+    return 1.18;
   }
   if (viewportWidth <= 420) {
     return SOLAR_OVERVIEW_TARGET_SIZE;
   }
   if (viewportWidth <= 520) {
-    return 1.62;
+    return 1.36;
   }
-  return 1.68;
+  return 1.42;
 }
 
 function getRequiredElement<T extends HTMLElement>(selector: string): T {
@@ -352,7 +354,10 @@ function renderPlanetPanelPreview(planet: PlanetData): void {
   const revealModel = () => {
     window.requestAnimationFrame(() => {
       syncPlanetPreviewCanvas(previewScene);
-      const didFit = fitModelToMarkerSize(model, getPanelPreviewTargetSize(planet));
+      const didFit = fitModelToMarkerSize(model, getPanelPreviewTargetSize(planet), {
+        center: true,
+        centerY: true
+      });
       if (!didFit) {
         ui.planetPreview.dataset.state = "error";
         if (status) {
@@ -631,7 +636,7 @@ type ZoomCapabilityRange = {
   max?: number;
 };
 
-const SUN_MODEL_SCALE = 1;
+const SUN_MODEL_SCALE = 0.32;
 
 type ScaleLike = {
   set: (x: number, y: number, z: number) => void;
@@ -642,6 +647,8 @@ type ScaleLike = {
 
 type Object3DLike = {
   name?: string;
+  visible?: boolean;
+  position?: ScaleLike;
   scale?: ScaleLike;
   traverse?: (callback: (object: Object3DLike) => void) => void;
   updateMatrixWorld?: (force?: boolean) => void;
@@ -656,12 +663,28 @@ type Vector3Like = {
 type Box3Like = {
   setFromObject: (object: unknown) => Box3Like;
   getSize: (target: Vector3Like) => Vector3Like;
+  getCenter: (target: Vector3Like) => Vector3Like;
 };
 
 type ThreeSizingLike = {
   Box3: new () => Box3Like;
   Vector3: new () => Vector3Like;
 };
+
+type FitModelOptions = {
+  center?: boolean;
+  centerY?: boolean;
+  verticalOffset?: number;
+};
+
+function shouldHideSolarSystemNode(name: string | undefined): boolean {
+  if (!name) {
+    return false;
+  }
+
+  const normalizedName = name.toLowerCase();
+  return SOLAR_MODEL_CLUTTER_NAME_PARTS.some((part) => normalizedName.includes(part));
+}
 
 function tuneSolarSystemModelScale(): void {
   const object3D = (solarSystemEl as HTMLElement & { object3D?: Object3DLike } | null)?.object3D;
@@ -670,6 +693,12 @@ function tuneSolarSystemModelScale(): void {
   }
 
   object3D.traverse((object) => {
+    if (shouldHideSolarSystemNode(object.name)) {
+      object.visible = false;
+      object.scale?.set(0.0001, 0.0001, 0.0001);
+      return;
+    }
+
     if (object.name?.toLowerCase().includes("sun")) {
       object.scale?.set(SUN_MODEL_SCALE, SUN_MODEL_SCALE, SUN_MODEL_SCALE);
       console.log("[MODEL] sun node scaled", object.name, SUN_MODEL_SCALE);
@@ -677,7 +706,7 @@ function tuneSolarSystemModelScale(): void {
   });
 }
 
-function fitModelToMarkerSize(entity: HTMLElement, targetSize: number): boolean {
+function fitModelToMarkerSize(entity: HTMLElement, targetSize: number, options: FitModelOptions = {}): boolean {
   const maybeWindow = window as Window & { THREE?: ThreeSizingLike };
   const object3D = (entity as HTMLElement & { object3D?: Object3DLike }).object3D;
   const currentScale = object3D?.scale;
@@ -701,6 +730,23 @@ function fitModelToMarkerSize(entity: HTMLElement, targetSize: number): boolean 
   const nextY = (currentScale.y ?? 1) * correction;
   const nextZ = (currentScale.z ?? 1) * correction;
   currentScale.set(nextX, nextY, nextZ);
+
+  if (options.center && object3D.position) {
+    object3D.updateMatrixWorld?.(true);
+
+    const centeredBox = new maybeWindow.THREE.Box3().setFromObject(object3D);
+    const center = centeredBox.getCenter(new maybeWindow.THREE.Vector3());
+    const currentX = object3D.position.x ?? 0;
+    const currentY = object3D.position.y ?? 0;
+    const currentZ = object3D.position.z ?? 0;
+    const nextPositionX = currentX - center.x;
+    const nextPositionY = options.centerY
+      ? currentY - center.y + (options.verticalOffset ?? 0)
+      : currentY + (options.verticalOffset ?? 0);
+    const nextPositionZ = currentZ - center.z;
+
+    object3D.position.set(nextPositionX, nextPositionY, nextPositionZ);
+  }
 
   return true;
 }
@@ -1150,7 +1196,11 @@ function bindSolarModelFallback(): void {
     console.log("[MODEL] solar_system.glb loaded");
     tuneSolarSystemModelScale();
     if (solarSystemEl) {
-      const didFit = fitModelToMarkerSize(solarSystemEl, getSolarOverviewTargetSize());
+      const didFit = fitModelToMarkerSize(solarSystemEl, getSolarOverviewTargetSize(), {
+        center: true,
+        centerY: true,
+        verticalOffset: SOLAR_MODEL_VERTICAL_OFFSET
+      });
       if (!didFit) {
         console.warn("[MODEL] solar_system.glb fit skipped; using calibrated scene scale.");
       }

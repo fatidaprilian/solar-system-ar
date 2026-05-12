@@ -1,6 +1,6 @@
 {
   "mode": "dynamic",
-  "status": "refined-mobile-ar-scanner-v8-glb-first-solar-crisp-detail-preview",
+  "status": "refined-mobile-ar-scanner-v9-tidied-solar-glb-centered-preview",
   "seedPolicy": {
     "mode": "structure-first-scaffold",
     "requiresProjectSpecificRefinement": true,
@@ -428,7 +428,7 @@
     "status": "refined-for-mobile-ar-scanner-v5-glb-first-overview",
     "seedMode": "structure-first-scaffold",
     "requiresTaskSpecificRefinement": true,
-    "primaryExperienceGoal": "Camera preview must stay visible, scanner close must return to a normal landing page, solar_system.glb must be the primary marker visual at a readable mobile scale, and planet detail must display a crisp contained selected local GLB asset below the return button.",
+    "primaryExperienceGoal": "Camera preview must stay visible, scanner close must return to a normal landing page, solar_system.glb must be the primary marker visual at a tidy readable mobile scale, and planet detail must display a full centered selected local GLB asset below the return button.",
     "surfacePlan": [
       {
         "surfaceId": "landing-entry",
@@ -451,7 +451,7 @@
       {
         "surfaceId": "solar-system-marker-model",
         "role": "primary-ar-model",
-        "goal": "Render solar_system.glb as the main Hiro marker visual with a controlled mobile scale and fallback spheres only on model load failure.",
+        "goal": "Render solar_system.glb as the main Hiro marker visual with decorative clutter hidden at runtime, a controlled mobile scale, marker-centered fit, and fallback spheres only on model load failure.",
         "antiPatterns": [
           "fallback-row-as-primary-model",
           "oversized-marker-model"
@@ -460,7 +460,7 @@
       {
         "surfaceId": "planet-detail-sheet",
         "role": "contextual-information",
-        "goal": "Reveal planet data and a crisp contained selected local GLB preview directly below the return button in a bottom sheet on small viewports.",
+        "goal": "Reveal planet data and a crisp full selected local GLB preview centered inside the bordered slot directly below the return button in a bottom sheet on small viewports.",
         "antiPatterns": [
           "full-screen-modal-takeover"
         ]
@@ -561,7 +561,7 @@
           "ready",
           "error"
         ],
-        "notes": "Detail sheet preview loads the selected local GLB model in a constrained high-DPI slot and falls back to an error message instead of generated planet art."
+        "notes": "Detail sheet preview loads the selected local GLB model in a constrained high-DPI slot, centers it after bounding-box fit, and falls back to an error message instead of generated planet art."
       }
     ],
     "expressionFlexibility": {
