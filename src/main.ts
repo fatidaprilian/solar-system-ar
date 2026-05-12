@@ -56,13 +56,14 @@ const cleanupListeners: Array<() => void> = [];
 let delayedArtifactCleanupTimers: number[] = [];
 let landingResetTimers: number[] = [];
 let viewportListenersBound = false;
+let planetPreviewRenderToken = 0;
 
 const MIN_VIEWPORT_HEIGHT = 320;
 const MAX_TOUCH_VIEWPORT_HEIGHT = 1400;
 const MAX_TOUCH_VIEWPORT_ASPECT = 2.35;
-const SOLAR_OVERVIEW_TARGET_SIZE = 1.3;
-const PANEL_PREVIEW_TARGET_SIZE = 0.96;
-const PANEL_PREVIEW_LARGE_TARGET_SIZE = 1.08;
+const SOLAR_OVERVIEW_TARGET_SIZE = 1.7;
+const PANEL_PREVIEW_TARGET_SIZE = 1.18;
+const PANEL_PREVIEW_LARGE_TARGET_SIZE = 1.34;
 const MOBILE_CLOSE_RELOAD_DELAY_MS = 180;
 const SOLAR_MODEL_VERTICAL_OFFSET = 0.12;
 const SOLAR_MODEL_CLUTTER_NAME_PARTS = ["asteroid", "asteroidi", "ceres", "pluto", "moon"];
@@ -75,16 +76,16 @@ function getSolarScaleMultiplier(): number {
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 1.55;
+    return 2.18;
   }
   if (viewportWidth <= 420) {
-    return 1.45;
+    return 2.05;
   }
   if (viewportWidth <= 520) {
-    return 1.35;
+    return 1.88;
   }
   if (viewportWidth <= 768) {
-    return 1.18;
+    return 1.58;
   }
   return 1;
 }
@@ -92,23 +93,23 @@ function getSolarScaleMultiplier(): number {
 function getSolarOverviewTargetSize(): number {
   const isTouch = window.matchMedia("(pointer: coarse)").matches;
   if (!isTouch) {
-    return 1.46;
+    return SOLAR_OVERVIEW_TARGET_SIZE;
   }
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 1.65;
+    return 2.26;
   }
   if (viewportWidth <= 420) {
-    return 1.55;
+    return 2.16;
   }
   if (viewportWidth <= 520) {
-    return 1.46;
+    return 2.02;
   }
   if (viewportWidth <= 768) {
-    return 1.38;
+    return 1.84;
   }
-  return 1.52;
+  return SOLAR_OVERVIEW_TARGET_SIZE;
 }
 
 function getRequiredElement<T extends HTMLElement>(selector: string): T {
@@ -267,10 +268,12 @@ function isTouchDevice(): boolean {
 }
 
 function clearPlanetPanelPreview(): void {
+  planetPreviewRenderToken += 1;
   const previewScene = ui.planetPreview.querySelector<HTMLElement & { pause?: () => void }>("a-scene");
   previewScene?.pause?.();
   ui.planetPreview.innerHTML = "";
   delete ui.planetPreview.dataset.state;
+  delete ui.planetPreview.dataset.planet;
 }
 
 type PreviewRendererLike = {
@@ -308,16 +311,72 @@ function syncPlanetPreviewCanvas(previewScene: PreviewSceneLike | null): void {
 
   canvas.style.width = "100%";
   canvas.style.height = "100%";
+  canvas.style.background = "transparent";
   canvas.width = Math.round(width * pixelRatio);
   canvas.height = Math.round(height * pixelRatio);
+}
+
+function setPlanetPreviewError(status: HTMLElement | null, planetName: string, message?: string): void {
+  ui.planetPreview.dataset.state = "error";
+  if (status) {
+    status.textContent = message ?? `Model ${planetName} belum bisa ditampilkan.`;
+  }
+}
+
+function schedulePlanetPreviewReveal(
+  planet: PlanetData,
+  model: HTMLElement,
+  status: HTMLElement | null,
+  previewScene: PreviewSceneLike | null,
+  renderToken: number,
+  attempt = 0
+): void {
+  if (renderToken !== planetPreviewRenderToken || !ui.planetPreview.contains(model)) {
+    return;
+  }
+
+  window.requestAnimationFrame(() => {
+    if (renderToken !== planetPreviewRenderToken || !ui.planetPreview.contains(model)) {
+      return;
+    }
+
+    syncPlanetPreviewCanvas(previewScene);
+    const didFit = fitModelToMarkerSize(model, getPanelPreviewTargetSize(planet), {
+      center: true,
+      centerY: true
+    });
+
+    if (didFit) {
+      ui.planetPreview.dataset.state = "ready";
+      model.setAttribute("visible", "true");
+      window.requestAnimationFrame(() => syncPlanetPreviewCanvas(previewScene));
+      window.setTimeout(() => syncPlanetPreviewCanvas(previewScene), 180);
+      return;
+    }
+
+    if (attempt < 14) {
+      window.setTimeout(() => {
+        schedulePlanetPreviewReveal(planet, model, status, previewScene, renderToken, attempt + 1);
+      }, 120);
+      return;
+    }
+
+    setPlanetPreviewError(status, planet.name);
+    model.setAttribute("visible", "false");
+  });
 }
 
 function renderPlanetPanelPreview(planet: PlanetData): void {
   clearPlanetPanelPreview();
 
   const assetId = `panel-${planet.id}-model`;
+  const renderToken = planetPreviewRenderToken;
+  ui.planetPreview.dataset.planet = planet.id;
   ui.planetPreview.dataset.state = "loading";
   ui.planetPreview.innerHTML = `
+    <div class="planet-preview-fallback" aria-hidden="true">
+      <span class="planet-preview-orb"></span>
+    </div>
     <div class="planet-preview-status">Memuat model ${planet.name}...</div>
     <a-scene
       class="planet-preview-scene"
@@ -338,10 +397,10 @@ function renderPlanetPanelPreview(planet: PlanetData): void {
         rotation="0 -22 0"
         scale="${planet.detailScale}"
       ></a-entity>
-      <a-light type="ambient" intensity="1.2"></a-light>
-      <a-light type="directional" intensity="1.25" position="1.5 1.5 2"></a-light>
+      <a-light type="ambient" intensity="1.65"></a-light>
+      <a-light type="directional" intensity="1.8" position="1.5 1.5 2"></a-light>
       <a-camera
-        position="0 0 2.35"
+        position="0 0 2.65"
         look-controls="enabled: false"
         wasd-controls="enabled: false"
       ></a-camera>
@@ -352,38 +411,15 @@ function renderPlanetPanelPreview(planet: PlanetData): void {
   const status = ui.planetPreview.querySelector<HTMLElement>(".planet-preview-status");
   const previewScene = ui.planetPreview.querySelector<PreviewSceneLike>(".planet-preview-scene");
   if (!model) {
-    ui.planetPreview.dataset.state = "error";
+    setPlanetPreviewError(null, planet.name);
     ui.planetPreview.innerHTML = `<div class="planet-preview-status">Model ${planet.name} belum bisa ditampilkan.</div>`;
     return;
   }
 
-  const revealModel = () => {
-    window.requestAnimationFrame(() => {
-      syncPlanetPreviewCanvas(previewScene);
-      const didFit = fitModelToMarkerSize(model, getPanelPreviewTargetSize(planet), {
-        center: true,
-        centerY: true
-      });
-      if (!didFit) {
-        ui.planetPreview.dataset.state = "error";
-        if (status) {
-          status.textContent = `Model ${planet.name} belum bisa ditampilkan.`;
-        }
-        model.setAttribute("visible", "false");
-        return;
-      }
-
-      ui.planetPreview.dataset.state = "ready";
-      model.setAttribute("visible", "true");
-      window.requestAnimationFrame(() => syncPlanetPreviewCanvas(previewScene));
-    });
-  };
+  const revealModel = () => schedulePlanetPreviewReveal(planet, model, status, previewScene, renderToken);
 
   const showPreviewError = () => {
-    ui.planetPreview.dataset.state = "error";
-    if (status) {
-      status.textContent = `Model ${planet.name} gagal dimuat dari file GLB.`;
-    }
+    setPlanetPreviewError(status, planet.name, `Model ${planet.name} gagal dimuat dari file GLB.`);
     model.setAttribute("visible", "false");
   };
 
@@ -391,6 +427,8 @@ function renderPlanetPanelPreview(planet: PlanetData): void {
   previewScene?.addEventListener("loaded", syncPreview, { once: true });
   previewScene?.addEventListener("renderstart", syncPreview, { once: true });
   window.requestAnimationFrame(syncPreview);
+  window.requestAnimationFrame(revealModel);
+  window.setTimeout(revealModel, 240);
 
   model.addEventListener("model-loaded", revealModel, { once: true });
   model.addEventListener("model-error", showPreviewError, { once: true });
@@ -818,7 +856,7 @@ function syncArViewportLayout(): void {
     scene.style.minHeight = targetMinHeight;
   }
 
-  document.querySelectorAll<HTMLCanvasElement>("canvas.a-canvas, canvas[data-aframe-canvas]").forEach((canvas) => {
+  ui.arMount.querySelectorAll<HTMLCanvasElement>("canvas.a-canvas, canvas[data-aframe-canvas]").forEach((canvas) => {
     canvas.style.position = "fixed";
     canvas.style.inset = "0";
     canvas.style.width = "100vw";
