@@ -74,6 +74,7 @@ export function createArSceneMarkup(
       <a-entity
         id="solarSystem"
         gltf-model="#solarSystemModel"
+        animation-mixer="loop: repeat; timeScale: 0.5"
         visible="false"
         position="0 ${SOLAR_ROOT_Y_POSITION} 0"
         rotation="0 90 0"

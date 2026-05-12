@@ -39,6 +39,7 @@ let planetDetailRootEl: HTMLElement | null = null;
 let arCameraEl: HTMLElement | null = null;
 let hitZoneEls: HTMLElement[] = [];
 let isSolarSystemModelReady = false;
+let initialSolarScale: { x: number; y: number; z: number } | null = null;
 
 let currentPlanet: PlanetData | null = null;
 let isMarkerDetected = false;
@@ -391,8 +392,9 @@ function renderPlanetPanelPreview(planet: PlanetData): void {
         gltf-model="#${assetId}"
         visible="false"
         position="0 0 0"
-        rotation="0 -22 0"
+        rotation="0 0 0"
         scale="${planet.detailScale}"
+        animation="property: rotation; from: 0 0 0; to: 0 360 0; dur: 10000; easing: linear; loop: true"
       ></a-entity>
       <a-light type="ambient" intensity="1.65"></a-light>
       <a-light type="directional" intensity="1.8" position="1.5 1.5 2"></a-light>
@@ -982,6 +984,7 @@ function clearSceneReferences(): void {
   planetDetailRootEl = null;
   arCameraEl = null;
   hitZoneEls = [];
+  initialSolarScale = null;
 }
 
 function runCleanupListeners(): void {
@@ -1027,6 +1030,15 @@ function isSessionCurrent(sessionId: number): boolean {
   return sessionId === activeScannerSession;
 }
 
+function resetSolarSystemScale(): void {
+  if (!solarSystemEl || !initialSolarScale) {
+    return;
+  }
+
+  const object3D = (solarSystemEl as HTMLElement & { object3D?: Object3DLike }).object3D;
+  object3D?.scale?.set(initialSolarScale.x, initialSolarScale.y, initialSolarScale.z);
+}
+
 function resetSolarTransforms(): void {
   if (!solarRootEl) {
     return;
@@ -1041,6 +1053,8 @@ function resetSolarTransforms(): void {
     detailObject?.scale.set(1, 1, 1);
     planetDetailRootEl.innerHTML = "";
   }
+
+  resetSolarSystemScale();
 
   if (solarSystemEl) {
     solarSystemEl.setAttribute("visible", isSolarSystemModelReady ? "true" : "false");
@@ -1061,15 +1075,17 @@ function setSolarOverviewVisible(isVisible: boolean): void {
   }
 
   if (solarSystemEl) {
-    solarSystemEl.setAttribute("visible", isSolarSystemModelReady && isVisible ? "true" : "false");
-
     if (isSolarSystemModelReady && isVisible) {
+      resetSolarSystemScale();
       tuneSolarSystemModelScale();
       fitModelToMarkerSize(solarSystemEl, getSolarOverviewTargetSize(), {
         center: true,
         centerY: true,
         verticalOffset: SOLAR_MODEL_VERTICAL_OFFSET
       });
+      solarSystemEl.setAttribute("visible", "true");
+    } else {
+      solarSystemEl.setAttribute("visible", "false");
     }
   }
 
@@ -1244,7 +1260,20 @@ function bindSolarModelFallback(): void {
   }
 
   const onSolarLoaded = () => {
-    console.log("[MODEL] solar_system.glb loaded");
+    console.log("[MODEL] solar_system_animation.glb loaded");
+
+    if (solarSystemEl) {
+      const obj3D = (solarSystemEl as HTMLElement & { object3D?: Object3DLike }).object3D;
+      if (obj3D?.scale) {
+        initialSolarScale = {
+          x: obj3D.scale.x ?? 1,
+          y: obj3D.scale.y ?? 1,
+          z: obj3D.scale.z ?? 1
+        };
+        console.log("[MODEL] initial solar scale stored", initialSolarScale);
+      }
+    }
+
     tuneSolarSystemModelScale();
     if (solarSystemEl) {
       const didFit = fitModelToMarkerSize(solarSystemEl, getSolarOverviewTargetSize(), {
@@ -1253,7 +1282,7 @@ function bindSolarModelFallback(): void {
         verticalOffset: SOLAR_MODEL_VERTICAL_OFFSET
       });
       if (!didFit) {
-        console.warn("[MODEL] solar_system.glb fit skipped; using calibrated scene scale.");
+        console.warn("[MODEL] solar_system_animation.glb fit skipped; using calibrated scene scale.");
       }
     }
     isSolarSystemModelReady = true;
