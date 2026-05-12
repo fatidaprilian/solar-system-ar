@@ -61,9 +61,9 @@ let planetPreviewRenderToken = 0;
 const MIN_VIEWPORT_HEIGHT = 320;
 const MAX_TOUCH_VIEWPORT_HEIGHT = 1400;
 const MAX_TOUCH_VIEWPORT_ASPECT = 2.35;
-const SOLAR_OVERVIEW_TARGET_SIZE = 1.7;
-const PANEL_PREVIEW_TARGET_SIZE = 1.18;
-const PANEL_PREVIEW_LARGE_TARGET_SIZE = 1.34;
+const SOLAR_OVERVIEW_TARGET_SIZE = 2.4;
+const PANEL_PREVIEW_TARGET_SIZE = 1.26;
+const PANEL_PREVIEW_LARGE_TARGET_SIZE = 1.44;
 const MOBILE_CLOSE_RELOAD_DELAY_MS = 180;
 const SOLAR_MODEL_VERTICAL_OFFSET = 0.12;
 const SOLAR_MODEL_CLUTTER_NAME_PARTS = ["asteroid", "asteroidi", "ceres", "pluto", "moon"];
@@ -76,16 +76,16 @@ function getSolarScaleMultiplier(): number {
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 2.18;
+    return 3.75;
   }
   if (viewportWidth <= 420) {
-    return 2.05;
+    return 3.55;
   }
   if (viewportWidth <= 520) {
-    return 1.88;
+    return 3.2;
   }
   if (viewportWidth <= 768) {
-    return 1.58;
+    return 2.6;
   }
   return 1;
 }
@@ -98,16 +98,16 @@ function getSolarOverviewTargetSize(): number {
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 2.26;
+    return 4.25;
   }
   if (viewportWidth <= 420) {
-    return 2.16;
+    return 4.05;
   }
   if (viewportWidth <= 520) {
-    return 2.02;
+    return 3.7;
   }
   if (viewportWidth <= 768) {
-    return 1.84;
+    return 3.15;
   }
   return SOLAR_OVERVIEW_TARGET_SIZE;
 }
@@ -374,9 +374,6 @@ function renderPlanetPanelPreview(planet: PlanetData): void {
   ui.planetPreview.dataset.planet = planet.id;
   ui.planetPreview.dataset.state = "loading";
   ui.planetPreview.innerHTML = `
-    <div class="planet-preview-fallback" aria-hidden="true">
-      <span class="planet-preview-orb"></span>
-    </div>
     <div class="planet-preview-status">Memuat model ${planet.name}...</div>
     <a-scene
       class="planet-preview-scene"

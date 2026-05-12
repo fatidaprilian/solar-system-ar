@@ -8,7 +8,7 @@
                      },
     "project":  {
                     "name":  "TUGAS-AKHIR-VAR-TATA-SURYA",
-                    "currentFocus":  "Validate enlarged mobile solar overview scale and resilient selected-planet detail preview on Android, iOS, tablets, and Infinix Note 40.",
+                    "currentFocus":  "Validate very large mobile solar overview scale and GLB-only selected-planet detail preview on Android, iOS, tablets, and Infinix Note 40.",
                     "durableFacts":  [
 
                                      ]
@@ -23,13 +23,14 @@
                                               "Expanded cleanupAFrameArtifacts to remove all A-Frame scenes during teardown, including preview scenes.",
                                               "Updated DESIGN, design-intent, and ADR to match GLB-first solar overview and crisp contained preview behavior.",
                                               "Increased smartphone AR solar overview calibration by raising solar_system.glb base scale, fallback scale, mobile multipliers, and fitted target size.",
-                                              "Made the planet detail preview more resilient by scoping AR viewport canvas resizing to the main AR mount, retrying GLB preview fitting, and keeping a planet-colored fallback underlay so the bordered preview is not blank."
+                                              "Made the planet detail preview more resilient by scoping AR viewport canvas resizing to the main AR mount and retrying GLB preview fitting.",
+                                              "Increased smartphone AR scale again for Infinix Note 40 testing and removed the CSS-drawn planet preview underlay so the detail border shows only the selected planet GLB or a loading/error state."
                                           ],
                      "pendingIssues":  [
                                            "Real-device verification is still required on Android Chrome, iOS Safari, tablets, and the user's Infinix Note 40 after the GLB-first solar patch.",
                                            "If solar_system.glb is still too small or too large, adjust SOLAR_SYSTEM_MODEL_SCALE or SOLAR_FALLBACK_SCALE in src/ar/scene.ts, then tune SOLAR_OVERVIEW_TARGET_SIZE and getSolarScaleMultiplier in src/main.ts.",
                                            "If planet taps feel offset after scale changes, tune hitZonePosition and hitZoneRadius in src/data/planets.ts.",
-                                           "Verify embedded GLB preview sizing across planets; tweak previewScale, PANEL_PREVIEW_TARGET_SIZE, PANEL_PREVIEW_LARGE_TARGET_SIZE, or the CSS fallback opacity if any appear too large, too small, or visually doubled.",
+                                           "Verify embedded GLB preview sizing across planets; tweak previewScale, PANEL_PREVIEW_TARGET_SIZE, or PANEL_PREVIEW_LARGE_TARGET_SIZE if any appear too large or too small.",
                                            "If deployed preview still looks soft, verify the browser is not serving a stale Vercel build or cached asset.",
                                            "If close still fails on a specific browser after the mobile reload fallback, capture whether reload fired and whether the deployed service worker/cache served stale assets."
                                        ],
@@ -41,7 +42,7 @@
                                              "Verify the landing page and modal remain centered and tappable after closing AR and after reopening AR."
                                          ],
                      "validationState":  [
-                                             "npm run build after enlarged mobile solar overview and resilient planet preview patch: PASS",
+                                             "npm run build after very large Infinix-focused solar overview scale and GLB-only planet preview patch: PASS",
                                              "docs/design-intent.json JSON parse after documentation sync: PASS",
                                              "git diff --check after latest patch: PASS with CRLF conversion warnings only",
                                              "Node GLTF geometry check after runtime cleanup estimated tidied solar bbox max at 1293.57 before AR fit.",
@@ -66,5 +67,5 @@
                     "redactSensitiveTextBeforeWriting":  true
                 },
     "generatedAt":  "2026-05-10T17:34:50.825Z",
-    "lastUpdatedAt":  "2026-05-12T11:12:42+07:00"
+    "lastUpdatedAt":  "2026-05-12T11:31:46+07:00"
 }

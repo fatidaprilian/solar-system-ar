@@ -437,64 +437,6 @@ body:not(.is-ar-active) .a-orientation-modal {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
-.planet-preview-fallback {
-  position: absolute;
-  inset: 11%;
-  z-index: 0;
-  display: grid;
-  place-items: center;
-  opacity: 0.95;
-  filter: drop-shadow(0 0 22px color-mix(in srgb, var(--planet-theme) 42%, transparent));
-}
-
-.planet-preview-orb {
-  position: relative;
-  width: 76%;
-  aspect-ratio: 1;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.56), transparent 0 13%, transparent 24%),
-    linear-gradient(145deg, color-mix(in srgb, var(--planet-theme), #ffffff 26%), var(--planet-theme) 48%, rgba(7, 14, 28, 0.92));
-  box-shadow:
-    inset -18px -18px 28px rgba(0, 0, 0, 0.42),
-    inset 12px 12px 24px rgba(255, 255, 255, 0.12),
-    0 0 20px color-mix(in srgb, var(--planet-theme) 36%, transparent);
-}
-
-.planet-preview[data-planet="jupiter"] .planet-preview-orb,
-.planet-preview[data-planet="venus"] .planet-preview-orb {
-  background:
-    radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.48), transparent 0 12%, transparent 23%),
-    repeating-linear-gradient(
-      8deg,
-      color-mix(in srgb, var(--planet-theme), #ffffff 22%) 0 10%,
-      color-mix(in srgb, var(--planet-theme), #513221 12%) 10% 18%
-    );
-}
-
-.planet-preview[data-planet="earth"] .planet-preview-orb,
-.planet-preview[data-planet="uranus"] .planet-preview-orb,
-.planet-preview[data-planet="neptune"] .planet-preview-orb {
-  background:
-    radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.55), transparent 0 12%, transparent 24%),
-    radial-gradient(circle at 42% 48%, rgba(138, 235, 174, 0.52), transparent 0 18%, transparent 28%),
-    linear-gradient(145deg, color-mix(in srgb, var(--planet-theme), #ffffff 30%), var(--planet-theme) 52%, #071329);
-}
-
-.planet-preview[data-planet="saturn"] .planet-preview-orb::before {
-  content: "";
-  position: absolute;
-  left: -30%;
-  right: -30%;
-  top: 42%;
-  height: 18%;
-  border: 3px solid color-mix(in srgb, var(--planet-theme), #ffffff 44%);
-  border-left-color: transparent;
-  border-right-color: transparent;
-  border-radius: 999px;
-  transform: rotate(-12deg);
-}
-
 .planet-preview-scene {
   position: absolute !important;
   inset: 0 !important;
@@ -544,10 +486,6 @@ body:not(.is-ar-active) .a-orientation-modal {
 .planet-preview[data-state="ready"] .planet-preview-scene canvas {
   background: transparent !important;
   opacity: 1 !important;
-}
-
-.planet-preview[data-state="ready"] .planet-preview-fallback {
-  opacity: 0.44;
 }
 
 .planet-preview[data-state="loading"] .planet-preview-status {
