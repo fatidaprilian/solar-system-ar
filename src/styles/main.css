@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg-0: #030611;
   --bg-1: #070f1f;
   --bg-2: #0d1b31;
@@ -599,6 +599,18 @@ body:not(.is-ar-active) .a-orientation-modal {
   margin: 0;
   color: var(--text-1);
   line-height: 1.5;
+}
+
+.planet-nav-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.nav-btn {
+  flex: 1;
+  font-size: 13px;
+  padding: 10px 12px;
 }
 
 .fatal-error {

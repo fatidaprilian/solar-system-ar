@@ -1,4 +1,4 @@
-﻿export const APP_TEMPLATE = `
+export const APP_TEMPLATE = `
 <div class="app-shell">
   <div class="space-backdrop" aria-hidden="true"></div>
 
@@ -45,6 +45,10 @@
       <div class="planet-fact">
         <h3>Fakta Menarik</h3>
         <p id="planetFact"></p>
+      </div>
+      <div class="planet-nav-actions">
+        <button id="prevPlanetBtn" class="btn btn-secondary nav-btn" type="button">« Sebelumnya</button>
+        <button id="nextPlanetBtn" class="btn btn-primary nav-btn" type="button">Selanjutnya »</button>
       </div>
     </aside>
 

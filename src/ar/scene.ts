@@ -2,22 +2,12 @@ import { PLANETS } from "../data/planets";
 
 type FacingMode = "environment" | "user";
 
-const LEGACY_SOLAR_SYSTEM_SCALE = 0.35;
 const SOLAR_SYSTEM_MODEL_SCALE = 0.0012;
 const SOLAR_FALLBACK_SCALE = 0.72;
 const SOLAR_ROOT_Y_POSITION = 0.02;
-const DEBUG_HIT_ZONES = false;
 
 function formatUniformScale(scale: number): string {
   return `${scale} ${scale} ${scale}`;
-}
-
-function getHitZoneMaterial(): string {
-  if (DEBUG_HIT_ZONES) {
-    return "color: #00b7ff; opacity: 0.18; transparent: true";
-  }
-
-  return "color: #00b7ff; opacity: 0; transparent: true";
 }
 
 function buildAssetItems(): string {
@@ -31,15 +21,6 @@ function buildAssetItems(): string {
     ${planetAssets}`;
 }
 
-function buildHitZones(): string {
-  const hitZoneMaterial = getHitZoneMaterial();
-
-  return PLANETS.map(
-    (planet) =>
-      `<a-sphere class="planet-hit-zone" data-planet="${planet.id}" position="${planet.hitZonePosition}" radius="${planet.hitZoneRadius}" material="${hitZoneMaterial}" ></a-sphere>`
-  ).join("\n      ");
-}
-
 export function createArSceneMarkup(
   facingMode: FacingMode = "environment",
   scaleMultiplier = 1
@@ -51,11 +32,6 @@ export function createArSceneMarkup(
   const scaledFallbackScale = SOLAR_FALLBACK_SCALE * safeMultiplier;
   const solarScaleValue = formatUniformScale(scaledSolarScale);
   const fallbackScaleValue = formatUniformScale(scaledFallbackScale);
-  const hitZoneScaleFactor = Math.max(
-    scaledSolarScale / LEGACY_SOLAR_SYSTEM_SCALE,
-    scaledFallbackScale
-  );
-  const hitZoneScaleValue = formatUniformScale(hitZoneScaleFactor);
 
   return `
 <a-scene
@@ -73,8 +49,10 @@ export function createArSceneMarkup(
     <a-entity id="solarRoot">
       <a-entity
         id="solarSystem"
+        class="interactable-planet"
         gltf-model="#solarSystemModel"
         animation-mixer="loop: repeat; timeScale: 0.5"
+        continuous-sun-spin
         visible="false"
         position="0 ${SOLAR_ROOT_Y_POSITION} 0"
         rotation="0 90 0"
@@ -93,10 +71,6 @@ export function createArSceneMarkup(
         <a-sphere color="#8cd6e5" radius="0.075" position="1.31 0.12 0.02"></a-sphere>
         <a-sphere color="#5b83e0" radius="0.075" position="1.69 0.12 0.03"></a-sphere>
       </a-entity>
-
-      <a-entity id="solarHitZones" position="0 ${SOLAR_ROOT_Y_POSITION} 0" scale="${hitZoneScaleValue}">
-      ${buildHitZones()}
-      </a-entity>
     </a-entity>
 
     <a-entity id="planetDetailRoot" visible="false"></a-entity>
@@ -106,12 +80,12 @@ export function createArSceneMarkup(
     id="arCamera"
     camera
     cursor="rayOrigin: mouse"
-    raycaster="objects: .planet-hit-zone; far: 20"
+    raycaster="objects: .interactable-planet; far: 20"
   >
     <a-entity
       id="touchCursor"
       cursor="fuse: false; rayOrigin: entity"
-      raycaster="objects: .planet-hit-zone; far: 20"
+      raycaster="objects: .interactable-planet; far: 20"
       position="0 0 -1"
     ></a-entity>
   </a-entity>

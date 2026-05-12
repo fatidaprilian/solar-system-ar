@@ -3,6 +3,31 @@ import { PLANET_BY_ID, PLANETS, type PlanetData, type PlanetId } from "./data/pl
 import "./styles/main.css";
 import { APP_TEMPLATE } from "./ui/templates";
 
+const maybeWindow = window as Window & { AFRAME?: any };
+if (maybeWindow.AFRAME) {
+  maybeWindow.AFRAME.registerComponent("continuous-sun-spin", {
+    tick: function (_time: number, timeDelta: number) {
+      if (!this.el.object3D) return;
+      this.el.object3D.traverse((child: any) => {
+        if (child.name === "sun_53" || child.name === "Object_56") {
+          child.rotation.y += (0.0003 * timeDelta);
+        }
+      });
+    }
+  });
+}
+
+const GLB_NODE_TO_PLANET: Record<string, PlanetId> = {
+  "mercury_2": "mercury",
+  "venus_5": "venus",
+  "erath_8": "earth",
+  "mars_12": "mars",
+  "jupiter_15": "jupiter",
+  "saturn_19": "saturn",
+  "uranus_22": "uranus",
+  "neptune_25": "neptune"
+};
+
 type RequiredElements = {
   app: HTMLElement;
   landingPage: HTMLElement;
@@ -14,16 +39,18 @@ type RequiredElements = {
   switchCameraBtn: HTMLButtonElement;
   markerStatus: HTMLElement;
   scannerHint: HTMLElement;
-  planetPanel: HTMLElement;
-  planetPreview: HTMLElement;
-  planetName: HTMLElement;
-  planetDescription: HTMLElement;
+  planetPanel: HTMLDivElement;
+  planetPreview: HTMLDivElement;
+  planetName: HTMLHeadingElement;
+  planetDescription: HTMLParagraphElement;
   planetDiameter: HTMLElement;
   planetDistance: HTMLElement;
   planetOrbit: HTMLElement;
   planetRotation: HTMLElement;
-  planetFact: HTMLElement;
+  planetFact: HTMLParagraphElement;
   closePlanetBtn: HTMLButtonElement;
+  prevPlanetBtn: HTMLButtonElement;
+  nextPlanetBtn: HTMLButtonElement;
   howToModal: HTMLElement;
   closeHowToBtn: HTMLButtonElement;
   toast: HTMLElement;
@@ -37,7 +64,6 @@ let solarSystemEl: HTMLElement | null = null;
 let solarFallbackEl: HTMLElement | null = null;
 let planetDetailRootEl: HTMLElement | null = null;
 let arCameraEl: HTMLElement | null = null;
-let hitZoneEls: HTMLElement[] = [];
 let isSolarSystemModelReady = false;
 let initialSolarScale: { x: number; y: number; z: number } | null = null;
 
@@ -179,16 +205,18 @@ function buildUi(): RequiredElements {
     switchCameraBtn: getRequiredElement<HTMLButtonElement>("#switchCameraBtn"),
     markerStatus: getRequiredElement<HTMLElement>("#markerStatus"),
     scannerHint: getRequiredElement<HTMLElement>("#scannerHint"),
-    planetPanel: getRequiredElement<HTMLElement>("#planetPanel"),
-    planetPreview: getRequiredElement<HTMLElement>("#planetPreview"),
-    planetName: getRequiredElement<HTMLElement>("#planetName"),
-    planetDescription: getRequiredElement<HTMLElement>("#planetDescription"),
+    planetPanel: getRequiredElement<HTMLDivElement>("#planetPanel"),
+    planetPreview: getRequiredElement<HTMLDivElement>("#planetPreview"),
+    planetName: getRequiredElement<HTMLHeadingElement>("#planetName"),
+    planetDescription: getRequiredElement<HTMLParagraphElement>("#planetDescription"),
     planetDiameter: getRequiredElement<HTMLElement>("#planetDiameter"),
     planetDistance: getRequiredElement<HTMLElement>("#planetDistance"),
     planetOrbit: getRequiredElement<HTMLElement>("#planetOrbit"),
     planetRotation: getRequiredElement<HTMLElement>("#planetRotation"),
-    planetFact: getRequiredElement<HTMLElement>("#planetFact"),
+    planetFact: getRequiredElement<HTMLParagraphElement>("#planetFact"),
     closePlanetBtn: getRequiredElement<HTMLButtonElement>("#closePlanetBtn"),
+    prevPlanetBtn: getRequiredElement<HTMLButtonElement>("#prevPlanetBtn"),
+    nextPlanetBtn: getRequiredElement<HTMLButtonElement>("#nextPlanetBtn"),
     howToModal: getRequiredElement<HTMLElement>("#howToModal"),
     closeHowToBtn: getRequiredElement<HTMLButtonElement>("#closeHowToBtn"),
     toast: getRequiredElement<HTMLElement>("#toast"),
@@ -744,7 +772,12 @@ function tuneSolarSystemModelScale(): void {
 
     if (object.name?.toLowerCase().includes("sun")) {
       object.scale?.set(SUN_MODEL_SCALE, SUN_MODEL_SCALE, SUN_MODEL_SCALE);
-      console.log("[MODEL] sun node scaled", object.name, SUN_MODEL_SCALE);
+    }
+    
+    if (object.name && GLB_NODE_TO_PLANET[object.name]) {
+      const meshObj = object as any;
+      meshObj.userData = meshObj.userData || {};
+      meshObj.userData.planetId = GLB_NODE_TO_PLANET[object.name];
     }
   });
 }
@@ -983,7 +1016,6 @@ function clearSceneReferences(): void {
   isSolarSystemModelReady = false;
   planetDetailRootEl = null;
   arCameraEl = null;
-  hitZoneEls = [];
   initialSolarScale = null;
 }
 
@@ -1132,34 +1164,32 @@ function closePlanetDetail(): void {
 }
 
 function bindHitZoneEvents(): void {
-  hitZoneEls.forEach((hitZone) => {
-    const planetId = hitZone.dataset.planet as PlanetId | undefined;
-    if (!planetId) {
+  if (!solarSystemEl) return;
+
+  const handler = (event: Event) => {
+    if (!isMarkerDetected || currentPlanet || isTransitioning) {
       return;
     }
 
-    const object3D = (hitZone as HTMLElement & { object3D?: { userData?: Record<string, unknown> } }).object3D;
-    if (object3D) {
-      object3D.userData = {
-        ...(object3D.userData ?? {}),
-        planetId
-      };
-    }
-
-    const handler = () => {
-      if (!isMarkerDetected || currentPlanet || isTransitioning) {
-        return;
+    const customEvent = event as Event & { detail?: { intersection?: { object?: any } } };
+    if (customEvent.detail?.intersection?.object) {
+      let objectRef = customEvent.detail.intersection.object;
+      while (objectRef) {
+        if (objectRef.userData?.planetId) {
+          openPlanetDetail(objectRef.userData.planetId as PlanetId);
+          return;
+        }
+        objectRef = objectRef.parent;
       }
-      openPlanetDetail(planetId);
-    };
+    }
+  };
 
-    hitZone.addEventListener("click", handler);
-    cleanupListeners.push(() => hitZone.removeEventListener("click", handler));
-  });
+  solarSystemEl.addEventListener("click", handler);
+  cleanupListeners.push(() => solarSystemEl?.removeEventListener("click", handler));
 }
 
 function pickPlanetFromCenterRay(): PlanetId | null {
-  if (!arCameraEl || hitZoneEls.length === 0) {
+  if (!arCameraEl || !solarSystemEl) {
     return null;
   }
 
@@ -1167,7 +1197,7 @@ function pickPlanetFromCenterRay(): PlanetId | null {
     THREE?: {
       Raycaster: new () => {
         setFromCamera: (coords: { x: number; y: number }, camera: unknown) => void;
-        intersectObjects: (objects: unknown[], recursive?: boolean) => Array<{ object: { userData?: Record<string, unknown>; parent?: unknown } }>;
+        intersectObject: (object: unknown, recursive?: boolean) => Array<{ object: { userData?: Record<string, unknown>; parent?: unknown } }>;
       };
       Vector2: new (x: number, y: number) => { x: number; y: number };
     };
@@ -1178,18 +1208,15 @@ function pickPlanetFromCenterRay(): PlanetId | null {
   }
 
   const cameraObject = (arCameraEl as HTMLElement & { getObject3D?: (name: string) => unknown }).getObject3D?.("camera");
-  if (!cameraObject) {
+  const solarSystemObj = (solarSystemEl as HTMLElement & { object3D?: unknown }).object3D;
+  if (!cameraObject || !solarSystemObj) {
     return null;
   }
 
   const raycaster = new maybeWindow.THREE.Raycaster();
   raycaster.setFromCamera(new maybeWindow.THREE.Vector2(0, 0), cameraObject);
 
-  const objects = hitZoneEls
-    .map((hitZone) => (hitZone as HTMLElement & { object3D?: unknown }).object3D)
-    .filter((obj): obj is unknown => Boolean(obj));
-
-  const intersections = raycaster.intersectObjects(objects, true);
+  const intersections = raycaster.intersectObject(solarSystemObj, true);
   for (const intersection of intersections) {
     let objectRef: unknown = intersection.object;
     while (objectRef && typeof objectRef === "object") {
@@ -1314,7 +1341,6 @@ function bindSceneReferences(): void {
   solarFallbackEl = ui.arMount.querySelector<HTMLElement>("#solarFallback");
   planetDetailRootEl = ui.arMount.querySelector<HTMLElement>("#planetDetailRoot");
   arCameraEl = ui.arMount.querySelector<HTMLElement>("#arCamera");
-  hitZoneEls = Array.from(ui.arMount.querySelectorAll<HTMLElement>(".planet-hit-zone"));
 
   if (!sceneEl || !markerEl || !solarRootEl || !solarSystemEl || !planetDetailRootEl) {
     throw new Error("Scene AR tidak lengkap.");
@@ -1393,13 +1419,6 @@ async function bootScene(forceRebuild = false, sessionId = activeScannerSession)
     if (!isScannerSessionActive(sessionId)) {
       return false;
     }
-
-    console.log("[AR LAYER]", {
-      videos: document.querySelectorAll("video").length,
-      canvases: document.querySelectorAll("canvas").length,
-      arMountChildren: ui.arMount.children.length,
-      hasArjsVideoInMount: Boolean(ui.arMount.querySelector("#arjs-video"))
-    });
 
     updateCameraButtonLabel();
 
@@ -1527,7 +1546,21 @@ function bindStaticUiEvents(): void {
   });
 
   ui.howToBtn.addEventListener("click", openHowToModal);
-  ui.closeHowToBtn.addEventListener("click", closeHowToModal);
+  ui.closePlanetBtn.addEventListener("click", () => {
+    closePlanetDetail();
+  });
+
+  const navigatePlanet = (offset: number) => {
+    if (!currentPlanet) return;
+    const currentIndex = PLANETS.findIndex(p => p.id === currentPlanet!.id);
+    if (currentIndex === -1) return;
+    const nextIndex = (currentIndex + offset + PLANETS.length) % PLANETS.length;
+    fillPlanetPanel(PLANETS[nextIndex]);
+    currentPlanet = PLANETS[nextIndex];
+  };
+
+  ui.prevPlanetBtn.addEventListener("click", () => navigatePlanet(-1));
+  ui.nextPlanetBtn.addEventListener("click", () => navigatePlanet(1));
 
   ui.howToModal.addEventListener("click", (event) => {
     if (event.target === ui.howToModal) {
