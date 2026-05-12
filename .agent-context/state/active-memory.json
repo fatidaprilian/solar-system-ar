@@ -8,37 +8,42 @@
                      },
     "project":  {
                     "name":  "TUGAS-AKHIR-VAR-TATA-SURYA",
-                    "currentFocus":  "Validate contained selected-planet GLB detail preview, deterministic return to solar overview, and mobile close-to-landing hard reset across devices.",
+                    "currentFocus":  "Validate GLB-first solar overview, crisp selected-planet GLB detail preview, deterministic return to solar overview, and mobile close-to-landing hard reset across devices.",
                     "durableFacts":  [
 
                                      ]
                 },
     "progress":  {
                      "lastAchievements":  [
-                                              "Removed the AR-scene detail zoom path so tapping a planet no longer renders a large selected planet behind the info panel.",
-                                              "Made Kembali ke Tata Surya deterministic: it hides the panel, clears the detail root, resets scales, and shows the controlled solar fallback row again.",
-                                              "Reduced the embedded GLB preview slot and forced its A-Frame canvas to stay inside the panel under the return button.",
+                                              "Changed the marker overview so loaded solar_system.glb is the primary visual and the sphere row is only an error fallback.",
+                                              "Recalibrated solar_system.glb scale and rotation for a smaller mobile marker fit.",
+                                              "Enlarged the embedded GLB preview slot, removed the soft radial glow, and synced the preview canvas to device pixel ratio for a crisper planet detail image.",
+                                              "Kept Kembali ke Tata Surya deterministic: it hides the panel, clears the detail root, resets scales, and restores whichever solar overview is available.",
                                               "Added mobile/touch close fallback: after stream/artifact cleanup and landing remount, the page reloads to clear persistent AR.js browser side effects.",
                                               "Expanded cleanupAFrameArtifacts to remove all A-Frame scenes during teardown, including preview scenes.",
-                                              "Updated DESIGN, design-intent, flow overview, project brief, and ADR to match contained preview, deterministic return, and mobile close reload behavior."
+                                              "Updated DESIGN, design-intent, and ADR to match GLB-first solar overview and crisp contained preview behavior."
                                           ],
                      "pendingIssues":  [
-                                           "Real-device verification is still required on Android Chrome, iOS Safari, and tablets after the deterministic return and mobile close reload patch.",
-                                           "If the solar row is still too small or too large, adjust getSolarScaleMultiplier or SOLAR_FALLBACK_SCALE from the current 0.42 baseline.",
+                                           "Real-device verification is still required on Android Chrome, iOS Safari, tablets, and the user's Infinix Note 40 after the GLB-first solar patch.",
+                                           "If solar_system.glb is still too small or too large, adjust SOLAR_SYSTEM_MODEL_SCALE in src/ar/scene.ts or getSolarOverviewTargetSize in src/main.ts.",
                                            "If planet taps feel offset after scale changes, tune hitZonePosition and hitZoneRadius in src/data/planets.ts.",
-                                           "Verify embedded GLB preview sizing across planets; tweak previewScale or PANEL_PREVIEW_TARGET_SIZE values if any appear too large or too small.",
+                                           "Verify embedded GLB preview sizing across planets; tweak previewScale, PANEL_PREVIEW_TARGET_SIZE, or PANEL_PREVIEW_LARGE_TARGET_SIZE values if any appear too large or too small.",
+                                           "If deployed preview still looks soft, verify the browser is not serving a stale Vercel build or cached asset.",
                                            "If close still fails on a specific browser after the mobile reload fallback, capture whether reload fired and whether the deployed service worker/cache served stale assets."
                                        ],
                      "nextBestActions":  [
-                                             "Deploy and test open AR -\u003e scan Hiro -\u003e tap planet -\u003e confirm contained local GLB preview under the return button -\u003e Kembali ke Tata Surya -\u003e confirm solar row returns.",
+                                             "Deploy and test open AR -\u003e scan Hiro -\u003e confirm solar_system.glb appears as the main marker visual at a readable size.",
+                                             "Tap Jupiter/Saturn/other planets and confirm the local GLB preview is crisp, centered, and directly under the return button.",
+                                             "Tap Kembali ke Tata Surya and confirm the GLB overview returns, with fallback row only appearing if solar_system.glb fails.",
                                              "Tap close on Android/iOS and confirm the page reloads back to a normal landing page.",
                                              "Verify the landing page and modal remain centered and tappable after closing AR and after reopening AR."
                                          ],
                      "validationState":  [
-                                             "npm run build after deterministic detail return and mobile close reload patch: PASS",
+                                             "npm run build after GLB-first solar overview and crisp preview patch: PASS",
                                              "docs/design-intent.json JSON parse after documentation sync: PASS",
                                              "git diff --check after latest patch: PASS with CRLF conversion warnings only",
-                                             "Local Vite dev server http://127.0.0.1:5173 responded HTTP 200 and jupiter.glb responded HTTP 200.",
+                                             "Local Vite dev server http://127.0.0.1:5173 responded HTTP 200; solar_system.glb, jupiter.glb, and saturn.glb responded HTTP 200.",
+                                             "agent-browser CLI was not available in this environment, so browser visual verification was not run.",
                                              "Manual real-device verification remains pending.",
                                              "npm run validate after latest UI changes: NOT AVAILABLE in package.json"
                                          ]
@@ -58,5 +63,5 @@
                     "redactSensitiveTextBeforeWriting":  true
                 },
     "generatedAt":  "2026-05-10T17:34:50.825Z",
-    "lastUpdatedAt":  "2026-05-12T08:40:21+07:00"
+    "lastUpdatedAt":  "2026-05-12T09:19:16+07:00"
 }

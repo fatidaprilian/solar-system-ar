@@ -38,6 +38,7 @@ let solarFallbackEl: HTMLElement | null = null;
 let planetDetailRootEl: HTMLElement | null = null;
 let arCameraEl: HTMLElement | null = null;
 let hitZoneEls: HTMLElement[] = [];
+let isSolarSystemModelReady = false;
 
 let currentPlanet: PlanetData | null = null;
 let isMarkerDetected = false;
@@ -59,9 +60,9 @@ let viewportListenersBound = false;
 const MIN_VIEWPORT_HEIGHT = 320;
 const MAX_TOUCH_VIEWPORT_HEIGHT = 1400;
 const MAX_TOUCH_VIEWPORT_ASPECT = 2.35;
-const USE_CONTROLLED_SOLAR_ROW = true;
-const PANEL_PREVIEW_TARGET_SIZE = 0.74;
-const PANEL_PREVIEW_LARGE_TARGET_SIZE = 0.86;
+const SOLAR_OVERVIEW_TARGET_SIZE = 1.56;
+const PANEL_PREVIEW_TARGET_SIZE = 1.26;
+const PANEL_PREVIEW_LARGE_TARGET_SIZE = 1.42;
 const MOBILE_CLOSE_RELOAD_DELAY_MS = 180;
 
 function getSolarScaleMultiplier(): number {
@@ -72,15 +73,34 @@ function getSolarScaleMultiplier(): number {
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 2.45;
+    return 1.18;
   }
   if (viewportWidth <= 420) {
-    return 2.35;
+    return 1.14;
   }
   if (viewportWidth <= 520) {
-    return 2.15;
+    return 1.08;
   }
-  return 1.95;
+  return 1;
+}
+
+function getSolarOverviewTargetSize(): number {
+  const isTouch = window.matchMedia("(pointer: coarse)").matches;
+  if (!isTouch) {
+    return 1.72;
+  }
+
+  const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
+  if (viewportWidth <= 360) {
+    return 1.48;
+  }
+  if (viewportWidth <= 420) {
+    return SOLAR_OVERVIEW_TARGET_SIZE;
+  }
+  if (viewportWidth <= 520) {
+    return 1.62;
+  }
+  return 1.68;
 }
 
 function getRequiredElement<T extends HTMLElement>(selector: string): T {
@@ -245,6 +265,45 @@ function clearPlanetPanelPreview(): void {
   delete ui.planetPreview.dataset.state;
 }
 
+type PreviewRendererLike = {
+  setPixelRatio?: (pixelRatio: number) => void;
+  setSize?: (width: number, height: number, updateStyle?: boolean) => void;
+  domElement?: HTMLCanvasElement;
+};
+
+type PreviewSceneLike = HTMLElement & {
+  renderer?: PreviewRendererLike;
+  resize?: () => void;
+};
+
+function syncPlanetPreviewCanvas(previewScene: PreviewSceneLike | null): void {
+  if (!previewScene) {
+    return;
+  }
+
+  const rect = previewScene.getBoundingClientRect();
+  const width = Math.round(rect.width);
+  const height = Math.round(rect.height);
+  if (width <= 0 || height <= 0) {
+    return;
+  }
+
+  const pixelRatio = Math.min(Math.max(window.devicePixelRatio || 1, 1), 2.5);
+  previewScene.renderer?.setPixelRatio?.(pixelRatio);
+  previewScene.renderer?.setSize?.(width, height, false);
+  previewScene.resize?.();
+
+  const canvas = previewScene.renderer?.domElement ?? previewScene.querySelector<HTMLCanvasElement>("canvas");
+  if (!canvas) {
+    return;
+  }
+
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
+  canvas.width = Math.round(width * pixelRatio);
+  canvas.height = Math.round(height * pixelRatio);
+}
+
 function renderPlanetPanelPreview(planet: PlanetData): void {
   clearPlanetPanelPreview();
 
@@ -255,7 +314,7 @@ function renderPlanetPanelPreview(planet: PlanetData): void {
     <a-scene
       class="planet-preview-scene"
       embedded
-      renderer="alpha: true; antialias: true; logarithmicDepthBuffer: true"
+      renderer="alpha: true; antialias: true; logarithmicDepthBuffer: true; precision: high"
       vr-mode-ui="enabled: false"
       loading-screen="enabled: false"
       device-orientation-permission-ui="enabled: false"
@@ -274,7 +333,7 @@ function renderPlanetPanelPreview(planet: PlanetData): void {
       <a-light type="ambient" intensity="1.2"></a-light>
       <a-light type="directional" intensity="1.25" position="1.5 1.5 2"></a-light>
       <a-camera
-        position="0 0 3"
+        position="0 0 2.35"
         look-controls="enabled: false"
         wasd-controls="enabled: false"
       ></a-camera>
@@ -283,6 +342,7 @@ function renderPlanetPanelPreview(planet: PlanetData): void {
 
   const model = ui.planetPreview.querySelector<HTMLElement>("#planetPreviewModel");
   const status = ui.planetPreview.querySelector<HTMLElement>(".planet-preview-status");
+  const previewScene = ui.planetPreview.querySelector<PreviewSceneLike>(".planet-preview-scene");
   if (!model) {
     ui.planetPreview.dataset.state = "error";
     ui.planetPreview.innerHTML = `<div class="planet-preview-status">Model ${planet.name} belum bisa ditampilkan.</div>`;
@@ -291,6 +351,7 @@ function renderPlanetPanelPreview(planet: PlanetData): void {
 
   const revealModel = () => {
     window.requestAnimationFrame(() => {
+      syncPlanetPreviewCanvas(previewScene);
       const didFit = fitModelToMarkerSize(model, getPanelPreviewTargetSize(planet));
       if (!didFit) {
         ui.planetPreview.dataset.state = "error";
@@ -303,6 +364,7 @@ function renderPlanetPanelPreview(planet: PlanetData): void {
 
       ui.planetPreview.dataset.state = "ready";
       model.setAttribute("visible", "true");
+      window.requestAnimationFrame(() => syncPlanetPreviewCanvas(previewScene));
     });
   };
 
@@ -313,6 +375,11 @@ function renderPlanetPanelPreview(planet: PlanetData): void {
     }
     model.setAttribute("visible", "false");
   };
+
+  const syncPreview = () => syncPlanetPreviewCanvas(previewScene);
+  previewScene?.addEventListener("loaded", syncPreview, { once: true });
+  previewScene?.addEventListener("renderstart", syncPreview, { once: true });
+  window.requestAnimationFrame(syncPreview);
 
   model.addEventListener("model-loaded", revealModel, { once: true });
   model.addEventListener("model-error", showPreviewError, { once: true });
@@ -564,7 +631,7 @@ type ZoomCapabilityRange = {
   max?: number;
 };
 
-const SUN_MODEL_SCALE = 0.035;
+const SUN_MODEL_SCALE = 1;
 
 type ScaleLike = {
   set: (x: number, y: number, z: number) => void;
@@ -824,6 +891,7 @@ function clearSceneReferences(): void {
   solarRootEl = null;
   solarSystemEl = null;
   solarFallbackEl = null;
+  isSolarSystemModelReady = false;
   planetDetailRootEl = null;
   arCameraEl = null;
   hitZoneEls = [];
@@ -888,11 +956,11 @@ function resetSolarTransforms(): void {
   }
 
   if (solarSystemEl) {
-    solarSystemEl.setAttribute("visible", USE_CONTROLLED_SOLAR_ROW ? "false" : "true");
+    solarSystemEl.setAttribute("visible", isSolarSystemModelReady ? "true" : "false");
   }
 
-  if (solarFallbackEl && USE_CONTROLLED_SOLAR_ROW) {
-    solarFallbackEl.setAttribute("visible", "true");
+  if (solarFallbackEl) {
+    solarFallbackEl.setAttribute("visible", isSolarSystemModelReady ? "false" : "true");
   }
 }
 
@@ -906,11 +974,11 @@ function setSolarOverviewVisible(isVisible: boolean): void {
   }
 
   if (solarSystemEl) {
-    solarSystemEl.setAttribute("visible", !USE_CONTROLLED_SOLAR_ROW && isVisible ? "true" : "false");
+    solarSystemEl.setAttribute("visible", isSolarSystemModelReady && isVisible ? "true" : "false");
   }
 
   if (solarFallbackEl) {
-    solarFallbackEl.setAttribute("visible", USE_CONTROLLED_SOLAR_ROW && isVisible ? "true" : "false");
+    solarFallbackEl.setAttribute("visible", !isSolarSystemModelReady && isVisible ? "true" : "false");
   }
 
   if (planetDetailRootEl) {
@@ -1080,21 +1148,22 @@ function bindSolarModelFallback(): void {
 
   const onSolarLoaded = () => {
     console.log("[MODEL] solar_system.glb loaded");
-    if (USE_CONTROLLED_SOLAR_ROW) {
-      solarSystemEl?.setAttribute("visible", "false");
-      solarFallbackEl?.setAttribute("visible", "true");
-      return;
-    }
-
     tuneSolarSystemModelScale();
-    solarSystemEl?.setAttribute("visible", "true");
-    solarFallbackEl?.setAttribute("visible", "false");
+    if (solarSystemEl) {
+      const didFit = fitModelToMarkerSize(solarSystemEl, getSolarOverviewTargetSize());
+      if (!didFit) {
+        console.warn("[MODEL] solar_system.glb fit skipped; using calibrated scene scale.");
+      }
+    }
+    isSolarSystemModelReady = true;
+    setSolarOverviewVisible(!currentPlanet);
   };
 
   const onSolarError = (error: Event) => {
     console.error("[MODEL] solar_system.glb failed", error);
+    isSolarSystemModelReady = false;
     solarSystemEl?.setAttribute("visible", "false");
-    solarFallbackEl?.setAttribute("visible", "true");
+    solarFallbackEl?.setAttribute("visible", currentPlanet ? "false" : "true");
     showToast("solar_system.glb gagal dimuat. Fallback tata surya sphere diaktifkan.", "warning");
   };
 

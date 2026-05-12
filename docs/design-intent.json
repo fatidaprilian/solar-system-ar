@@ -1,6 +1,6 @@
 {
   "mode": "dynamic",
-  "status": "refined-mobile-ar-scanner-v7-contained-glb-preview-deterministic-return-mobile-close-reload",
+  "status": "refined-mobile-ar-scanner-v8-glb-first-solar-crisp-detail-preview",
   "seedPolicy": {
     "mode": "structure-first-scaffold",
     "requiresProjectSpecificRefinement": true,
@@ -209,7 +209,8 @@
       "camera-first fixed scanner viewport",
       "marker-status capsule with detected/lost state language",
       "planet detail bottom sheet tied to AR tap flow",
-      "embedded selected-planet GLB preview above the detail content"
+      "actual solar_system.glb as the primary marker visual",
+      "crisp embedded selected-planet GLB preview above the detail content"
     ],
     "paletteExplorationRule": "Use a visually exploratory product-derived palette with WCAG contrast and status clarity.",
     "backgroundPatternRule": "Lines, grids, scanlines, noise, glows, blobs, logos, calibration marks, and geometry must serve a named product function; never use grid, line, or calibration-mark backgrounds as first-output filler. Measurement and inspection marks belong to task overlays or controls, not page wallpaper.",
@@ -424,10 +425,10 @@
   "designExecutionHandoff": {
     "version": "ui-handoff-v1",
     "location": "inline-design-intent",
-    "status": "refined-for-mobile-ar-scanner-v4",
+    "status": "refined-for-mobile-ar-scanner-v5-glb-first-overview",
     "seedMode": "structure-first-scaffold",
     "requiresTaskSpecificRefinement": true,
-    "primaryExperienceGoal": "Camera preview must stay visible, scanner close must return to a normal landing page, AR model scale must be readable on mobile devices, and planet detail must display a contained selected local GLB asset below the return button.",
+    "primaryExperienceGoal": "Camera preview must stay visible, scanner close must return to a normal landing page, solar_system.glb must be the primary marker visual at a readable mobile scale, and planet detail must display a crisp contained selected local GLB asset below the return button.",
     "surfacePlan": [
       {
         "surfaceId": "landing-entry",
@@ -448,9 +449,18 @@
         ]
       },
       {
+        "surfaceId": "solar-system-marker-model",
+        "role": "primary-ar-model",
+        "goal": "Render solar_system.glb as the main Hiro marker visual with a controlled mobile scale and fallback spheres only on model load failure.",
+        "antiPatterns": [
+          "fallback-row-as-primary-model",
+          "oversized-marker-model"
+        ]
+      },
+      {
         "surfaceId": "planet-detail-sheet",
         "role": "contextual-information",
-        "goal": "Reveal planet data and a contained selected local GLB preview directly below the return button in a bottom sheet on small viewports.",
+        "goal": "Reveal planet data and a crisp contained selected local GLB preview directly below the return button in a bottom sheet on small viewports.",
         "antiPatterns": [
           "full-screen-modal-takeover"
         ]
@@ -551,7 +561,7 @@
           "ready",
           "error"
         ],
-        "notes": "Detail sheet preview loads the selected local GLB model in a constrained slot and falls back to an error message instead of generated planet art."
+        "notes": "Detail sheet preview loads the selected local GLB model in a constrained high-DPI slot and falls back to an error message instead of generated planet art."
       }
     ],
     "expressionFlexibility": {

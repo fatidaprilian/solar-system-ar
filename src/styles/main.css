@@ -403,7 +403,7 @@ body:not(.is-ar-active) .a-orientation-modal {
 .planet-panel {
   --planet-theme: #69c6ff;
   --planet-preview-scale: 1;
-  --planet-preview-base: clamp(82px, 18vw, 112px);
+  --planet-preview-base: clamp(150px, 22vw, 190px);
   position: fixed;
   z-index: 42;
   right: max(16px, env(safe-area-inset-right));
@@ -423,7 +423,7 @@ body:not(.is-ar-active) .a-orientation-modal {
 .planet-preview {
   display: grid;
   place-items: center;
-  margin: 8px 0 10px;
+  margin: 12px 0 14px;
   pointer-events: none;
   min-height: calc(var(--planet-preview-base) * var(--planet-preview-scale));
   position: relative;
@@ -438,15 +438,11 @@ body:not(.is-ar-active) .a-orientation-modal {
   max-width: 100%;
   border-radius: 14px;
   overflow: hidden;
-  background:
-    radial-gradient(
-      circle at 50% 42%,
-      color-mix(in srgb, var(--planet-theme), transparent 74%) 0%,
-      transparent 58%
-    ),
-    transparent;
+  border: 1px solid color-mix(in srgb, var(--planet-theme), #ffffff 48%);
+  background: rgba(2, 8, 18, 0.22);
   opacity: 0;
   transition: opacity 0.2s ease;
+  transform: translateZ(0);
 }
 
 .planet-preview .a-canvas,
@@ -458,6 +454,8 @@ body:not(.is-ar-active) .a-orientation-modal {
   height: 100% !important;
   display: block !important;
   background: transparent !important;
+  filter: none !important;
+  image-rendering: auto !important;
   pointer-events: none !important;
 }
 
@@ -662,7 +660,7 @@ body:not(.is-ar-active) .a-orientation-modal {
     width: auto;
     max-height: min(58vh, 460px);
     border-radius: 16px;
-    --planet-preview-base: clamp(76px, 24vw, 104px);
+    --planet-preview-base: clamp(150px, 44vw, 190px);
   }
 
   .planet-meta {

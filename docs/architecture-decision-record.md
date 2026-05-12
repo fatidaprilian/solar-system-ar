@@ -13,21 +13,21 @@ Scene AR harus menjaga feed kamera tetap stabil, menampilkan tata surya dengan u
 
 ### Decision
 
-- Menggunakan tata surya mini berbasis marker yang terkontrol untuk tampilan utama, bukan menampilkan `solar_system.glb` penuh di mobile.
-- Detail planet tetap memakai GLB individual, dengan ukuran disesuaikan otomatis berdasarkan bounding box di preview panel informasi.
+- Menggunakan `solar_system.glb` sebagai tampilan utama saat marker terdeteksi, dengan sphere row hanya sebagai fallback ketika file GLB gagal dimuat.
+- Detail planet tetap memakai GLB individual, dengan ukuran disesuaikan otomatis berdasarkan bounding box dan canvas preview yang dipaksa crisp di panel informasi.
 - Saat panel detail dibuka, scene AR utama menyembunyikan tata surya tanpa merender planet besar tambahan. Tombol kembali langsung mengembalikan overview tata surya secara deterministik.
 - Cleanup lifecycle AR dipusatkan di `src/main.ts`: mematikan stream, membersihkan preview GLB panel, menghapus artefak A-Frame, reset state scanner, cleanup berulang setelah close, dan reload khusus perangkat touch untuk menghapus side-effect mobile browser yang tersisa.
 - Menggunakan `visualViewport` untuk menjaga stabilitas tinggi tampilan mobile (`--app-height`).
 
 ### Rationale
 
-Model `solar_system.glb` penuh punya skala internal yang tidak konsisten di berbagai perangkat. Mini row terkontrol memberi posisi dan ukuran yang lebih stabil, serta memudahkan tap pada hit zone. Penyesuaian bounding box mencegah model detail planet menutup kamera saat skala asli asset tidak seragam.
+Model `solar_system.glb` punya skala internal besar sehingga perlu diperkecil dan sedikit dikalibrasi untuk marker mobile. Fallback sphere row tetap ada sebagai jalur recovery jika model gagal dimuat, sementara penyesuaian bounding box dan canvas preview mencegah model detail planet tampak blur atau keluar dari panel.
 
 AR.js kadang meninggalkan elemen video/canvas dan kelas fullscreen setelah close. Cleanup berulang, reset landing, dan reload khusus perangkat touch mencegah UI glitch pada siklus buka-tutup berulang.
 
 ### Consequences
 
-- Tampilan utama fokus pada keterbacaan edukasi, bukan komposisi penuh GLB.
+- Tampilan utama mengikuti asset `solar_system.glb` dengan ukuran marker yang lebih terkendali.
 - Detail planet tetap memakai asset 3D individual.
 - Kalibrasi hit zone tetap dikendalikan dari `src/data/planets.ts`.
 - Verifikasi visual wajib di perangkat nyata (Android Chrome, iOS Safari, tablet).
