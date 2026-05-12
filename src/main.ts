@@ -75,13 +75,16 @@ function getSolarScaleMultiplier(): number {
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 1.18;
+    return 1.55;
   }
   if (viewportWidth <= 420) {
-    return 1.14;
+    return 1.45;
   }
   if (viewportWidth <= 520) {
-    return 1.08;
+    return 1.35;
+  }
+  if (viewportWidth <= 768) {
+    return 1.18;
   }
   return 1;
 }
@@ -94,15 +97,18 @@ function getSolarOverviewTargetSize(): number {
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 1.18;
+    return 1.65;
   }
   if (viewportWidth <= 420) {
-    return SOLAR_OVERVIEW_TARGET_SIZE;
+    return 1.55;
   }
   if (viewportWidth <= 520) {
-    return 1.36;
+    return 1.46;
   }
-  return 1.42;
+  if (viewportWidth <= 768) {
+    return 1.38;
+  }
+  return 1.52;
 }
 
 function getRequiredElement<T extends HTMLElement>(selector: string): T {
