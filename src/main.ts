@@ -17,16 +17,21 @@ if (maybeWindow.AFRAME) {
   });
 }
 
-const GLB_NODE_TO_PLANET: Record<string, PlanetId> = {
-  "mercury_2": "mercury",
-  "venus_5": "venus",
-  "erath_8": "earth",
-  "mars_12": "mars",
-  "jupiter_15": "jupiter",
-  "saturn_19": "saturn",
-  "uranus_22": "uranus",
-  "neptune_25": "neptune"
-};
+function getPlanetIdFromNodeName(name: string): PlanetId | null {
+  if (!name) return null;
+  const lower = name.toLowerCase();
+  
+  if (lower.includes("mercury")) return "mercury";
+  if (lower.includes("venus")) return "venus";
+  if (lower.includes("earth") || lower.includes("erath")) return "earth";
+  if (lower.includes("mars")) return "mars";
+  if (lower.includes("jupiter")) return "jupiter";
+  if (lower.includes("saturn") && !lower.includes("ring")) return "saturn";
+  if (lower.includes("uranus")) return "uranus";
+  if (lower.includes("neptune")) return "neptune";
+  
+  return null;
+}
 
 type RequiredElements = {
   app: HTMLElement;
@@ -768,10 +773,11 @@ function tuneSolarSystemModelScale(): void {
       return;
     }
 
-    if (object.name && GLB_NODE_TO_PLANET[object.name]) {
+    const planetId = object.name ? getPlanetIdFromNodeName(object.name) : null;
+    if (planetId) {
       const meshObj = object as any;
       meshObj.userData = meshObj.userData || {};
-      meshObj.userData.planetId = GLB_NODE_TO_PLANET[object.name];
+      meshObj.userData.planetId = planetId;
 
       if (!meshObj.userData.hasHitBox && (window as any).THREE) {
         const THREE = (window as any).THREE;
@@ -781,7 +787,7 @@ function tuneSolarSystemModelScale(): void {
           const hitGeo = new THREE.SphereGeometry(radius, 12, 12);
           const hitMat = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.0, depthWrite: false });
           const hitMesh = new THREE.Mesh(hitGeo, hitMat);
-          hitMesh.userData = { planetId: GLB_NODE_TO_PLANET[object.name] };
+          hitMesh.userData = { planetId: planetId };
           meshObj.add(hitMesh);
           meshObj.userData.hasHitBox = true;
         }
