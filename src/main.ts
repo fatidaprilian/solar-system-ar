@@ -61,11 +61,11 @@ let planetPreviewRenderToken = 0;
 const MIN_VIEWPORT_HEIGHT = 320;
 const MAX_TOUCH_VIEWPORT_HEIGHT = 1400;
 const MAX_TOUCH_VIEWPORT_ASPECT = 2.35;
-const SOLAR_OVERVIEW_TARGET_SIZE = 2.4;
-const PANEL_PREVIEW_TARGET_SIZE = 1.26;
-const PANEL_PREVIEW_LARGE_TARGET_SIZE = 1.44;
+const SOLAR_OVERVIEW_TARGET_SIZE = 2.8;
+const PANEL_PREVIEW_TARGET_SIZE = 1.3;
+const PANEL_PREVIEW_LARGE_TARGET_SIZE = 1.5;
 const MOBILE_CLOSE_RELOAD_DELAY_MS = 180;
-const SOLAR_MODEL_VERTICAL_OFFSET = 0.12;
+const SOLAR_MODEL_VERTICAL_OFFSET = 0.08;
 const SOLAR_MODEL_CLUTTER_NAME_PARTS = ["asteroid", "asteroidi", "ceres", "pluto", "moon"];
 
 function getSolarScaleMultiplier(): number {
@@ -76,16 +76,16 @@ function getSolarScaleMultiplier(): number {
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 3.75;
+    return 4.2;
   }
   if (viewportWidth <= 420) {
-    return 3.55;
+    return 3.9;
   }
   if (viewportWidth <= 520) {
-    return 3.2;
+    return 3.5;
   }
   if (viewportWidth <= 768) {
-    return 2.6;
+    return 2.8;
   }
   return 1;
 }
@@ -98,16 +98,16 @@ function getSolarOverviewTargetSize(): number {
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 4.25;
+    return 4.8;
   }
   if (viewportWidth <= 420) {
-    return 4.05;
+    return 4.5;
   }
   if (viewportWidth <= 520) {
-    return 3.7;
+    return 4.0;
   }
   if (viewportWidth <= 768) {
-    return 3.15;
+    return 3.4;
   }
   return SOLAR_OVERVIEW_TARGET_SIZE;
 }
@@ -1062,6 +1062,15 @@ function setSolarOverviewVisible(isVisible: boolean): void {
 
   if (solarSystemEl) {
     solarSystemEl.setAttribute("visible", isSolarSystemModelReady && isVisible ? "true" : "false");
+
+    if (isSolarSystemModelReady && isVisible) {
+      tuneSolarSystemModelScale();
+      fitModelToMarkerSize(solarSystemEl, getSolarOverviewTargetSize(), {
+        center: true,
+        centerY: true,
+        verticalOffset: SOLAR_MODEL_VERTICAL_OFFSET
+      });
+    }
   }
 
   if (solarFallbackEl) {
@@ -1094,7 +1103,7 @@ function openPlanetDetail(planetId: PlanetId): void {
 }
 
 function closePlanetDetail(): void {
-  if (!solarRootEl || !currentPlanet) {
+  if (!solarRootEl) {
     return;
   }
 
@@ -1102,6 +1111,7 @@ function closePlanetDetail(): void {
   isTransitioning = false;
   hidePlanetPanel();
   currentPlanet = null;
+  resetSolarTransforms();
   setSolarOverviewVisible(true);
 }
 

@@ -3,7 +3,7 @@ import { PLANETS } from "../data/planets";
 type FacingMode = "environment" | "user";
 
 const LEGACY_SOLAR_SYSTEM_SCALE = 0.35;
-const SOLAR_SYSTEM_MODEL_SCALE = 0.00165;
+const SOLAR_SYSTEM_MODEL_SCALE = 0.0012;
 const SOLAR_FALLBACK_SCALE = 0.72;
 const SOLAR_ROOT_Y_POSITION = 0.02;
 const DEBUG_HIT_ZONES = false;
@@ -27,7 +27,7 @@ function buildAssetItems(): string {
   ).join("\n    ");
 
   return `
-    <a-asset-item id="solarSystemModel" src="/assets/models/solar-system/solar_system.glb"></a-asset-item>
+    <a-asset-item id="solarSystemModel" src="/assets/models/solar-system/solar_system_animation.glb"></a-asset-item>
     ${planetAssets}`;
 }
 

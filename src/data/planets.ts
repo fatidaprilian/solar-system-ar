@@ -1,4 +1,4 @@
-﻿export type PlanetId =
+export type PlanetId =
   | "mercury"
   | "venus"
   | "earth"
@@ -41,7 +41,7 @@ export const PLANETS: PlanetData[] = [
     themeColor: "#b5b6bc",
     hitZonePosition: "-1.45 0.12 -0.02",
     hitZoneRadius: 0.24,
-    detailScale: "0.01 0.01 0.01",
+    detailScale: "1 1 1",
     previewScale: 0.88
   },
   {
@@ -58,7 +58,7 @@ export const PLANETS: PlanetData[] = [
     themeColor: "#e7c48e",
     hitZonePosition: "-1.05 0.12 -0.02",
     hitZoneRadius: 0.26,
-    detailScale: "0.01 0.01 0.01",
+    detailScale: "1 1 1",
     previewScale: 0.95
   },
   {
@@ -75,7 +75,7 @@ export const PLANETS: PlanetData[] = [
     themeColor: "#58a6ff",
     hitZonePosition: "-0.65 0.12 -0.02",
     hitZoneRadius: 0.26,
-    detailScale: "0.01 0.01 0.01",
+    detailScale: "1 1 1",
     previewScale: 1
   },
   {
@@ -92,7 +92,7 @@ export const PLANETS: PlanetData[] = [
     themeColor: "#d88a6d",
     hitZonePosition: "-0.25 0.12 -0.02",
     hitZoneRadius: 0.24,
-    detailScale: "0.01 0.01 0.01",
+    detailScale: "1 1 1",
     previewScale: 0.9
   },
   {
@@ -109,7 +109,7 @@ export const PLANETS: PlanetData[] = [
     themeColor: "#d7b497",
     hitZonePosition: "0.34 0.12 0",
     hitZoneRadius: 0.34,
-    detailScale: "0.008 0.008 0.008",
+    detailScale: "1 1 1",
     previewScale: 1.08
   },
   {
@@ -126,7 +126,7 @@ export const PLANETS: PlanetData[] = [
     themeColor: "#d3c18a",
     hitZonePosition: "0.88 0.12 0.01",
     hitZoneRadius: 0.38,
-    detailScale: "0.008 0.008 0.008",
+    detailScale: "1 1 1",
     previewScale: 1.12
   },
   {
@@ -143,7 +143,7 @@ export const PLANETS: PlanetData[] = [
     themeColor: "#8fd7e8",
     hitZonePosition: "1.31 0.12 0.02",
     hitZoneRadius: 0.3,
-    detailScale: "0.009 0.009 0.009",
+    detailScale: "1 1 1",
     previewScale: 1.02
   },
   {
@@ -160,7 +160,7 @@ export const PLANETS: PlanetData[] = [
     themeColor: "#5783e1",
     hitZonePosition: "1.69 0.12 0.03",
     hitZoneRadius: 0.3,
-    detailScale: "0.009 0.009 0.009",
+    detailScale: "1 1 1",
     previewScale: 1.02
   }
 ];
