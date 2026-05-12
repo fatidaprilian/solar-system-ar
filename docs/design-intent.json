@@ -1,6 +1,6 @@
 {
   "mode": "dynamic",
-  "status": "refined-mobile-ar-scanner-v6-larger-scale-glb-detail-preview-clean-close",
+  "status": "refined-mobile-ar-scanner-v7-contained-glb-preview-deterministic-return-mobile-close-reload",
   "seedPolicy": {
     "mode": "structure-first-scaffold",
     "requiresProjectSpecificRefinement": true,
@@ -171,7 +171,7 @@
     "colorDerivationSource": "Dark camera-first base with cool utility controls and high-contrast status roles.",
     "spacingDerivationSource": "Safe-area aware compact HUD spacing that protects center marker visibility.",
     "typographyDerivationSource": "Compact utility labels for scanner; large display role for landing hero only.",
-    "motionDerivationSource": "Utility-first short transitions and GSAP focus flow without fullscreen choreography.",
+    "motionDerivationSource": "Utility-first short transitions, immediate detail-panel state changes, and no fullscreen choreography.",
     "validationRule": "Tokens must protect marker visibility, touch target size, and AR scanning readability."
   },
   "motionPaletteDecision": {
@@ -262,7 +262,7 @@
   "libraryDecisions": [
     {
       "library": "none-new-for-this-phase",
-      "purpose": "This phase uses existing A-Frame, AR.js, and GSAP stack only.",
+      "purpose": "This phase uses the existing A-Frame and AR.js stack only.",
       "verifiedAt": null,
       "sourceUrl": null,
       "stableVersion": null,
@@ -424,10 +424,10 @@
   "designExecutionHandoff": {
     "version": "ui-handoff-v1",
     "location": "inline-design-intent",
-    "status": "refined-for-mobile-ar-scanner-v3",
+    "status": "refined-for-mobile-ar-scanner-v4",
     "seedMode": "structure-first-scaffold",
     "requiresTaskSpecificRefinement": true,
-    "primaryExperienceGoal": "Camera preview must stay visible, scanner close must return to landing safely, AR model scale must be readable on mobile devices, and planet detail must display the selected local GLB asset.",
+    "primaryExperienceGoal": "Camera preview must stay visible, scanner close must return to a normal landing page, AR model scale must be readable on mobile devices, and planet detail must display a contained selected local GLB asset below the return button.",
     "surfacePlan": [
       {
         "surfaceId": "landing-entry",
@@ -450,7 +450,7 @@
       {
         "surfaceId": "planet-detail-sheet",
         "role": "contextual-information",
-        "goal": "Reveal planet data and the selected local GLB preview in a bottom sheet on small viewports.",
+        "goal": "Reveal planet data and a contained selected local GLB preview directly below the return button in a bottom sheet on small viewports.",
         "antiPatterns": [
           "full-screen-modal-takeover"
         ]
@@ -551,7 +551,7 @@
           "ready",
           "error"
         ],
-        "notes": "Detail sheet preview loads the selected local GLB model and falls back to an error message instead of generated planet art."
+        "notes": "Detail sheet preview loads the selected local GLB model in a constrained slot and falls back to an error message instead of generated planet art."
       }
     ],
     "expressionFlexibility": {

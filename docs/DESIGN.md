@@ -37,7 +37,7 @@ CSS variables in `:root` remain the source for semantic roles (`--accent`, `--te
 
 ## 9. Interaction, Motion, and Feedback Rules
 
-Motion is utilitarian: short button hover transitions and GSAP model transitions only for planet detail focus. No fullscreen transition or orientation forcing is allowed.
+Motion is utilitarian: short button hover transitions and immediate detail-panel state changes. No fullscreen transition, AR detail zoom, or orientation forcing is allowed.
 
 ## 10. Component Language, Morphology, and Shared Patterns
 
@@ -61,5 +61,5 @@ Do not force fullscreen, do not rotate-lock orientation, do not block the camera
 ## 14. Implementation Notes for Future UI Tasks
 
 When planet tap calibration drifts, tune `hitZonePosition` and `hitZoneRadius` in `src/data/planets.ts`. Use `DEBUG_HIT_ZONES` in `src/ar/scene.ts` during calibration and disable it for production.
-Current baseline: base scales live in `src/ar/scene.ts` (`SOLAR_SYSTEM_MODEL_SCALE = 0.01`, `SOLAR_FALLBACK_SCALE = 0.42`) with a mobile multiplier in `src/main.ts` (`getSolarScaleMultiplier` ~ 1.95-2.45). Detail marker sizing uses `DETAIL_MODEL_TARGET_SIZE` / `DETAIL_MODEL_LARGE_TARGET_SIZE`, while the panel preview uses `PANEL_PREVIEW_TARGET_SIZE` / `PANEL_PREVIEW_LARGE_TARGET_SIZE` plus per-planet `previewScale` from `src/data/planets.ts`.
-Close/reopen stability depends on the `visualViewport`-driven `--app-height` path, repeated post-close AR artifact cleanup, explicit landing/scanner pointer-event restoration, killed GSAP planet timelines, cleared embedded preview scenes, and a clean landing shell remount after scanner close in `src/main.ts`.
+Current baseline: base scales live in `src/ar/scene.ts` (`SOLAR_SYSTEM_MODEL_SCALE = 0.01`, `SOLAR_FALLBACK_SCALE = 0.42`) with a mobile multiplier in `src/main.ts` (`getSolarScaleMultiplier` ~ 1.95-2.45). Detail panel preview uses `PANEL_PREVIEW_TARGET_SIZE` / `PANEL_PREVIEW_LARGE_TARGET_SIZE` plus per-planet `previewScale` from `src/data/planets.ts`.
+Close/reopen stability depends on the `visualViewport`-driven `--app-height` path, repeated post-close AR artifact cleanup, explicit landing/scanner pointer-event restoration, cleared embedded preview scenes, clean landing shell remount after scanner close, and a mobile-only page reload fallback in `src/main.ts`.

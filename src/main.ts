@@ -1,4 +1,3 @@
-import { gsap } from "gsap";
 import { createArSceneMarkup } from "./ar/scene";
 import { PLANET_BY_ID, PLANETS, type PlanetData, type PlanetId } from "./data/planets";
 import "./styles/main.css";
@@ -45,7 +44,6 @@ let isMarkerDetected = false;
 let isTransitioning = false;
 let pendingSceneBoot = false;
 let toastTimer = 0;
-let activePlanetTimeline: ReturnType<typeof gsap.timeline> | null = null;
 
 type CameraFacingMode = "environment" | "user";
 
@@ -62,10 +60,9 @@ const MIN_VIEWPORT_HEIGHT = 320;
 const MAX_TOUCH_VIEWPORT_HEIGHT = 1400;
 const MAX_TOUCH_VIEWPORT_ASPECT = 2.35;
 const USE_CONTROLLED_SOLAR_ROW = true;
-const DETAIL_MODEL_TARGET_SIZE = 0.18;
-const DETAIL_MODEL_LARGE_TARGET_SIZE = 0.22;
-const PANEL_PREVIEW_TARGET_SIZE = 1.4;
-const PANEL_PREVIEW_LARGE_TARGET_SIZE = 1.65;
+const PANEL_PREVIEW_TARGET_SIZE = 0.74;
+const PANEL_PREVIEW_LARGE_TARGET_SIZE = 0.86;
+const MOBILE_CLOSE_RELOAD_DELAY_MS = 180;
 
 function getSolarScaleMultiplier(): number {
   const isTouch = window.matchMedia("(pointer: coarse)").matches;
@@ -237,6 +234,10 @@ function getPanelPreviewTargetSize(planet: PlanetData): number {
   return baseSize * planet.previewScale;
 }
 
+function isTouchDevice(): boolean {
+  return window.matchMedia("(pointer: coarse)").matches;
+}
+
 function clearPlanetPanelPreview(): void {
   const previewScene = ui.planetPreview.querySelector<HTMLElement & { pause?: () => void }>("a-scene");
   previewScene?.pause?.();
@@ -377,9 +378,7 @@ function cleanupAFrameArtifacts(): void {
   });
 
   document.querySelectorAll<HTMLElement>("a-scene").forEach((scene) => {
-    if (scene.id === "arScene" || ui.arMount.contains(scene)) {
-      scene.remove();
-    }
+    scene.remove();
   });
 
   document.documentElement.classList.remove("a-html");
@@ -493,6 +492,20 @@ function remountCleanLandingShell(): void {
   ui.toast.classList.add("is-hidden");
 }
 
+function scheduleMobileLandingReload(): void {
+  if (!isTouchDevice()) {
+    return;
+  }
+
+  window.setTimeout(() => {
+    if (document.body.classList.contains("is-ar-active")) {
+      return;
+    }
+
+    window.location.reload();
+  }, MOBILE_CLOSE_RELOAD_DELAY_MS);
+}
+
 function cancelDelayedArtifactCleanups(): void {
   delayedArtifactCleanupTimers.forEach((timerId) => {
     window.clearTimeout(timerId);
@@ -597,12 +610,6 @@ function tuneSolarSystemModelScale(): void {
   });
 }
 
-function getDetailTargetSize(planet: PlanetData): number {
-  return planet.id === "jupiter" || planet.id === "saturn"
-    ? DETAIL_MODEL_LARGE_TARGET_SIZE
-    : DETAIL_MODEL_TARGET_SIZE;
-}
-
 function fitModelToMarkerSize(entity: HTMLElement, targetSize: number): boolean {
   const maybeWindow = window as Window & { THREE?: ThreeSizingLike };
   const object3D = (entity as HTMLElement & { object3D?: Object3DLike }).object3D;
@@ -628,22 +635,6 @@ function fitModelToMarkerSize(entity: HTMLElement, targetSize: number): boolean 
   const nextZ = (currentScale.z ?? 1) * correction;
   currentScale.set(nextX, nextY, nextZ);
 
-  return true;
-}
-
-function revealFittedDetailModel(
-  planet: PlanetData,
-  detailModel: HTMLElement,
-  detailFallback: HTMLElement
-): boolean {
-  const didFit = fitModelToMarkerSize(detailModel, getDetailTargetSize(planet));
-
-  if (!didFit) {
-    return false;
-  }
-
-  detailModel.setAttribute("visible", "true");
-  detailFallback.setAttribute("visible", "false");
   return true;
 }
 
@@ -848,14 +839,7 @@ function runCleanupListeners(): void {
 }
 
 function killPlanetTransition(): void {
-  activePlanetTimeline?.kill();
-  activePlanetTimeline = null;
-  gsap.killTweensOf([
-    solarRootEl,
-    planetDetailRootEl,
-    solarSystemEl,
-    solarFallbackEl
-  ].filter(Boolean));
+  isTransitioning = false;
 }
 
 function teardownScene(): void {
@@ -912,71 +896,33 @@ function resetSolarTransforms(): void {
   }
 }
 
-function renderDetailModel(planet: PlanetData): void {
-  if (!planetDetailRootEl) {
-    return;
+function setSolarOverviewVisible(isVisible: boolean): void {
+  const visibleValue = isVisible ? "true" : "false";
+
+  if (solarRootEl) {
+    solarRootEl.setAttribute("visible", visibleValue);
+    const rootObject = (solarRootEl as HTMLElement & { object3D?: { scale?: ScaleLike } }).object3D;
+    rootObject?.scale?.set(1, 1, 1);
   }
 
-  planetDetailRootEl.innerHTML = `
-    <a-entity id="planetDetailWrapper" position="0 0.08 0" scale="0.01 0.01 0.01">
-      <a-entity
-        id="planetDetailModel"
-        gltf-model="#${planet.modelId}"
-        visible="false"
-        rotation="0 0 0"
-        scale="${planet.detailScale}"
-      ></a-entity>
-      <a-sphere
-        id="planetDetailFallback"
-        visible="true"
-        radius="0.12"
-        color="${planet.themeColor}"
-        position="0 0 0"
-      ></a-sphere>
-    </a-entity>
-  `;
-
-  const detailModel = planetDetailRootEl.querySelector<HTMLElement>("#planetDetailModel");
-  const detailFallback = planetDetailRootEl.querySelector<HTMLElement>("#planetDetailFallback");
-
-  if (!detailModel || !detailFallback) {
-    return;
+  if (solarSystemEl) {
+    solarSystemEl.setAttribute("visible", !USE_CONTROLLED_SOLAR_ROW && isVisible ? "true" : "false");
   }
 
-  const onModelLoaded = () => {
-    if (!isTransitioning) {
-      revealFittedDetailModel(planet, detailModel, detailFallback);
-    }
-  };
-
-  const onModelError = () => {
-    detailModel.setAttribute("visible", "false");
-    detailFallback.setAttribute("visible", "true");
-    showToast(`Model ${planet.name} gagal dimuat. Fallback sphere ditampilkan.`, "warning");
-  };
-
-  detailModel.addEventListener("model-loaded", onModelLoaded);
-  detailModel.addEventListener("model-error", onModelError);
-
-  cleanupListeners.push(() => {
-    detailModel.removeEventListener("model-loaded", onModelLoaded);
-    detailModel.removeEventListener("model-error", onModelError);
-  });
-}
-
-function getEntityScaleObject(
-  entity: HTMLElement | null
-): { x: number; y: number; z: number } | null {
-  if (!entity) {
-    return null;
+  if (solarFallbackEl) {
+    solarFallbackEl.setAttribute("visible", USE_CONTROLLED_SOLAR_ROW && isVisible ? "true" : "false");
   }
 
-  const object3D = (entity as HTMLElement & { object3D?: { scale?: { x: number; y: number; z: number } } }).object3D;
-  return object3D?.scale ?? null;
+  if (planetDetailRootEl) {
+    planetDetailRootEl.setAttribute("visible", "false");
+    const detailObject = (planetDetailRootEl as HTMLElement & { object3D?: { scale?: ScaleLike } }).object3D;
+    detailObject?.scale?.set(1, 1, 1);
+    planetDetailRootEl.innerHTML = "";
+  }
 }
 
 function openPlanetDetail(planetId: PlanetId): void {
-  if (!planetDetailRootEl || !solarRootEl || isTransitioning) {
+  if (!solarRootEl || isTransitioning) {
     return;
   }
 
@@ -985,107 +931,23 @@ function openPlanetDetail(planetId: PlanetId): void {
     return;
   }
 
-  renderDetailModel(planet);
-
-  const detailWrapper = planetDetailRootEl.querySelector<HTMLElement>("#planetDetailWrapper");
-  if (!detailWrapper) {
-    return;
-  }
-
-  const solarScale = getEntityScaleObject(solarRootEl);
-  const detailScale = getEntityScaleObject(planetDetailRootEl);
-  if (!solarScale || !detailScale) {
-    return;
-  }
-
-  planetDetailRootEl.setAttribute("visible", "true");
-  detailScale.x = 0.01;
-  detailScale.y = 0.01;
-  detailScale.z = 0.01;
-
-  const detailWrapperScale = getEntityScaleObject(detailWrapper);
-  if (detailWrapperScale) {
-    detailWrapperScale.x = 0.01;
-    detailWrapperScale.y = 0.01;
-    detailWrapperScale.z = 0.01;
-  }
-
-  isTransitioning = true;
-  const detailWrapperTarget = detailWrapperScale ?? detailScale;
-
-  activePlanetTimeline = gsap.timeline({
-    defaults: { ease: "power2.inOut" },
-    onComplete: () => {
-      const activeDetailModel = planetDetailRootEl?.querySelector<HTMLElement>("#planetDetailModel");
-      const activeDetailFallback = planetDetailRootEl?.querySelector<HTMLElement>("#planetDetailFallback");
-      if (activeDetailModel && activeDetailFallback) {
-        revealFittedDetailModel(planet, activeDetailModel, activeDetailFallback);
-      }
-      currentPlanet = planet;
-      fillPlanetPanel(planet);
-      isTransitioning = false;
-      activePlanetTimeline = null;
-    }
-  });
-
-  activePlanetTimeline
-    .to(solarScale, { x: 0.01, y: 0.01, z: 0.01, duration: 0.85 })
-    .add(() => {
-      solarRootEl?.setAttribute("visible", "false");
-    })
-    .to(detailScale, { x: 1, y: 1, z: 1, duration: 0.85 })
-    .to(detailWrapperTarget, { x: 1, y: 1, z: 1, duration: 0.85 }, "<");
+  killPlanetTransition();
+  isTransitioning = false;
+  currentPlanet = planet;
+  setSolarOverviewVisible(false);
+  fillPlanetPanel(planet);
 }
 
 function closePlanetDetail(): void {
-  if (!planetDetailRootEl || !solarRootEl || isTransitioning || !currentPlanet) {
+  if (!solarRootEl || !currentPlanet) {
     return;
   }
 
-  const detailScale = getEntityScaleObject(planetDetailRootEl);
-  const solarScale = getEntityScaleObject(solarRootEl);
-  if (!detailScale || !solarScale) {
-    return;
-  }
-
-  isTransitioning = true;
-  solarRootEl.setAttribute("visible", "true");
-  solarScale.x = 0.01;
-  solarScale.y = 0.01;
-  solarScale.z = 0.01;
-
+  killPlanetTransition();
+  isTransitioning = false;
   hidePlanetPanel();
-
-  activePlanetTimeline = gsap.timeline({
-    defaults: { ease: "power2.inOut" },
-    onComplete: () => {
-      currentPlanet = null;
-      if (planetDetailRootEl) {
-        planetDetailRootEl.setAttribute("visible", "false");
-        planetDetailRootEl.innerHTML = "";
-      }
-      if (solarSystemEl) {
-        solarSystemEl.setAttribute("visible", USE_CONTROLLED_SOLAR_ROW ? "false" : "true");
-      }
-      if (USE_CONTROLLED_SOLAR_ROW && solarFallbackEl) {
-        solarFallbackEl.setAttribute("visible", "true");
-      } else if (solarFallbackEl?.getAttribute("visible") === "true" && solarSystemEl) {
-        solarSystemEl.setAttribute("visible", "false");
-      }
-      solarScale.x = 1;
-      solarScale.y = 1;
-      solarScale.z = 1;
-      detailScale.x = 1;
-      detailScale.y = 1;
-      detailScale.z = 1;
-      isTransitioning = false;
-      activePlanetTimeline = null;
-    }
-  });
-
-  activePlanetTimeline
-    .to(detailScale, { x: 0.01, y: 0.01, z: 0.01, duration: 0.85 })
-    .to(solarScale, { x: 1, y: 1, z: 1, duration: 0.85 });
+  currentPlanet = null;
+  setSolarOverviewVisible(true);
 }
 
 function bindHitZoneEvents(): void {
@@ -1454,6 +1316,7 @@ function stopArFlow(): void {
     pendingSceneBoot = false;
     remountCleanLandingShell();
     schedulePostCloseArtifactCleanup(stoppedSession);
+    scheduleMobileLandingReload();
   }
 }
 
@@ -1478,7 +1341,11 @@ function bindStaticUiEvents(): void {
     event.stopPropagation();
     stopArFlow();
   });
-  ui.closePlanetBtn.addEventListener("click", closePlanetDetail);
+  ui.closePlanetBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    closePlanetDetail();
+  });
 
   ui.switchCameraBtn.addEventListener("click", (event) => {
     void switchCamera(event);

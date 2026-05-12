@@ -32,7 +32,7 @@ AR Tata Surya Explorer adalah aplikasi Web AR marker-based (Hiro) untuk eksplora
 
 - Frontend: Vite + TypeScript.
 - AR runtime: A-Frame + AR.js.
-- Animasi: GSAP.
+- Animasi: CSS transitions ringan; detail planet memakai state change langsung agar stabil di mobile.
 - Asset 3D: GLB/glTF.
 - Tidak ada backend; semua asset disajikan statis.
 
