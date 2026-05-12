@@ -15,6 +15,44 @@ if (maybeWindow.AFRAME) {
       });
     }
   });
+
+  maybeWindow.AFRAME.registerComponent("planet-orbit-animation", {
+    schema: {
+      speedMultiplier: { type: "number", default: 1 }
+    },
+    tick: function (_time: number, timeDelta: number) {
+      if (!this.el.object3D) return;
+      
+      const speed = (this.data.speedMultiplier * timeDelta) / 1000;
+      
+      this.el.object3D.traverse((child: any) => {
+        const planetId = getPlanetIdFromNodeName(child.name);
+        if (planetId && child.isMesh && child.position) {
+          // Different speeds for different planets
+          let orbitSpeed = speed;
+          if (planetId === "mercury") orbitSpeed *= 4.1;
+          if (planetId === "venus") orbitSpeed *= 1.6;
+          if (planetId === "earth") orbitSpeed *= 1.0;
+          if (planetId === "mars") orbitSpeed *= 0.5;
+          if (planetId === "jupiter") orbitSpeed *= 0.2;
+          if (planetId === "saturn") orbitSpeed *= 0.1;
+          if (planetId === "uranus") orbitSpeed *= 0.05;
+          if (planetId === "neptune") orbitSpeed *= 0.03;
+          
+          const x = child.position.x;
+          const z = child.position.z;
+          const cos = Math.cos(orbitSpeed);
+          const sin = Math.sin(orbitSpeed);
+          
+          child.position.x = x * cos - z * sin;
+          child.position.z = x * sin + z * cos;
+          
+          // Also spin the planet on its own axis
+          child.rotation.y += orbitSpeed * 2;
+        }
+      });
+    }
+  });
 }
 
 function getPlanetIdFromNodeName(name: string): PlanetId | null {
@@ -303,167 +341,59 @@ function isTouchDevice(): boolean {
 
 function clearPlanetPanelPreview(): void {
   planetPreviewRenderToken += 1;
-  const previewScene = ui.planetPreview.querySelector<HTMLElement & { pause?: () => void }>("a-scene");
-  previewScene?.pause?.();
   ui.planetPreview.innerHTML = "";
   delete ui.planetPreview.dataset.state;
   delete ui.planetPreview.dataset.planet;
 }
 
-type PreviewRendererLike = {
-  setPixelRatio?: (pixelRatio: number) => void;
-  setSize?: (width: number, height: number, updateStyle?: boolean) => void;
-  domElement?: HTMLCanvasElement;
-};
-
-type PreviewSceneLike = HTMLElement & {
-  renderer?: PreviewRendererLike;
-  resize?: () => void;
-};
-
-function syncPlanetPreviewCanvas(previewScene: PreviewSceneLike | null): void {
-  if (!previewScene) {
-    return;
-  }
-
-  const rect = previewScene.getBoundingClientRect();
-  const width = Math.round(rect.width);
-  const height = Math.round(rect.height);
-  if (width <= 0 || height <= 0) {
-    return;
-  }
-
-  const pixelRatio = Math.min(Math.max(window.devicePixelRatio || 1, 1), 2.5);
-  previewScene.renderer?.setPixelRatio?.(pixelRatio);
-  previewScene.renderer?.setSize?.(width, height, false);
-  previewScene.resize?.();
-
-  const canvas = previewScene.renderer?.domElement ?? previewScene.querySelector<HTMLCanvasElement>("canvas");
-  if (!canvas) {
-    return;
-  }
-
-  canvas.style.width = "100%";
-  canvas.style.height = "100%";
-  canvas.style.background = "transparent";
-  canvas.width = Math.round(width * pixelRatio);
-  canvas.height = Math.round(height * pixelRatio);
-}
-
-function setPlanetPreviewError(status: HTMLElement | null, planetName: string, message?: string): void {
-  ui.planetPreview.dataset.state = "error";
-  if (status) {
-    status.textContent = message ?? `Model ${planetName} belum bisa ditampilkan.`;
-  }
-}
-
-function schedulePlanetPreviewReveal(
-  planet: PlanetData,
-  model: HTMLElement,
-  status: HTMLElement | null,
-  previewScene: PreviewSceneLike | null,
-  renderToken: number,
-  attempt = 0
-): void {
-  if (renderToken !== planetPreviewRenderToken || !ui.planetPreview.contains(model)) {
-    return;
-  }
-
-  window.requestAnimationFrame(() => {
-    if (renderToken !== planetPreviewRenderToken || !ui.planetPreview.contains(model)) {
-      return;
-    }
-
-    syncPlanetPreviewCanvas(previewScene);
-    const didFit = fitModelToMarkerSize(model, getPanelPreviewTargetSize(planet), {
-      center: true,
-      centerY: true
-    });
-
-    if (didFit) {
-      ui.planetPreview.dataset.state = "ready";
-      model.setAttribute("visible", "true");
-      window.requestAnimationFrame(() => syncPlanetPreviewCanvas(previewScene));
-      window.setTimeout(() => syncPlanetPreviewCanvas(previewScene), 180);
-      return;
-    }
-
-    if (attempt < 14) {
-      window.setTimeout(() => {
-        schedulePlanetPreviewReveal(planet, model, status, previewScene, renderToken, attempt + 1);
-      }, 120);
-      return;
-    }
-
-    setPlanetPreviewError(status, planet.name);
-    model.setAttribute("visible", "false");
-  });
-}
-
 function renderPlanetPanelPreview(planet: PlanetData): void {
   clearPlanetPanelPreview();
 
-  const assetId = `panel-${planet.id}-model`;
   const renderToken = planetPreviewRenderToken;
   ui.planetPreview.dataset.planet = planet.id;
   ui.planetPreview.dataset.state = "loading";
+
+  // Use model-viewer for high-fidelity textured previews instead of a secondary a-scene
+  const scaleRatio = 1 / planet.previewScale;
+  const distance = Math.max(105, 105 * scaleRatio);
+
   ui.planetPreview.innerHTML = `
-    <div class="planet-preview-status">Memuat model ${planet.name}...</div>
-    <a-scene
-      class="planet-preview-scene"
-      embedded
-      renderer="alpha: true; antialias: true; logarithmicDepthBuffer: true; precision: high"
-      vr-mode-ui="enabled: false"
-      loading-screen="enabled: false"
-      device-orientation-permission-ui="enabled: false"
+    <model-viewer
+      src="${planet.modelPath}"
+      alt="${planet.name}"
+      auto-rotate
+      camera-controls
+      rotation-per-second="30deg"
+      interaction-prompt="none"
+      camera-orbit="0deg 90deg ${distance}%"
+      shadow-intensity="1"
+      environment-image="neutral"
+      style="width: 100%; height: 100%; background-color: transparent; outline: none; pointer-events: auto;"
     >
-      <a-assets timeout="15000">
-        <a-asset-item id="${assetId}" src="${planet.modelPath}"></a-asset-item>
-      </a-assets>
-      <a-entity
-        id="planetPreviewModel"
-        gltf-model="#${assetId}"
-        visible="false"
-        position="0 0 0"
-        rotation="0 0 0"
-        scale="${planet.detailScale}"
-        animation="property: rotation; from: 0 0 0; to: 0 360 0; dur: 10000; easing: linear; loop: true"
-      ></a-entity>
-      <a-light type="ambient" intensity="1.65"></a-light>
-      <a-light type="directional" intensity="1.8" position="1.5 1.5 2"></a-light>
-      <a-camera
-        position="0 0 2.65"
-        look-controls="enabled: false"
-        wasd-controls="enabled: false"
-      ></a-camera>
-    </a-scene>
+      <div slot="poster" class="planet-preview-status">Memuat model ${planet.name}...</div>
+    </model-viewer>
   `;
 
-  const model = ui.planetPreview.querySelector<HTMLElement>("#planetPreviewModel");
-  const status = ui.planetPreview.querySelector<HTMLElement>(".planet-preview-status");
-  const previewScene = ui.planetPreview.querySelector<PreviewSceneLike>(".planet-preview-scene");
-  if (!model) {
-    setPlanetPreviewError(null, planet.name);
+  const modelViewer = ui.planetPreview.querySelector('model-viewer') as HTMLElement;
+  
+  if (!modelViewer) {
+    ui.planetPreview.dataset.state = "error";
     ui.planetPreview.innerHTML = `<div class="planet-preview-status">Model ${planet.name} belum bisa ditampilkan.</div>`;
     return;
   }
 
-  const revealModel = () => schedulePlanetPreviewReveal(planet, model, status, previewScene, renderToken);
-
-  const showPreviewError = () => {
-    setPlanetPreviewError(status, planet.name, `Model ${planet.name} gagal dimuat dari file GLB.`);
-    model.setAttribute("visible", "false");
-  };
-
-  const syncPreview = () => syncPlanetPreviewCanvas(previewScene);
-  previewScene?.addEventListener("loaded", syncPreview, { once: true });
-  previewScene?.addEventListener("renderstart", syncPreview, { once: true });
-  window.requestAnimationFrame(syncPreview);
-  window.requestAnimationFrame(revealModel);
-  window.setTimeout(revealModel, 240);
-
-  model.addEventListener("model-loaded", revealModel, { once: true });
-  model.addEventListener("model-error", showPreviewError, { once: true });
+  modelViewer.addEventListener('load', () => {
+    if (renderToken === planetPreviewRenderToken) {
+      ui.planetPreview.dataset.state = "ready";
+    }
+  }, { once: true });
+  
+  modelViewer.addEventListener('error', () => {
+    if (renderToken === planetPreviewRenderToken) {
+      ui.planetPreview.dataset.state = "error";
+      ui.planetPreview.innerHTML = `<div class="planet-preview-status">Model ${planet.name} gagal dimuat dari file GLB.</div>`;
+    }
+  }, { once: true });
 }
 
 function fillPlanetPanel(planet: PlanetData): void {

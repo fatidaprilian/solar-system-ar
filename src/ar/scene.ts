@@ -51,8 +51,9 @@ export function createArSceneMarkup(
         id="solarSystem"
         class="interactable-planet"
         gltf-model="#solarSystemModel"
-        animation-mixer="loop: repeat; timeScale: 0.5"
+        animation-mixer="clip: *; loop: repeat; timeScale: 0.5"
         continuous-sun-spin
+        planet-orbit-animation="speedMultiplier: 0.8"
         visible="false"
         position="0 ${SOLAR_ROOT_Y_POSITION} 0"
         rotation="-90 0 0"
