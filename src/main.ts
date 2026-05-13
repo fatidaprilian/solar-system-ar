@@ -135,6 +135,18 @@ const SOLAR_OVERVIEW_TARGET_SIZE = 2.8;
 const MOBILE_CLOSE_RELOAD_DELAY_MS = 180;
 const SOLAR_MODEL_VERTICAL_OFFSET = 0.08;
 const SOLAR_MODEL_CLUTTER_NAME_PARTS = ["asteroid", "asteroidi", "ceres", "pluto", "moon"];
+const PLANET_TAP_RADIUS_MULTIPLIER: Record<PlanetId, number> = {
+  mercury: 3,
+  venus: 2.8,
+  earth: 2.8,
+  mars: 2.9,
+  jupiter: 1.9,
+  saturn: 1.9,
+  uranus: 2.3,
+  neptune: 2.3
+};
+const TOUCH_SCREEN_PICK_RADIUS_PX = 82;
+const POINTER_SCREEN_PICK_RADIUS_PX = 54;
 
 function getSolarScaleMultiplier(): number {
   const isTouch = window.matchMedia("(pointer: coarse)").matches;
@@ -648,6 +660,22 @@ type Object3DLike = {
   updateMatrixWorld?: (force?: boolean) => void;
 };
 
+type PlanetObject3DLike = Object3DLike & {
+  add?: (object: unknown) => void;
+  geometry?: {
+    computeBoundingSphere?: () => void;
+    boundingSphere?: {
+      center?: { copy?: (target: unknown) => void };
+      radius?: number;
+    };
+  };
+  getWorldPosition?: (target: unknown) => unknown;
+  isMesh?: boolean;
+  material?: unknown;
+  parent?: PlanetObject3DLike | null;
+  userData?: Record<string, unknown>;
+};
+
 type Vector3Like = {
   x: number;
   y: number;
@@ -680,6 +708,95 @@ function shouldHideSolarSystemNode(name: string | undefined): boolean {
   return SOLAR_MODEL_CLUTTER_NAME_PARTS.some((part) => normalizedName.includes(part));
 }
 
+function getMaterialNames(material: unknown): string[] {
+  const materials = Array.isArray(material) ? material : [material];
+
+  return materials
+    .map((item) => {
+      if (item && typeof item === "object" && "name" in item) {
+        const name = (item as { name?: unknown }).name;
+        return typeof name === "string" ? name.toLowerCase() : "";
+      }
+      return "";
+    })
+    .filter(Boolean);
+}
+
+function getPlanetIdFromMaterial(material: unknown): PlanetId | null {
+  const materialNames = getMaterialNames(material);
+
+  for (const materialName of materialNames) {
+    if (materialName.includes("mercury")) return "mercury";
+    if (materialName.includes("venus")) return "venus";
+    if (materialName.includes("earth") || materialName.includes("erath")) return "earth";
+    if (materialName.includes("mars")) return "mars";
+    if (materialName.includes("jupiter")) return "jupiter";
+    if (materialName.includes("saturn")) return "saturn";
+    if (materialName.includes("uranus")) return "uranus";
+    if (materialName.includes("neptune")) return "neptune";
+  }
+
+  return null;
+}
+
+function isPlanetRingMesh(object: PlanetObject3DLike): boolean {
+  const objectName = object.name?.toLowerCase() ?? "";
+  return objectName.includes("ring") || getMaterialNames(object.material).some((name) => name.includes("ring"));
+}
+
+function tagPlanetObject(object: PlanetObject3DLike, planetId: PlanetId, isSelectableMesh: boolean): void {
+  object.userData = object.userData || {};
+  object.userData.planetId = planetId;
+
+  if (isSelectableMesh) {
+    object.userData.isSelectablePlanetMesh = true;
+  }
+}
+
+function addPlanetTapTarget(meshObj: PlanetObject3DLike, planetId: PlanetId): void {
+  if (meshObj.userData?.hasHitBox || !meshObj.isMesh || !meshObj.geometry || !meshObj.add) {
+    return;
+  }
+
+  const THREE = (window as Window & { THREE?: any }).THREE;
+  if (!THREE) {
+    return;
+  }
+
+  meshObj.geometry.computeBoundingSphere?.();
+  const sourceRadius = meshObj.geometry.boundingSphere?.radius;
+  if (!Number.isFinite(sourceRadius) || !sourceRadius || sourceRadius <= 0) {
+    return;
+  }
+
+  const radius = sourceRadius * PLANET_TAP_RADIUS_MULTIPLIER[planetId];
+  const hitGeo = new THREE.SphereGeometry(radius, 16, 16);
+  const hitMat = new THREE.MeshBasicMaterial({
+    color: 0x00ff00,
+    colorWrite: false,
+    depthTest: false,
+    depthWrite: false,
+    opacity: 0,
+    transparent: true
+  });
+  const hitMesh = new THREE.Mesh(hitGeo, hitMat);
+  const center = meshObj.geometry.boundingSphere?.center;
+
+  hitMesh.name = `${planetId}_tap_target`;
+  hitMesh.userData = {
+    planetId,
+    isPlanetTapTarget: true
+  };
+
+  if (center && hitMesh.position?.copy) {
+    hitMesh.position.copy(center);
+  }
+
+  meshObj.add(hitMesh);
+  meshObj.userData = meshObj.userData || {};
+  meshObj.userData.hasHitBox = true;
+}
+
 function tuneSolarSystemModelScale(): void {
   const object3D = (solarSystemEl as HTMLElement & { object3D?: Object3DLike } | null)?.object3D;
   if (!object3D?.traverse) {
@@ -693,24 +810,14 @@ function tuneSolarSystemModelScale(): void {
       return;
     }
 
-    const planetId = object.name ? getPlanetIdFromNodeName(object.name) : null;
-    if (planetId) {
-      const meshObj = object as any;
-      meshObj.userData = meshObj.userData || {};
-      meshObj.userData.planetId = planetId;
+    const planetObject = object as PlanetObject3DLike;
+    const materialPlanetId = getPlanetIdFromMaterial(planetObject.material);
+    if (materialPlanetId) {
+      const isSelectableMesh = Boolean(planetObject.isMesh && !isPlanetRingMesh(planetObject));
+      tagPlanetObject(planetObject, materialPlanetId, isSelectableMesh);
 
-      if (!meshObj.userData.hasHitBox && (window as any).THREE) {
-        const THREE = (window as any).THREE;
-        if (meshObj.isMesh && meshObj.geometry) {
-          meshObj.geometry.computeBoundingSphere();
-          const radius = meshObj.geometry.boundingSphere.radius * 4;
-          const hitGeo = new THREE.SphereGeometry(radius, 12, 12);
-          const hitMat = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.0, depthWrite: false });
-          const hitMesh = new THREE.Mesh(hitGeo, hitMat);
-          hitMesh.userData = { planetId: planetId };
-          meshObj.add(hitMesh);
-          meshObj.userData.hasHitBox = true;
-        }
+      if (isSelectableMesh) {
+        addPlanetTapTarget(planetObject, materialPlanetId);
       }
     }
   });
@@ -1097,6 +1204,23 @@ function closePlanetDetail(): void {
   setSolarOverviewVisible(true);
 }
 
+function resolvePlanetIdFromObjectRef(objectRef: unknown): PlanetId | null {
+  let currentRef = objectRef;
+
+  while (currentRef && typeof currentRef === "object") {
+    const candidate = currentRef as PlanetObject3DLike;
+    const maybePlanetId = candidate.userData?.planetId;
+
+    if (typeof maybePlanetId === "string" && maybePlanetId in PLANET_BY_ID) {
+      return maybePlanetId as PlanetId;
+    }
+
+    currentRef = candidate.parent;
+  }
+
+  return null;
+}
+
 function bindHitZoneEvents(): void {
   if (!solarSystemEl) return;
 
@@ -1107,13 +1231,9 @@ function bindHitZoneEvents(): void {
 
     const customEvent = event as Event & { detail?: { intersection?: { object?: any } } };
     if (customEvent.detail?.intersection?.object) {
-      let objectRef = customEvent.detail.intersection.object;
-      while (objectRef) {
-        if (objectRef.userData?.planetId) {
-          openPlanetDetail(objectRef.userData.planetId as PlanetId);
-          return;
-        }
-        objectRef = objectRef.parent;
+      const planetId = resolvePlanetIdFromObjectRef(customEvent.detail.intersection.object);
+      if (planetId) {
+        openPlanetDetail(planetId);
       }
     }
   };
@@ -1122,7 +1242,53 @@ function bindHitZoneEvents(): void {
   cleanupListeners.push(() => solarSystemEl?.removeEventListener("click", handler));
 }
 
-function pickPlanetFromCenterRay(): PlanetId | null {
+function getPointerBounds(): DOMRect | null {
+  const target = ui.arMount.querySelector<HTMLCanvasElement>("canvas.a-canvas, canvas") ?? sceneEl ?? ui.arMount;
+  const rect = target.getBoundingClientRect();
+
+  if (rect.width <= 0 || rect.height <= 0) {
+    return null;
+  }
+
+  return rect;
+}
+
+function getNormalizedPointerCoordinates(clientX: number, clientY: number): { x: number; y: number } | null {
+  const rect = getPointerBounds();
+  if (!rect) {
+    return null;
+  }
+
+  return {
+    x: ((clientX - rect.left) / rect.width) * 2 - 1,
+    y: -(((clientY - rect.top) / rect.height) * 2 - 1)
+  };
+}
+
+function getClientPointFromTapEvent(event: Event): { clientX: number; clientY: number } | null {
+  if ("clientX" in event && "clientY" in event) {
+    const pointerEvent = event as PointerEvent | MouseEvent;
+    return {
+      clientX: pointerEvent.clientX,
+      clientY: pointerEvent.clientY
+    };
+  }
+
+  if ("changedTouches" in event) {
+    const touchEvent = event as TouchEvent;
+    const touch = touchEvent.changedTouches[0] ?? touchEvent.touches[0];
+    if (touch) {
+      return {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+      };
+    }
+  }
+
+  return null;
+}
+
+function pickPlanetByRaycastPoint(clientX: number, clientY: number): PlanetId | null {
   if (!arCameraEl || !solarSystemEl) {
     return null;
   }
@@ -1141,6 +1307,11 @@ function pickPlanetFromCenterRay(): PlanetId | null {
     return null;
   }
 
+  const pointerCoords = getNormalizedPointerCoordinates(clientX, clientY);
+  if (!pointerCoords) {
+    return null;
+  }
+
   const cameraObject = (arCameraEl as HTMLElement & { getObject3D?: (name: string) => unknown }).getObject3D?.("camera");
   const solarSystemObj = (solarSystemEl as HTMLElement & { object3D?: unknown }).object3D;
   if (!cameraObject || !solarSystemObj) {
@@ -1148,27 +1319,75 @@ function pickPlanetFromCenterRay(): PlanetId | null {
   }
 
   const raycaster = new maybeWindow.THREE.Raycaster();
-  raycaster.setFromCamera(new maybeWindow.THREE.Vector2(0, 0), cameraObject);
+  raycaster.setFromCamera(new maybeWindow.THREE.Vector2(pointerCoords.x, pointerCoords.y), cameraObject);
 
   const intersections = raycaster.intersectObject(solarSystemObj, true);
   for (const intersection of intersections) {
-    let objectRef: unknown = intersection.object;
-    while (objectRef && typeof objectRef === "object") {
-      const candidate = objectRef as {
-        userData?: Record<string, unknown>;
-        parent?: unknown;
-      };
-
-      const maybePlanetId = candidate.userData?.planetId;
-      if (typeof maybePlanetId === "string" && maybePlanetId in PLANET_BY_ID) {
-        return maybePlanetId as PlanetId;
-      }
-
-      objectRef = candidate.parent;
+    const planetId = resolvePlanetIdFromObjectRef(intersection.object);
+    if (planetId) {
+      return planetId;
     }
   }
 
   return null;
+}
+
+function pickNearestPlanetByScreenPoint(clientX: number, clientY: number): PlanetId | null {
+  if (!arCameraEl || !solarSystemEl) {
+    return null;
+  }
+
+  const THREE = (window as Window & { THREE?: any }).THREE;
+  const rect = getPointerBounds();
+  const cameraObject = (arCameraEl as HTMLElement & { getObject3D?: (name: string) => unknown }).getObject3D?.("camera");
+  const solarSystemObj = (solarSystemEl as HTMLElement & { object3D?: PlanetObject3DLike }).object3D;
+
+  if (!THREE || !rect || !cameraObject || !solarSystemObj?.traverse) {
+    return null;
+  }
+
+  const candidates: Array<{ planetId: PlanetId; distance: number }> = [];
+
+  solarSystemObj.updateMatrixWorld?.(true);
+  solarSystemObj.traverse((object) => {
+    const planetObject = object as PlanetObject3DLike;
+    const maybePlanetId = planetObject.userData?.planetId;
+
+    if (
+      !planetObject.userData?.isSelectablePlanetMesh ||
+      typeof maybePlanetId !== "string" ||
+      !(maybePlanetId in PLANET_BY_ID) ||
+      !planetObject.getWorldPosition
+    ) {
+      return;
+    }
+
+    const worldPosition = new THREE.Vector3();
+    planetObject.getWorldPosition(worldPosition);
+    worldPosition.project(cameraObject);
+
+    if (worldPosition.z < -1 || worldPosition.z > 1) {
+      return;
+    }
+
+    const screenX = rect.left + ((worldPosition.x + 1) / 2) * rect.width;
+    const screenY = rect.top + ((1 - worldPosition.y) / 2) * rect.height;
+    const distance = Math.hypot(clientX - screenX, clientY - screenY);
+
+    candidates.push({
+      planetId: maybePlanetId as PlanetId,
+      distance
+    });
+  });
+
+  const pickRadius = isTouchDevice() ? TOUCH_SCREEN_PICK_RADIUS_PX : POINTER_SCREEN_PICK_RADIUS_PX;
+  const bestCandidate = candidates.sort((a, b) => a.distance - b.distance)[0];
+
+  return bestCandidate && bestCandidate.distance <= pickRadius ? bestCandidate.planetId : null;
+}
+
+function pickPlanetFromTapPoint(clientX: number, clientY: number): PlanetId | null {
+  return pickNearestPlanetByScreenPoint(clientX, clientY) ?? pickPlanetByRaycastPoint(clientX, clientY);
 }
 
 function bindTouchFallbackRaycast(): void {
@@ -1176,19 +1395,35 @@ function bindTouchFallbackRaycast(): void {
     return;
   }
 
-  const handler = () => {
+  let lastFallbackTapAt = 0;
+  const handler = (event: Event) => {
     if (!isMarkerDetected || currentPlanet || isTransitioning) {
       return;
     }
 
-    const planetId = pickPlanetFromCenterRay();
+    const now = window.performance.now();
+    if (now - lastFallbackTapAt < 120) {
+      return;
+    }
+    lastFallbackTapAt = now;
+
+    const point = getClientPointFromTapEvent(event);
+    if (!point) {
+      return;
+    }
+
+    const planetId = pickPlanetFromTapPoint(point.clientX, point.clientY);
     if (planetId) {
       openPlanetDetail(planetId);
     }
   };
 
+  sceneEl.addEventListener("pointerup", handler);
   sceneEl.addEventListener("touchend", handler, { passive: true });
-  cleanupListeners.push(() => sceneEl?.removeEventListener("touchend", handler));
+  cleanupListeners.push(() => {
+    sceneEl?.removeEventListener("pointerup", handler);
+    sceneEl?.removeEventListener("touchend", handler);
+  });
 }
 
 function bindMarkerEvents(): void {

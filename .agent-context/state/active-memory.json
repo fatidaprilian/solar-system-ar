@@ -8,13 +8,16 @@
                      },
     "project":  {
                     "name":  "TUGAS-AKHIR-VAR-TATA-SURYA",
-                    "currentFocus":  "Validate very large mobile solar overview scale and GLB-only selected-planet detail preview on Android, iOS, tablets, and Infinix Note 40.",
+                    "currentFocus":  "Validate material-mapped planet tap selection and matching selected-planet GLB preview on Android, iOS, tablets, and Infinix Note 40.",
                     "durableFacts":  [
 
                                      ]
                 },
     "progress":  {
                      "lastAchievements":  [
+                                              "Fixed solar-system tap mapping by resolving selectable planet meshes from GLB material names instead of decorative orbit path node names.",
+                                              "Changed touch fallback to use actual pointer/touch coordinates with nearest screen-space planet selection before raycast fallback, making mobile planet taps easier and less likely to open the wrong detail preview.",
+                                              "Cross-checked all public/assets/models/planets/*.glb metadata titles against planet ids after the tap mapping patch.",
                                               "Changed the marker overview so loaded solar_system.glb is the primary visual and the sphere row is only an error fallback.",
                                               "Recalibrated solar_system.glb scale and rotation for a smaller mobile marker fit, then hid asteroid/dwarf clutter nodes at runtime, shrank the Sun node, and centered the fitted model over the marker.",
                                               "Enlarged the embedded GLB preview slot, removed the soft radial glow, synced the preview canvas to device pixel ratio, reduced model target size, and centered the fitted planet so it is not cut inside the border.",
@@ -27,6 +30,7 @@
                                               "Increased smartphone AR scale again for Infinix Note 40 testing and removed the CSS-drawn planet preview underlay so the detail border shows only the selected planet GLB or a loading/error state."
                                           ],
                      "pendingIssues":  [
+                                           "Manual real-device AR tap verification is still required: scan Hiro, tap each visible planet, and confirm the panel title plus bordered GLB preview match the tapped planet.",
                                            "Real-device verification is still required on Android Chrome, iOS Safari, tablets, and the user's Infinix Note 40 after the GLB-first solar patch.",
                                            "If solar_system.glb is still too small or too large, adjust SOLAR_SYSTEM_MODEL_SCALE or SOLAR_FALLBACK_SCALE in src/ar/scene.ts, then tune SOLAR_OVERVIEW_TARGET_SIZE and getSolarScaleMultiplier in src/main.ts.",
                                            "If planet taps feel offset after scale changes, tune hitZonePosition and hitZoneRadius in src/data/planets.ts.",
@@ -42,6 +46,10 @@
                                              "Verify the landing page and modal remain centered and tappable after closing AR and after reopening AR."
                                          ],
                      "validationState":  [
+                                             "npm run build after material-mapped tap target patch: PASS",
+                                             "Planet GLB metadata cross-check after patch: PASS for Earth, Jupiter, Mars, Mercury, Neptune, Saturn, Uranus, and Venus.",
+                                             "git diff --check after tap mapping patch: PASS with CRLF conversion warnings only.",
+                                             "Local Vite dev server http://127.0.0.1:5173 responded HTTP 200; agent-browser CLI was unavailable, so automated visual browser verification was not run.",
                                              "npm run build after very large Infinix-focused solar overview scale and GLB-only planet preview patch: PASS",
                                              "docs/design-intent.json JSON parse after documentation sync: PASS",
                                              "git diff --check after latest patch: PASS with CRLF conversion warnings only",
@@ -67,5 +75,5 @@
                     "redactSensitiveTextBeforeWriting":  true
                 },
     "generatedAt":  "2026-05-10T17:34:50.825Z",
-    "lastUpdatedAt":  "2026-05-12T11:31:46+07:00"
+    "lastUpdatedAt":  "2026-05-13T16:34:32+07:00"
 }

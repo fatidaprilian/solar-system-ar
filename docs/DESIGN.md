@@ -45,7 +45,8 @@ Motion is utilitarian: short button hover transitions and immediate detail-panel
 - Marker status: centered capsule at top.
 - Planet detail: fixed bottom sheet on smaller viewports, side panel on larger viewports.
 - Solar overview: `solar_system.glb` is the primary marker visual; the controlled sphere row is only an error fallback when the GLB cannot load.
-- Planet detail preview: embedded static A-Frame preview that loads the selected planet's `.glb` from `public/assets/models/planets/**`; keep it crisp, centered, and contained below the return button, and do not replace it with CSS-drawn planet art or spin the info preview.
+- Planet detail preview: embedded GLB preview loads the selected planet's exact `.glb` from `public/assets/models/planets/**`; keep it crisp, centered, and contained below the return button, and do not replace it with CSS-drawn planet art.
+- Planet tap targeting: solar-system GLB interaction must resolve from actual planet mesh/material identity first, then use enlarged invisible tap targets and touch-coordinate fallback. Do not map detail selection from decorative orbit paths or a fixed center-screen ray.
 
 ## 11. Context Hygiene and Source Boundaries
 
@@ -61,6 +62,6 @@ Do not force fullscreen, do not rotate-lock orientation, do not block the camera
 
 ## 14. Implementation Notes for Future UI Tasks
 
-When planet tap calibration drifts, tune `hitZonePosition` and `hitZoneRadius` in `src/data/planets.ts`. Use `DEBUG_HIT_ZONES` in `src/ar/scene.ts` during calibration and disable it for production.
-Current baseline: base scales live in `src/ar/scene.ts` (`SOLAR_SYSTEM_MODEL_SCALE`, `SOLAR_FALLBACK_SCALE`) with an aggressive smartphone multiplier in `src/main.ts` (`getSolarScaleMultiplier`) for Infinix-class mobile testing. The loaded `solar_system.glb` is tidied at runtime by hiding decorative asteroid/dwarf clutter, shrinking the Sun node, and centering the fitted model over the Hiro marker. Detail panel preview uses `PANEL_PREVIEW_TARGET_SIZE` / `PANEL_PREVIEW_LARGE_TARGET_SIZE`, device-pixel-ratio canvas sync, centering after bounding-box fit, and per-planet `previewScale` from `src/data/planets.ts`; no CSS-drawn planet fallback should sit behind the GLB preview.
+When planet tap calibration drifts, tune `hitZonePosition` and `hitZoneRadius` in `src/data/planets.ts` only for the fallback sphere row. Primary `solar_system.glb` selection is resolved in `src/main.ts` from planet mesh/material metadata plus touch-coordinate raycast.
+Current baseline: base scales live in `src/ar/scene.ts` (`SOLAR_SYSTEM_MODEL_SCALE`, `SOLAR_FALLBACK_SCALE`) with an aggressive smartphone multiplier in `src/main.ts` (`getSolarScaleMultiplier`) for Infinix-class mobile testing. The loaded `solar_system.glb` is tidied at runtime by hiding decorative asteroid/dwarf clutter, shrinking the Sun node, and centering the fitted model over the Hiro marker. Detail panel preview uses the selected planet's `modelPath` and `previewScale` from `src/data/planets.ts`; no CSS-drawn planet fallback should sit behind the GLB preview.
 Close/reopen stability depends on the `visualViewport`-driven `--app-height` path, repeated post-close AR artifact cleanup, explicit landing/scanner pointer-event restoration, cleared embedded preview scenes, clean landing shell remount after scanner close, and a mobile-only page reload fallback in `src/main.ts`.

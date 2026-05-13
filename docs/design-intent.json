@@ -1,6 +1,6 @@
 {
   "mode": "dynamic",
-  "status": "refined-mobile-ar-scanner-v9-tidied-solar-glb-centered-preview",
+  "status": "refined-mobile-ar-scanner-v10-material-mapped-tap-targets",
   "seedPolicy": {
     "mode": "structure-first-scaffold",
     "requiresProjectSpecificRefinement": true,
@@ -210,6 +210,7 @@
       "marker-status capsule with detected/lost state language",
       "planet detail bottom sheet tied to AR tap flow",
       "actual solar_system.glb as the primary marker visual",
+      "tap selection resolved from actual planet mesh/material identity instead of decorative orbit paths",
       "crisp embedded selected-planet GLB preview above the detail content"
     ],
     "paletteExplorationRule": "Use a visually exploratory product-derived palette with WCAG contrast and status clarity.",
@@ -425,10 +426,10 @@
   "designExecutionHandoff": {
     "version": "ui-handoff-v1",
     "location": "inline-design-intent",
-    "status": "refined-for-mobile-ar-scanner-v5-glb-first-overview",
+    "status": "refined-for-mobile-ar-scanner-v6-material-mapped-tap-targets",
     "seedMode": "structure-first-scaffold",
     "requiresTaskSpecificRefinement": true,
-    "primaryExperienceGoal": "Camera preview must stay visible, scanner close must return to a normal landing page, solar_system.glb must be the primary marker visual at a tidy readable mobile scale, and planet detail must display a full centered selected local GLB asset below the return button.",
+    "primaryExperienceGoal": "Camera preview must stay visible, scanner close must return to a normal landing page, solar_system.glb must be the primary marker visual at a tidy readable mobile scale, planet taps must resolve to the matching selected local GLB asset, and planet detail must display that asset below the return button.",
     "surfacePlan": [
       {
         "surfaceId": "landing-entry",
@@ -451,7 +452,7 @@
       {
         "surfaceId": "solar-system-marker-model",
         "role": "primary-ar-model",
-        "goal": "Render solar_system.glb as the main Hiro marker visual with decorative clutter hidden at runtime, a controlled mobile scale, marker-centered fit, and fallback spheres only on model load failure.",
+        "goal": "Render solar_system.glb as the main Hiro marker visual with decorative clutter hidden at runtime, a controlled mobile scale, marker-centered fit, mesh/material-based tap targets, and fallback spheres only on model load failure.",
         "antiPatterns": [
           "fallback-row-as-primary-model",
           "oversized-marker-model"
@@ -561,7 +562,16 @@
           "ready",
           "error"
         ],
-        "notes": "Detail sheet preview loads the selected local GLB model in a constrained high-DPI slot, centers it after bounding-box fit, and falls back to an error message instead of generated planet art."
+        "notes": "Detail sheet preview loads the selected local GLB model from src/data/planets.ts and falls back to an error message instead of generated planet art."
+      },
+      {
+        "componentId": "solar-planet-tap-targets",
+        "states": [
+          "default",
+          "tap",
+          "fallback-pick"
+        ],
+        "notes": "Tap selection must prefer actual planet mesh/material identity, use invisible enlarged tap targets for mobile, and only fall back to nearest screen-space planet from the user's tap point."
       }
     ],
     "expressionFlexibility": {
