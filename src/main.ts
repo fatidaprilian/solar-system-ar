@@ -132,8 +132,6 @@ const MIN_VIEWPORT_HEIGHT = 320;
 const MAX_TOUCH_VIEWPORT_HEIGHT = 1400;
 const MAX_TOUCH_VIEWPORT_ASPECT = 2.35;
 const SOLAR_OVERVIEW_TARGET_SIZE = 2.8;
-const PANEL_PREVIEW_TARGET_SIZE = 1.3;
-const PANEL_PREVIEW_LARGE_TARGET_SIZE = 1.5;
 const MOBILE_CLOSE_RELOAD_DELAY_MS = 180;
 const SOLAR_MODEL_VERTICAL_OFFSET = 0.08;
 const SOLAR_MODEL_CLUTTER_NAME_PARTS = ["asteroid", "asteroidi", "ceres", "pluto", "moon"];
@@ -325,14 +323,6 @@ function openHowToModal(): void {
 
 function closeHowToModal(): void {
   ui.howToModal.classList.add("is-hidden");
-}
-
-function getPanelPreviewTargetSize(planet: PlanetData): number {
-  const baseSize = planet.id === "jupiter" || planet.id === "saturn"
-    ? PANEL_PREVIEW_LARGE_TARGET_SIZE
-    : PANEL_PREVIEW_TARGET_SIZE;
-
-  return baseSize * planet.previewScale;
 }
 
 function isTouchDevice(): boolean {
