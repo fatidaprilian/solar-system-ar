@@ -1122,8 +1122,6 @@ function resetSolarTransforms(): void {
     planetDetailRootEl.innerHTML = "";
   }
 
-  resetSolarSystemScale();
-
   if (solarSystemEl) {
     solarSystemEl.setAttribute("visible", isSolarSystemModelReady ? "true" : "false");
   }
@@ -1144,13 +1142,6 @@ function setSolarOverviewVisible(isVisible: boolean): void {
 
   if (solarSystemEl) {
     if (isSolarSystemModelReady && isVisible) {
-      resetSolarSystemScale();
-      tuneSolarSystemModelScale();
-      fitModelToMarkerSize(solarSystemEl, getSolarOverviewTargetSize(), {
-        center: true,
-        centerY: true,
-        verticalOffset: SOLAR_MODEL_VERTICAL_OFFSET
-      });
       solarSystemEl.setAttribute("visible", "true");
     } else {
       solarSystemEl.setAttribute("visible", "false");
