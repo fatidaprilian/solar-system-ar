@@ -969,41 +969,80 @@ async function applyFacingModeStream(): Promise<boolean> {
     return false;
   }
 
-  const [videoTrack] = videoEl.srcObject.getVideoTracks();
-  if (!videoTrack) {
-    return false;
-  }
-
   let facingModeApplied = false;
 
-  try {
-    if (typeof videoTrack.applyConstraints === "function") {
-      await videoTrack.applyConstraints({
-        facingMode: { ideal: currentFacingMode }
-      });
+  // 1. Try applyConstraints (works on desktop/multiple-webcam setups)
+  const [videoTrack] = videoEl.srcObject.getVideoTracks();
+  if (videoTrack) {
+    try {
+      if (typeof videoTrack.applyConstraints === "function") {
+        await videoTrack.applyConstraints({
+          facingMode: { ideal: currentFacingMode }
+        });
+      }
+      const settingsFacingMode = videoTrack.getSettings?.().facingMode;
+      facingModeApplied = !settingsFacingMode || settingsFacingMode === currentFacingMode;
+    } catch (error) {
+      console.error("[CAMERA] facingMode constraint failed", error);
     }
-
-    const settingsFacingMode = videoTrack.getSettings?.().facingMode;
-    facingModeApplied = !settingsFacingMode || settingsFacingMode === currentFacingMode;
-  } catch (error) {
-    console.error("[CAMERA] facingMode constraint failed", error);
   }
 
-  try {
-    const capabilities = typeof videoTrack.getCapabilities === "function"
-      ? (videoTrack.getCapabilities() as { zoom?: number | ZoomCapabilityRange })
-      : undefined;
-    const zoomCapability = capabilities?.zoom;
-    const zoomMin = typeof zoomCapability === "number" ? zoomCapability : zoomCapability?.min;
+  // 2. Force manual stream replacement if applyConstraints failed (mobile requirement)
+  if (!facingModeApplied) {
+    try {
+      console.log("[CAMERA] Forcing manual stream replacement for", currentFacingMode);
+      const oldStream = videoEl.srcObject as MediaStream;
+      if (oldStream) {
+        oldStream.getTracks().forEach(t => t.stop());
+      }
 
-    if (typeof zoomMin === "number" && Number.isFinite(zoomMin) && typeof videoTrack.applyConstraints === "function") {
-      const advancedZoomConstraint = [{ zoom: zoomMin }] as unknown as MediaTrackConstraintSet[];
-      await videoTrack.applyConstraints({
-        advanced: advancedZoomConstraint
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: currentFacingMode }
+        },
+        audio: false
       });
+
+      videoEl.srcObject = newStream;
+
+      await new Promise<void>((resolve) => {
+        const onReady = () => {
+          videoEl.play().catch(() => {});
+          resolve();
+        };
+        if (videoEl.readyState >= 2) {
+          onReady();
+        } else {
+          videoEl.onloadedmetadata = onReady;
+        }
+      });
+      facingModeApplied = true;
+    } catch (err) {
+      console.error("[CAMERA] Gagal force replace stream", err);
     }
-  } catch (error) {
-    console.warn("[CAMERA] default zoom reset skipped", error);
+  }
+
+  // 3. Apply default zoom constraints
+  if (videoEl.srcObject instanceof MediaStream) {
+    const [currentTrack] = videoEl.srcObject.getVideoTracks();
+    if (currentTrack) {
+      try {
+        const capabilities = typeof currentTrack.getCapabilities === "function"
+          ? (currentTrack.getCapabilities() as { zoom?: number | ZoomCapabilityRange })
+          : undefined;
+        const zoomCapability = capabilities?.zoom;
+        const zoomMin = typeof zoomCapability === "number" ? zoomCapability : zoomCapability?.min;
+
+        if (typeof zoomMin === "number" && Number.isFinite(zoomMin) && typeof currentTrack.applyConstraints === "function") {
+          const advancedZoomConstraint = [{ zoom: zoomMin }] as unknown as MediaTrackConstraintSet[];
+          await currentTrack.applyConstraints({
+            advanced: advancedZoomConstraint
+          });
+        }
+      } catch (error) {
+        console.warn("[CAMERA] default zoom reset skipped", error);
+      }
+    }
   }
 
   syncArViewportLayout();
