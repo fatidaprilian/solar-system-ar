@@ -1431,7 +1431,6 @@ function bindSolarModelFallback(): void {
   const onSolarLoaded = () => {
     console.log("[MODEL] solar_system_animation.glb loaded");
 
-    if (solarSystemEl) {
 
     tuneSolarSystemModelScale();
     if (solarSystemEl) {
