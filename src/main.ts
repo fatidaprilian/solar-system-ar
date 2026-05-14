@@ -1108,55 +1108,45 @@ function resetSolarSystemScale(): void {
 }
 
 function resetSolarTransforms(): void {
-  if (!solarRootEl) {
-    return;
-  }
-  solarRootEl.setAttribute("visible", "true");
-  const rootObject = (solarRootEl as HTMLElement & { object3D?: { scale: { set: (x: number, y: number, z: number) => void } } }).object3D;
-  rootObject?.scale.set(1, 1, 1);
-
   if (planetDetailRootEl) {
     planetDetailRootEl.setAttribute("visible", "false");
-    const detailObject = (planetDetailRootEl as HTMLElement & { object3D?: { scale: { set: (x: number, y: number, z: number) => void } } }).object3D;
-    detailObject?.scale.set(1, 1, 1);
     planetDetailRootEl.innerHTML = "";
-  }
-
-  if (solarSystemEl) {
-    solarSystemEl.setAttribute("visible", isSolarSystemModelReady ? "true" : "false");
-  }
-
-  if (solarFallbackEl) {
-    solarFallbackEl.setAttribute("visible", isSolarSystemModelReady ? "false" : "true");
   }
 }
 
 function setSolarOverviewVisible(isVisible: boolean): void {
-  const visibleValue = isVisible ? "true" : "false";
-
   if (solarRootEl) {
-    solarRootEl.setAttribute("visible", visibleValue);
-    const rootObject = (solarRootEl as HTMLElement & { object3D?: { scale?: ScaleLike } }).object3D;
-    rootObject?.scale?.set(1, 1, 1);
+    solarRootEl.setAttribute("visible", isVisible ? "true" : "false");
+    const rootObj = (solarRootEl as any).object3D;
+    if (rootObj) {
+      rootObj.visible = isVisible;
+      rootObj.scale.set(1, 1, 1);
+    }
   }
 
   if (solarSystemEl) {
-    if (isSolarSystemModelReady && isVisible) {
-      solarSystemEl.setAttribute("visible", "true");
-    } else {
-      solarSystemEl.setAttribute("visible", "false");
+    const shouldShowModel = isSolarSystemModelReady && isVisible;
+    solarSystemEl.setAttribute("visible", shouldShowModel ? "true" : "false");
+    const sysObj = (solarSystemEl as any).object3D;
+    if (sysObj) {
+      sysObj.visible = shouldShowModel;
+    }
+    
+    // Workaround for A-Frame animation-mixer getting stuck after being hidden
+    if (shouldShowModel && typeof (solarSystemEl as any).play === 'function') {
+      try {
+        (solarSystemEl as any).play();
+      } catch (e) {}
     }
   }
 
   if (solarFallbackEl) {
-    solarFallbackEl.setAttribute("visible", !isSolarSystemModelReady && isVisible ? "true" : "false");
-  }
-
-  if (planetDetailRootEl) {
-    planetDetailRootEl.setAttribute("visible", "false");
-    const detailObject = (planetDetailRootEl as HTMLElement & { object3D?: { scale?: ScaleLike } }).object3D;
-    detailObject?.scale?.set(1, 1, 1);
-    planetDetailRootEl.innerHTML = "";
+    const shouldShowFallback = !isSolarSystemModelReady && isVisible;
+    solarFallbackEl.setAttribute("visible", shouldShowFallback ? "true" : "false");
+    const fbObj = (solarFallbackEl as any).object3D;
+    if (fbObj) {
+      fbObj.visible = shouldShowFallback;
+    }
   }
 }
 
