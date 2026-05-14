@@ -53,6 +53,7 @@ export function createArSceneMarkup(
         gltf-model="#solarSystemModel"
         animation-mixer="clip: *; loop: repeat; timeScale: 0.5"
         continuous-sun-spin
+        touch-rotate="speed: 0.005"
         visible="false"
         position="0 ${SOLAR_ROOT_Y_POSITION} 0"
         rotation="-90 0 0"

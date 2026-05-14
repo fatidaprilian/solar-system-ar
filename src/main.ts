@@ -15,6 +15,54 @@ if (maybeWindow.AFRAME) {
       });
     }
   });
+
+  maybeWindow.AFRAME.registerComponent("touch-rotate", {
+    schema: { speed: { default: 0.005 } },
+    init: function () {
+      this.isDragging = false;
+      this.previousMousePosition = { x: 0, y: 0 };
+      this.dragDistance = 0;
+
+      this.onPointerDown = (e: PointerEvent) => {
+        this.isDragging = true;
+        this.previousMousePosition = { x: e.clientX, y: e.clientY };
+        this.dragDistance = 0;
+      };
+
+      this.onPointerUp = () => {
+        this.isDragging = false;
+        (window as any).__lastSolarDragDistance = this.dragDistance;
+      };
+
+      this.onPointerMove = (e: PointerEvent) => {
+        if (!this.isDragging || !this.el.object3D) return;
+
+        const deltaX = e.clientX - this.previousMousePosition.x;
+        const deltaY = e.clientY - this.previousMousePosition.y;
+        this.dragDistance += Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+        this.el.object3D.rotation.y += deltaX * this.data.speed;
+        this.el.object3D.rotation.x += deltaY * this.data.speed;
+
+        this.previousMousePosition = { x: e.clientX, y: e.clientY };
+      };
+
+      const sceneEl = document.querySelector('a-scene');
+      if (sceneEl) {
+        sceneEl.addEventListener('pointerdown', this.onPointerDown);
+        sceneEl.addEventListener('pointerup', this.onPointerUp);
+        sceneEl.addEventListener('pointermove', this.onPointerMove);
+      }
+    },
+    remove: function () {
+      const sceneEl = document.querySelector('a-scene');
+      if (sceneEl) {
+        sceneEl.removeEventListener('pointerdown', this.onPointerDown);
+        sceneEl.removeEventListener('pointerup', this.onPointerUp);
+        sceneEl.removeEventListener('pointermove', this.onPointerMove);
+      }
+    }
+  });
 }
 
 
@@ -1356,6 +1404,11 @@ function bindTouchFallbackRaycast(): void {
 
     const point = getClientPointFromTapEvent(event);
     if (!point) {
+      return;
+    }
+
+    // Abaikan jika user ternyata melakukan drag/swipe untuk merotasi tata surya
+    if ((window as any).__lastSolarDragDistance > 15) {
       return;
     }
 
