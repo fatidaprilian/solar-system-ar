@@ -15,61 +15,8 @@ if (maybeWindow.AFRAME) {
       });
     }
   });
-
-  maybeWindow.AFRAME.registerComponent("planet-orbit-animation", {
-    schema: {
-      speedMultiplier: { type: "number", default: 1 }
-    },
-    tick: function (_time: number, timeDelta: number) {
-      if (!this.el.object3D) return;
-      
-      const speed = (this.data.speedMultiplier * timeDelta) / 1000;
-      
-      this.el.object3D.traverse((child: any) => {
-        const planetId = getPlanetIdFromNodeName(child.name);
-        if (planetId && child.isMesh && child.position) {
-          // Different speeds for different planets
-          let orbitSpeed = speed;
-          if (planetId === "mercury") orbitSpeed *= 4.1;
-          if (planetId === "venus") orbitSpeed *= 1.6;
-          if (planetId === "earth") orbitSpeed *= 1.0;
-          if (planetId === "mars") orbitSpeed *= 0.5;
-          if (planetId === "jupiter") orbitSpeed *= 0.2;
-          if (planetId === "saturn") orbitSpeed *= 0.1;
-          if (planetId === "uranus") orbitSpeed *= 0.05;
-          if (planetId === "neptune") orbitSpeed *= 0.03;
-          
-          const x = child.position.x;
-          const z = child.position.z;
-          const cos = Math.cos(orbitSpeed);
-          const sin = Math.sin(orbitSpeed);
-          
-          child.position.x = x * cos - z * sin;
-          child.position.z = x * sin + z * cos;
-          
-          // Also spin the planet on its own axis
-          child.rotation.y += orbitSpeed * 2;
-        }
-      });
-    }
-  });
 }
 
-function getPlanetIdFromNodeName(name: string): PlanetId | null {
-  if (!name) return null;
-  const lower = name.toLowerCase();
-  
-  if (lower.includes("mercury")) return "mercury";
-  if (lower.includes("venus")) return "venus";
-  if (lower.includes("earth") || lower.includes("erath")) return "earth";
-  if (lower.includes("mars")) return "mars";
-  if (lower.includes("jupiter")) return "jupiter";
-  if (lower.includes("saturn") && !lower.includes("ring")) return "saturn";
-  if (lower.includes("uranus")) return "uranus";
-  if (lower.includes("neptune")) return "neptune";
-  
-  return null;
-}
 
 type RequiredElements = {
   app: HTMLElement;
