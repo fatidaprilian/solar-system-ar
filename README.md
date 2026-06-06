@@ -1,11 +1,12 @@
-﻿# TUGAS-AKHIR-VAR-TATA-SURYA
+# TUGAS-AKHIR-VAR-TATA-SURYA
 
 Project Web AR marker-based (Hiro) untuk eksplorasi tata surya menggunakan:
 - Vite
 - TypeScript
 - A-Frame
 - AR.js (`@ar-js-org/ar.js`)
-- GSAP
+- A-Frame Extras `animation-mixer`
+- Google `<model-viewer>` untuk preview GLB planet di panel detail
 - GLB/glTF models
 
 ## Jalankan Lokal
@@ -26,12 +27,13 @@ npm run preview
 
 ## Struktur Penting
 
-- `public/assets/models/solar-system/solar_system.glb`
+- `public/assets/models/solar-system/solar_system_animation.glb`
 - `public/assets/models/planets/*.glb`
 - `public/assets/markers/hiro.png`
 - `public/assets/markers/patt.hiro`
 - `public/vendor/aframe.min.js`
 - `public/vendor/aframe-ar.js`
+- `public/vendor/aframe-extras.min.js`
 - `public/marker-test.html`
 - `src/data/planets.ts`
 - `src/ar/scene.ts`
@@ -39,20 +41,35 @@ npm run preview
 - `src/styles/main.css`
 - `src/main.ts`
 
-## Deploy Vercel
+## Fitur Utama
+
+- Landing dengan tombol `Mulai AR`, `Cara Pakai`, dan `Tentang Tata Surya`.
+- Scanner AR berbasis Hiro marker.
+- Model tata surya utama dari `solar_system_animation.glb`.
+- Detail 8 planet utama dengan preview GLB planet individual.
+- Profil edukasi planet: kategori, bulan, atmosfer, suhu, gravitasi, komposisi, ciri utama, eksplorasi, dan fakta menarik.
+- Kuis pilihan jawaban per planet dengan feedback langsung.
+- Modal ringkas tentang Matahari, klasifikasi planet, asteroid belt, Kuiper belt, dan catatan skala AR.
+
+## Deploy Static Hosting
+
+Untuk Vercel atau static hosting sejenis:
 
 1. Push project ke repository.
-2. Import project di Vercel.
+2. Import project di platform hosting.
 3. Build command: `npm run build`.
 4. Output directory: `dist`.
 5. Deploy.
 
-`vercel.json` sudah disiapkan untuk SPA rewrite ke `index.html`.
+Saat ini project tidak memakai `vercel.json` khusus. Route utama berjalan sebagai static Vite app dari `index.html`.
 
 ## Cara Ubah Data Planet
 
 Edit `src/data/planets.ts` pada array `PLANETS`:
-- `name`, `description`, `diameter`, `distanceFromSun`, `orbitalPeriod`, `rotationPeriod`, `funFact`
+- `name`, `description`, `category`
+- `diameter`, `distanceFromSun`, `orbitalPeriod`, `rotationPeriod`
+- `moons`, `atmosphere`, `averageTemperature`, `gravity`, `composition`, `keyFeature`, `explorationNote`
+- `funFact`, `learningQuestion`, `learningAnswer`, `quizOptions`, `quizCorrectAnswer`, `quizExplanation`
 - `modelPath` / `modelId`
 - `themeColor`
 - `hitZonePosition` / `hitZoneRadius`
@@ -63,11 +80,17 @@ Masih di `src/data/planets.ts`, ubah:
 - `hitZonePosition` (format: `x y z`)
 - `hitZoneRadius` (angka radius sphere)
 
-Untuk kalibrasi visual hit zone saat testing, atur flag `DEBUG_HIT_ZONES` di `src/ar/scene.ts`:
-- `true`: hit zone terlihat semi-transparan (`opacity: 0.18`)
-- `false`: hit zone transparan penuh (`opacity: 0`)
-
 Rekomendasi tuning cepat:
 1. Naikkan/turunkan `y` jika klik terasa meleset di atas/bawah planet.
 2. Geser `x` untuk kiri/kanan, `z` untuk depan/belakang marker.
 3. Jika sulit diklik di HP, naikkan `hitZoneRadius` sedikit (misalnya +0.02).
+
+## Validasi Manual
+
+Minimal sebelum demo:
+1. Buka aplikasi di Android Chrome dan iOS Safari.
+2. Tap `Tentang Tata Surya`, baca modal, lalu tutup.
+3. Tap `Mulai AR`, izinkan kamera, dan arahkan ke Hiro marker.
+4. Tap beberapa planet, cek judul panel dan preview GLB sesuai planet yang dipilih.
+5. Coba kuis planet dan pastikan feedback benar/salah tampil.
+6. Tap `Kembali ke Tata Surya`, lalu tutup scanner dan pastikan landing kembali normal.

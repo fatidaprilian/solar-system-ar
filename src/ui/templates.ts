@@ -10,6 +10,7 @@ export const APP_TEMPLATE = `
       <div class="landing-actions">
         <button id="startArBtn" class="btn btn-primary" type="button">Mulai AR</button>
         <button id="howToBtn" class="btn btn-secondary" type="button">Cara Pakai</button>
+        <button id="solarInfoBtn" class="btn btn-secondary" type="button">Tentang Tata Surya</button>
       </div>
     </div>
   </section>
@@ -32,6 +33,7 @@ export const APP_TEMPLATE = `
         <h2 id="planetName">Planet</h2>
         <button id="closePlanetBtn" class="text-btn" type="button">Kembali ke Tata Surya</button>
       </div>
+      <p id="planetCategory" class="planet-category"></p>
       <div id="planetPreview" class="planet-preview" aria-hidden="true">
         <div class="planet-preview-status">Memuat model planet...</div>
       </div>
@@ -42,13 +44,34 @@ export const APP_TEMPLATE = `
         <div><dt>Periode Revolusi</dt><dd id="planetOrbit"></dd></div>
         <div><dt>Periode Rotasi</dt><dd id="planetRotation"></dd></div>
       </dl>
+      <section class="planet-learning" aria-label="Profil edukasi planet">
+        <h3>Profil Planet</h3>
+        <dl class="planet-learning-grid">
+          <div><dt>Bulan</dt><dd id="planetMoons"></dd></div>
+          <div><dt>Atmosfer</dt><dd id="planetAtmosphere"></dd></div>
+          <div><dt>Suhu</dt><dd id="planetTemperature"></dd></div>
+          <div><dt>Gravitasi</dt><dd id="planetGravity"></dd></div>
+          <div><dt>Komposisi</dt><dd id="planetComposition"></dd></div>
+          <div><dt>Ciri Utama</dt><dd id="planetFeature"></dd></div>
+        </dl>
+      </section>
+      <section class="planet-note" aria-label="Catatan eksplorasi planet">
+        <h3>Eksplorasi</h3>
+        <p id="planetExploration"></p>
+      </section>
       <div class="planet-fact">
         <h3>Fakta Menarik</h3>
         <p id="planetFact"></p>
       </div>
+      <section class="planet-quiz" aria-label="Pertanyaan cepat planet">
+        <h3>Pertanyaan Cepat</h3>
+        <p id="planetQuestion" class="planet-question"></p>
+        <div id="planetQuizOptions" class="planet-quiz-options"></div>
+        <p id="planetQuizFeedback" class="planet-quiz-feedback" role="status" aria-live="polite"></p>
+      </section>
       <div class="planet-nav-actions">
-        <button id="prevPlanetBtn" class="btn btn-secondary nav-btn" type="button">« Sebelumnya</button>
-        <button id="nextPlanetBtn" class="btn btn-primary nav-btn" type="button">Selanjutnya »</button>
+        <button id="prevPlanetBtn" class="btn btn-secondary nav-btn" type="button">Sebelumnya</button>
+        <button id="nextPlanetBtn" class="btn btn-primary nav-btn" type="button">Selanjutnya</button>
       </div>
     </aside>
 
@@ -67,6 +90,34 @@ export const APP_TEMPLATE = `
       <div class="modal-actions">
         <a class="btn btn-secondary" href="/assets/markers/hiro.png" target="_blank" rel="noreferrer">Download Hiro Marker</a>
         <button id="closeHowToBtn" class="btn btn-primary" type="button">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="solarInfoModal" class="modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="solarInfoTitle">
+    <div class="modal-card modal-card-wide">
+      <h2 id="solarInfoTitle">Tentang Tata Surya</h2>
+      <p class="modal-lead">Tata surya terdiri dari Matahari, delapan planet utama, satelit alami, asteroid, komet, dan objek kecil lain yang terikat oleh gravitasi Matahari.</p>
+      <div class="solar-info-grid">
+        <section>
+          <h3>Matahari</h3>
+          <p>Matahari adalah pusat tata surya dan sumber energi utama. Gravitasi Matahari menjaga planet tetap bergerak pada orbitnya.</p>
+        </section>
+        <section>
+          <h3>Klasifikasi Planet</h3>
+          <p>Mercury, Venus, Earth, dan Mars adalah planet batuan. Jupiter dan Saturn adalah gas giant. Uranus dan Neptune adalah ice giant.</p>
+        </section>
+        <section>
+          <h3>Asteroid dan Kuiper Belt</h3>
+          <p>Asteroid belt berada di antara Mars dan Jupiter. Kuiper belt berada lebih jauh dari Neptune dan berisi objek es, termasuk Pluto sebagai dwarf planet.</p>
+        </section>
+        <section>
+          <h3>Catatan Skala AR</h3>
+          <p>Ukuran dan jarak di mode AR disederhanakan agar semua planet tetap terlihat pada marker Hiro. Skala visual dipakai untuk pembelajaran, bukan perbandingan 1:1.</p>
+        </section>
+      </div>
+      <div class="modal-actions">
+        <button id="closeSolarInfoBtn" class="btn btn-primary" type="button">Tutup</button>
       </div>
     </div>
   </div>

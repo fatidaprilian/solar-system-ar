@@ -539,6 +539,20 @@ body:not(.is-ar-active) .a-orientation-modal {
   font-size: 27px;
 }
 
+.planet-category {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: 10px 0 0;
+  border: 1px solid color-mix(in srgb, var(--planet-theme), #ffffff 58%);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--planet-theme), transparent 84%);
+  color: var(--text-0);
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .text-btn {
   border: 1px solid color-mix(in srgb, var(--planet-theme), #ffffff 68%);
   background: rgba(6, 15, 28, 0.72);
@@ -581,6 +595,57 @@ body:not(.is-ar-active) .a-orientation-modal {
   font-weight: 600;
 }
 
+.planet-learning,
+.planet-note,
+.planet-quiz {
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  background: rgba(8, 18, 34, 0.46);
+}
+
+.planet-learning h3,
+.planet-note h3,
+.planet-quiz h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #9db1ce;
+}
+
+.planet-learning-grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 9px;
+}
+
+.planet-learning-grid div {
+  border-top: 1px solid rgba(145, 183, 229, 0.14);
+  padding-top: 9px;
+}
+
+.planet-learning-grid div:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.planet-learning-grid dt {
+  margin: 0 0 4px;
+  color: color-mix(in srgb, var(--planet-theme), #ffffff 58%);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.planet-learning-grid dd,
+.planet-note p,
+.planet-quiz p {
+  margin: 0;
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
 .planet-fact {
   margin-top: 14px;
   border: 1px solid var(--line);
@@ -599,6 +664,72 @@ body:not(.is-ar-active) .a-orientation-modal {
   margin: 0;
   color: var(--text-1);
   line-height: 1.5;
+}
+
+.planet-question {
+  font-weight: 600;
+  color: var(--text-0) !important;
+}
+
+.planet-quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.quiz-option {
+  min-height: 40px;
+  border: 1px solid color-mix(in srgb, var(--planet-theme), #ffffff 50%);
+  border-radius: 10px;
+  background: rgba(6, 15, 28, 0.68);
+  color: var(--text-0);
+  padding: 9px 10px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.quiz-option:hover:not(:disabled),
+.quiz-option:focus-visible {
+  border-color: color-mix(in srgb, var(--planet-theme), #ffffff 20%);
+  background: color-mix(in srgb, var(--planet-theme), rgba(6, 15, 28, 0.68) 78%);
+}
+
+.quiz-option:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.quiz-option:disabled {
+  cursor: default;
+}
+
+.quiz-option.is-correct {
+  border-color: rgba(102, 236, 150, 0.68);
+  background: rgba(21, 83, 48, 0.5);
+}
+
+.quiz-option.is-wrong {
+  border-color: rgba(255, 141, 141, 0.68);
+  background: rgba(94, 23, 31, 0.5);
+}
+
+.planet-quiz-feedback {
+  min-height: 0;
+  margin-top: 10px !important;
+}
+
+.planet-quiz-feedback:empty {
+  display: none;
+}
+
+.planet-quiz-feedback.is-correct {
+  color: #bdf0d0;
+}
+
+.planet-quiz-feedback.is-wrong {
+  color: #ffd2d2;
 }
 
 .planet-nav-actions {
@@ -651,8 +782,45 @@ body:not(.is-ar-active) .a-orientation-modal {
   padding: 20px;
 }
 
+.modal-card-wide {
+  width: min(820px, 100%);
+}
+
 .modal-card h2 {
   margin: 0;
+}
+
+.modal-lead {
+  margin: 12px 0 0;
+  color: var(--text-1);
+  line-height: 1.6;
+}
+
+.solar-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.solar-info-grid section {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(8, 18, 34, 0.52);
+  padding: 12px;
+}
+
+.solar-info-grid h3 {
+  margin: 0 0 8px;
+  color: #c7dcff;
+  font-size: 14px;
+}
+
+.solar-info-grid p {
+  margin: 0;
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 .modal-card ol {
@@ -704,7 +872,7 @@ body:not(.is-ar-active) .a-orientation-modal {
     top: auto;
     bottom: calc(max(10px, env(safe-area-inset-bottom)) + 54px);
     width: auto;
-    max-height: min(58vh, 460px);
+    max-height: min(64vh, 560px);
     border-radius: 16px;
     --planet-preview-base: clamp(150px, 44vw, 190px);
   }
@@ -720,6 +888,10 @@ body:not(.is-ar-active) .a-orientation-modal {
 
   .text-btn {
     width: 100%;
+  }
+
+  .solar-info-grid {
+    grid-template-columns: 1fr;
   }
 
   .scanner-hint {
@@ -751,7 +923,7 @@ body:not(.is-ar-active) .a-orientation-modal {
   }
 
   #closeScannerBtn::before {
-    content: "×";
+    content: "X";
     font-size: 28px;
     line-height: 1;
   }

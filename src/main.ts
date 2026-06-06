@@ -73,6 +73,7 @@ type RequiredElements = {
   arMount: HTMLElement;
   startArBtn: HTMLButtonElement;
   howToBtn: HTMLButtonElement;
+  solarInfoBtn: HTMLButtonElement;
   closeScannerBtn: HTMLButtonElement;
   switchCameraBtn: HTMLButtonElement;
   markerStatus: HTMLElement;
@@ -80,17 +81,30 @@ type RequiredElements = {
   planetPanel: HTMLDivElement;
   planetPreview: HTMLDivElement;
   planetName: HTMLHeadingElement;
+  planetCategory: HTMLElement;
   planetDescription: HTMLParagraphElement;
   planetDiameter: HTMLElement;
   planetDistance: HTMLElement;
   planetOrbit: HTMLElement;
   planetRotation: HTMLElement;
+  planetMoons: HTMLElement;
+  planetAtmosphere: HTMLElement;
+  planetTemperature: HTMLElement;
+  planetGravity: HTMLElement;
+  planetComposition: HTMLElement;
+  planetFeature: HTMLElement;
+  planetExploration: HTMLParagraphElement;
   planetFact: HTMLParagraphElement;
+  planetQuestion: HTMLParagraphElement;
+  planetQuizOptions: HTMLDivElement;
+  planetQuizFeedback: HTMLParagraphElement;
   closePlanetBtn: HTMLButtonElement;
   prevPlanetBtn: HTMLButtonElement;
   nextPlanetBtn: HTMLButtonElement;
   howToModal: HTMLElement;
   closeHowToBtn: HTMLButtonElement;
+  solarInfoModal: HTMLElement;
+  closeSolarInfoBtn: HTMLButtonElement;
   toast: HTMLElement;
   fatalError: HTMLElement;
 };
@@ -112,6 +126,10 @@ let pendingSceneBoot = false;
 let toastTimer = 0;
 
 type CameraFacingMode = "environment" | "user";
+type CameraTrackIdentity = {
+  deviceId?: string;
+  label?: string;
+};
 
 let currentFacingMode: CameraFacingMode = "environment";
 let manualFacingModeApplied = false;
@@ -249,6 +267,7 @@ function buildUi(): RequiredElements {
     arMount: getRequiredElement<HTMLElement>("#arMount"),
     startArBtn: getRequiredElement<HTMLButtonElement>("#startArBtn"),
     howToBtn: getRequiredElement<HTMLButtonElement>("#howToBtn"),
+    solarInfoBtn: getRequiredElement<HTMLButtonElement>("#solarInfoBtn"),
     closeScannerBtn: getRequiredElement<HTMLButtonElement>("#closeScannerBtn"),
     switchCameraBtn: getRequiredElement<HTMLButtonElement>("#switchCameraBtn"),
     markerStatus: getRequiredElement<HTMLElement>("#markerStatus"),
@@ -256,17 +275,30 @@ function buildUi(): RequiredElements {
     planetPanel: getRequiredElement<HTMLDivElement>("#planetPanel"),
     planetPreview: getRequiredElement<HTMLDivElement>("#planetPreview"),
     planetName: getRequiredElement<HTMLHeadingElement>("#planetName"),
+    planetCategory: getRequiredElement<HTMLElement>("#planetCategory"),
     planetDescription: getRequiredElement<HTMLParagraphElement>("#planetDescription"),
     planetDiameter: getRequiredElement<HTMLElement>("#planetDiameter"),
     planetDistance: getRequiredElement<HTMLElement>("#planetDistance"),
     planetOrbit: getRequiredElement<HTMLElement>("#planetOrbit"),
     planetRotation: getRequiredElement<HTMLElement>("#planetRotation"),
+    planetMoons: getRequiredElement<HTMLElement>("#planetMoons"),
+    planetAtmosphere: getRequiredElement<HTMLElement>("#planetAtmosphere"),
+    planetTemperature: getRequiredElement<HTMLElement>("#planetTemperature"),
+    planetGravity: getRequiredElement<HTMLElement>("#planetGravity"),
+    planetComposition: getRequiredElement<HTMLElement>("#planetComposition"),
+    planetFeature: getRequiredElement<HTMLElement>("#planetFeature"),
+    planetExploration: getRequiredElement<HTMLParagraphElement>("#planetExploration"),
     planetFact: getRequiredElement<HTMLParagraphElement>("#planetFact"),
+    planetQuestion: getRequiredElement<HTMLParagraphElement>("#planetQuestion"),
+    planetQuizOptions: getRequiredElement<HTMLDivElement>("#planetQuizOptions"),
+    planetQuizFeedback: getRequiredElement<HTMLParagraphElement>("#planetQuizFeedback"),
     closePlanetBtn: getRequiredElement<HTMLButtonElement>("#closePlanetBtn"),
     prevPlanetBtn: getRequiredElement<HTMLButtonElement>("#prevPlanetBtn"),
     nextPlanetBtn: getRequiredElement<HTMLButtonElement>("#nextPlanetBtn"),
     howToModal: getRequiredElement<HTMLElement>("#howToModal"),
     closeHowToBtn: getRequiredElement<HTMLButtonElement>("#closeHowToBtn"),
+    solarInfoModal: getRequiredElement<HTMLElement>("#solarInfoModal"),
+    closeSolarInfoBtn: getRequiredElement<HTMLButtonElement>("#closeSolarInfoBtn"),
     toast: getRequiredElement<HTMLElement>("#toast"),
     fatalError: getRequiredElement<HTMLElement>("#fatalError")
   };
@@ -311,6 +343,7 @@ function showLanding(): void {
   ui.landingPage.classList.remove("is-hidden");
   ui.scannerPage.classList.add("is-hidden");
   ui.howToModal.classList.add("is-hidden");
+  ui.solarInfoModal.classList.add("is-hidden");
   enableLandingInteraction();
   resetLandingViewport();
 }
@@ -330,6 +363,14 @@ function openHowToModal(): void {
 
 function closeHowToModal(): void {
   ui.howToModal.classList.add("is-hidden");
+}
+
+function openSolarInfoModal(): void {
+  ui.solarInfoModal.classList.remove("is-hidden");
+}
+
+function closeSolarInfoModal(): void {
+  ui.solarInfoModal.classList.add("is-hidden");
 }
 
 function isTouchDevice(): boolean {
@@ -393,24 +434,76 @@ function renderPlanetPanelPreview(planet: PlanetData): void {
   }, { once: true });
 }
 
+function renderPlanetQuiz(planet: PlanetData): void {
+  ui.planetQuizOptions.innerHTML = "";
+  ui.planetQuizFeedback.textContent = "";
+  ui.planetQuizFeedback.classList.remove("is-correct", "is-wrong");
+
+  planet.quizOptions.forEach((option) => {
+    const optionButton = document.createElement("button");
+    optionButton.type = "button";
+    optionButton.className = "quiz-option";
+    optionButton.textContent = option;
+    optionButton.dataset.answer = option;
+    ui.planetQuizOptions.appendChild(optionButton);
+  });
+}
+
+function answerPlanetQuiz(selectedAnswer: string): void {
+  if (!currentPlanet) {
+    return;
+  }
+
+  const isCorrect = selectedAnswer === currentPlanet.quizCorrectAnswer;
+  const optionButtons = ui.planetQuizOptions.querySelectorAll<HTMLButtonElement>(".quiz-option");
+
+  optionButtons.forEach((button) => {
+    const isSelected = button.dataset.answer === selectedAnswer;
+    const isAnswer = button.dataset.answer === currentPlanet?.quizCorrectAnswer;
+    button.disabled = true;
+    button.classList.toggle("is-selected", isSelected);
+    button.classList.toggle("is-correct", isAnswer);
+    button.classList.toggle("is-wrong", isSelected && !isCorrect);
+  });
+
+  ui.planetQuizFeedback.textContent = isCorrect
+    ? `Benar. ${currentPlanet.quizExplanation}`
+    : `Belum tepat. Jawaban yang benar: ${currentPlanet.quizCorrectAnswer}. ${currentPlanet.quizExplanation}`;
+  ui.planetQuizFeedback.classList.toggle("is-correct", isCorrect);
+  ui.planetQuizFeedback.classList.toggle("is-wrong", !isCorrect);
+}
+
 function fillPlanetPanel(planet: PlanetData): void {
   clearPlanetPanelPreview();
   ui.planetPanel.style.setProperty("--planet-theme", planet.themeColor);
   ui.planetPanel.style.setProperty("--planet-preview-scale", `${planet.previewScale}`);
   ui.planetPanel.dataset.planet = planet.id;
   ui.planetName.textContent = planet.name;
+  ui.planetCategory.textContent = planet.category;
   ui.planetDescription.textContent = planet.description;
   ui.planetDiameter.textContent = planet.diameter;
   ui.planetDistance.textContent = planet.distanceFromSun;
   ui.planetOrbit.textContent = planet.orbitalPeriod;
   ui.planetRotation.textContent = planet.rotationPeriod;
+  ui.planetMoons.textContent = planet.moons;
+  ui.planetAtmosphere.textContent = planet.atmosphere;
+  ui.planetTemperature.textContent = planet.averageTemperature;
+  ui.planetGravity.textContent = planet.gravity;
+  ui.planetComposition.textContent = planet.composition;
+  ui.planetFeature.textContent = planet.keyFeature;
+  ui.planetExploration.textContent = planet.explorationNote;
   ui.planetFact.textContent = planet.funFact;
+  ui.planetQuestion.textContent = planet.learningQuestion;
+  renderPlanetQuiz(planet);
   ui.planetPanel.classList.remove("is-hidden");
   renderPlanetPanelPreview(planet);
 }
 
 function hidePlanetPanel(): void {
   clearPlanetPanelPreview();
+  ui.planetQuizOptions.innerHTML = "";
+  ui.planetQuizFeedback.textContent = "";
+  ui.planetQuizFeedback.classList.remove("is-correct", "is-wrong");
   ui.planetPanel.classList.add("is-hidden");
   ui.planetPanel.style.setProperty("--planet-preview-scale", "1");
   delete ui.planetPanel.dataset.planet;
@@ -562,6 +655,7 @@ function remountCleanLandingShell(): void {
   bindStaticUiEvents();
   showLanding();
   setMarkerStatus("Mencari marker...", false);
+  closeSolarInfoModal();
   clearFatalError();
   hidePlanetPanel();
   ui.toast.classList.add("is-hidden");
@@ -632,6 +726,219 @@ function stopMediaStream(stream: MediaStream | null): void {
 
 function getFacingModeLabel(mode: CameraFacingMode): string {
   return mode === "environment" ? "Belakang" : "Depan";
+}
+
+const CAMERA_LABEL_HINTS: Record<CameraFacingMode, string[]> = {
+  environment: ["back", "rear", "environment", "world", "belakang"],
+  user: ["front", "user", "face", "facetime", "selfie", "depan"]
+};
+
+function normalizeCameraLabel(label: string | undefined): string {
+  return label?.trim().toLowerCase() ?? "";
+}
+
+function getCameraTrackIdentity(track: MediaStreamTrack | undefined): CameraTrackIdentity | null {
+  if (!track) {
+    return null;
+  }
+
+  const settings = typeof track.getSettings === "function" ? track.getSettings() : undefined;
+  const deviceId = typeof settings?.deviceId === "string" ? settings.deviceId : undefined;
+  const label = normalizeCameraLabel(track.label);
+
+  if (!deviceId && !label) {
+    return null;
+  }
+
+  return { deviceId, label };
+}
+
+function getActiveCameraTrackIdentity(): CameraTrackIdentity | null {
+  const videoEl = findArVideoElement();
+  if (!(videoEl?.srcObject instanceof MediaStream)) {
+    return null;
+  }
+
+  return getCameraTrackIdentity(videoEl.srcObject.getVideoTracks()[0]);
+}
+
+function isSameCameraIdentity(
+  currentIdentity: CameraTrackIdentity | null,
+  previousIdentity: CameraTrackIdentity | null | undefined
+): boolean {
+  if (!currentIdentity || !previousIdentity) {
+    return false;
+  }
+
+  if (
+    currentIdentity.deviceId &&
+    previousIdentity.deviceId &&
+    currentIdentity.deviceId === previousIdentity.deviceId
+  ) {
+    return true;
+  }
+
+  return Boolean(
+    currentIdentity.label &&
+    previousIdentity.label &&
+    currentIdentity.label === previousIdentity.label
+  );
+}
+
+function detectFacingModeFromLabel(label: string): CameraFacingMode | null {
+  if (!label) {
+    return null;
+  }
+
+  if (CAMERA_LABEL_HINTS.user.some((hint) => label.includes(hint))) {
+    return "user";
+  }
+
+  if (CAMERA_LABEL_HINTS.environment.some((hint) => label.includes(hint))) {
+    return "environment";
+  }
+
+  return null;
+}
+
+function detectFacingModeFromTrack(track: MediaStreamTrack | undefined): CameraFacingMode | null {
+  if (!track) {
+    return null;
+  }
+
+  const settings = typeof track.getSettings === "function" ? track.getSettings() : undefined;
+  const settingsFacingMode = typeof settings?.facingMode === "string" ? settings.facingMode : "";
+
+  if (settingsFacingMode === "environment" || settingsFacingMode === "user") {
+    return settingsFacingMode;
+  }
+
+  return detectFacingModeFromLabel(normalizeCameraLabel(track.label));
+}
+
+function isRequestedFacingModeTrack(
+  track: MediaStreamTrack | undefined,
+  requestedMode: CameraFacingMode,
+  previousIdentity?: CameraTrackIdentity | null
+): boolean {
+  if (!track) {
+    return false;
+  }
+
+  const detectedMode = detectFacingModeFromTrack(track);
+  if (detectedMode) {
+    return detectedMode === requestedMode;
+  }
+
+  const currentIdentity = getCameraTrackIdentity(track);
+  if (isSameCameraIdentity(currentIdentity, previousIdentity)) {
+    return false;
+  }
+
+  return Boolean(previousIdentity && currentIdentity);
+}
+
+function isRequestedFacingModeStream(
+  stream: MediaStream,
+  requestedMode: CameraFacingMode,
+  previousIdentity?: CameraTrackIdentity | null
+): boolean {
+  return isRequestedFacingModeTrack(stream.getVideoTracks()[0], requestedMode, previousIdentity);
+}
+
+async function requestCameraStream(
+  videoConstraints: MediaTrackConstraints,
+  requestedMode: CameraFacingMode,
+  previousIdentity?: CameraTrackIdentity | null
+): Promise<MediaStream | null> {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: videoConstraints,
+      audio: false
+    });
+
+    if (isRequestedFacingModeStream(stream, requestedMode, previousIdentity)) {
+      return stream;
+    }
+
+    stopMediaStream(stream);
+  } catch (error) {
+    console.warn("[CAMERA] requested camera stream failed", error);
+  }
+
+  return null;
+}
+
+async function findCameraDeviceIdByFacingMode(mode: CameraFacingMode): Promise<string | null> {
+  if (typeof navigator.mediaDevices.enumerateDevices !== "function") {
+    return null;
+  }
+
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videoDevices = devices.filter((device) => device.kind === "videoinput" && device.deviceId);
+    const requestedHints = CAMERA_LABEL_HINTS[mode];
+    const oppositeHints = CAMERA_LABEL_HINTS[mode === "environment" ? "user" : "environment"];
+
+    const matchedDevice = videoDevices.find((device) => {
+      const label = normalizeCameraLabel(device.label);
+      return requestedHints.some((hint) => label.includes(hint)) &&
+        !oppositeHints.some((hint) => label.includes(hint));
+    });
+
+    return matchedDevice?.deviceId ?? null;
+  } catch (error) {
+    console.warn("[CAMERA] enumerateDevices failed", error);
+    return null;
+  }
+}
+
+async function requestVerifiedFacingModeStream(
+  requestedMode: CameraFacingMode,
+  previousIdentity?: CameraTrackIdentity | null
+): Promise<MediaStream | null> {
+  const exactFacingModeStream = await requestCameraStream(
+    { facingMode: { exact: requestedMode } },
+    requestedMode,
+    previousIdentity
+  );
+  if (exactFacingModeStream) {
+    return exactFacingModeStream;
+  }
+
+  const deviceId = await findCameraDeviceIdByFacingMode(requestedMode);
+  if (deviceId) {
+    const exactDeviceStream = await requestCameraStream(
+      { deviceId: { exact: deviceId } },
+      requestedMode,
+      previousIdentity
+    );
+    if (exactDeviceStream) {
+      return exactDeviceStream;
+    }
+  }
+
+  return requestCameraStream(
+    { facingMode: { ideal: requestedMode } },
+    requestedMode,
+    previousIdentity
+  );
+}
+
+async function waitForVideoMetadata(videoEl: HTMLVideoElement): Promise<void> {
+  await new Promise<void>((resolve) => {
+    const onReady = () => {
+      videoEl.play().catch(() => undefined);
+      resolve();
+    };
+
+    if (videoEl.readyState >= 2) {
+      onReady();
+      return;
+    }
+
+    videoEl.addEventListener("loadedmetadata", onReady, { once: true });
+  });
 }
 
 type ZoomCapabilityRange = {
@@ -955,7 +1262,7 @@ async function waitForArVideoElement(timeoutMs = 3500): Promise<HTMLVideoElement
   return null;
 }
 
-async function applyFacingModeStream(): Promise<boolean> {
+async function applyFacingModeStream(previousCameraIdentity?: CameraTrackIdentity | null): Promise<boolean> {
   if (!navigator.mediaDevices) {
     return false;
   }
@@ -969,56 +1276,59 @@ async function applyFacingModeStream(): Promise<boolean> {
     return false;
   }
 
-  let facingModeApplied = false;
+  const currentStream = videoEl.srcObject as MediaStream;
+  let facingModeApplied = isRequestedFacingModeTrack(
+    currentStream.getVideoTracks()[0],
+    currentFacingMode,
+    previousCameraIdentity
+  );
 
   // 1. Try applyConstraints (works on desktop/multiple-webcam setups)
-  const [videoTrack] = videoEl.srcObject.getVideoTracks();
-  if (videoTrack) {
+  const [videoTrack] = currentStream.getVideoTracks();
+  if (!facingModeApplied && videoTrack) {
     try {
       if (typeof videoTrack.applyConstraints === "function") {
         await videoTrack.applyConstraints({
-          facingMode: { ideal: currentFacingMode }
+          facingMode: { exact: currentFacingMode }
         });
       }
-      const settingsFacingMode = videoTrack.getSettings?.().facingMode;
-      facingModeApplied = !settingsFacingMode || settingsFacingMode === currentFacingMode;
+      facingModeApplied = isRequestedFacingModeTrack(
+        videoTrack,
+        currentFacingMode,
+        previousCameraIdentity
+      );
     } catch (error) {
-      console.error("[CAMERA] facingMode constraint failed", error);
+      console.warn("[CAMERA] facingMode constraint failed", error);
     }
   }
 
   // 2. Force manual stream replacement if applyConstraints failed (mobile requirement)
   if (!facingModeApplied) {
-    try {
-      console.log("[CAMERA] Forcing manual stream replacement for", currentFacingMode);
-      const oldStream = videoEl.srcObject as MediaStream;
-      if (oldStream) {
-        oldStream.getTracks().forEach(t => t.stop());
-      }
+    const replacementStream = await requestVerifiedFacingModeStream(
+      currentFacingMode,
+      previousCameraIdentity
+    );
 
-      const newStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: currentFacingMode }
-        },
-        audio: false
-      });
-
-      videoEl.srcObject = newStream;
-
-      await new Promise<void>((resolve) => {
-        const onReady = () => {
-          videoEl.play().catch(() => {});
-          resolve();
-        };
-        if (videoEl.readyState >= 2) {
-          onReady();
-        } else {
-          videoEl.onloadedmetadata = onReady;
-        }
-      });
+    if (replacementStream) {
+      stopMediaStream(currentStream);
+      videoEl.srcObject = replacementStream;
+      await waitForVideoMetadata(videoEl);
       facingModeApplied = true;
-    } catch (err) {
-      console.error("[CAMERA] Gagal force replace stream", err);
+    } else if (previousCameraIdentity) {
+      const staleStream = videoEl.srcObject instanceof MediaStream ? videoEl.srcObject : null;
+      stopMediaStream(staleStream);
+      videoEl.srcObject = null;
+
+      const retryStream = await requestVerifiedFacingModeStream(
+        currentFacingMode,
+        previousCameraIdentity
+      );
+
+      if (retryStream) {
+        videoEl.srcObject = retryStream;
+        await waitForVideoMetadata(videoEl);
+        facingModeApplied = true;
+      }
     }
   }
 
@@ -1523,7 +1833,11 @@ function updateCameraButtonLabel(): void {
   ui.switchCameraBtn.setAttribute("aria-label", `Kamera ${cameraLabel}`);
 }
 
-async function bootScene(forceRebuild = false, sessionId = activeScannerSession): Promise<boolean> {
+async function bootScene(
+  forceRebuild = false,
+  sessionId = activeScannerSession,
+  previousCameraIdentity?: CameraTrackIdentity | null
+): Promise<boolean> {
   if (pendingSceneBoot) {
     return false;
   }
@@ -1567,7 +1881,7 @@ async function bootScene(forceRebuild = false, sessionId = activeScannerSession)
     if (!isScannerSessionActive(sessionId)) {
       return false;
     }
-    manualFacingModeApplied = videoEl ? await applyFacingModeStream() : false;
+    manualFacingModeApplied = videoEl ? await applyFacingModeStream(previousCameraIdentity) : false;
     if (!isScannerSessionActive(sessionId)) {
       return false;
     }
@@ -1621,7 +1935,9 @@ async function switchCamera(event: Event): Promise<void> {
   }
 
   const previousMode = currentFacingMode;
+  const previousCameraIdentity = getActiveCameraTrackIdentity();
   currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
+  const requestedMode = currentFacingMode;
   showScanner();
   syncArViewportLayout();
 
@@ -1630,7 +1946,7 @@ async function switchCamera(event: Event): Promise<void> {
     "info"
   );
 
-  const didBoot = await bootScene(true, activeScannerSession);
+  const didBoot = await bootScene(true, activeScannerSession, previousCameraIdentity);
   if (!didBoot) {
     currentFacingMode = previousMode;
     updateCameraButtonLabel();
@@ -1643,7 +1959,16 @@ async function switchCamera(event: Event): Promise<void> {
   syncArViewportLayout();
 
   if (!manualFacingModeApplied) {
-    showToast("Switch kamera tidak didukung browser ini. Gunakan kamera default.", "warning");
+    currentFacingMode = previousMode;
+    updateCameraButtonLabel();
+    const restored = await bootScene(true, activeScannerSession);
+    updateCameraButtonLabel();
+    showToast(
+      restored
+        ? `Kamera ${getFacingModeLabel(requestedMode).toLowerCase()} tidak tersedia atau tidak bisa diverifikasi. Tetap memakai kamera ${getFacingModeLabel(previousMode).toLowerCase()}.`
+        : "Switch kamera gagal dan scanner perlu dibuka ulang.",
+      "warning"
+    );
     return;
   }
 
@@ -1685,6 +2010,7 @@ function stopArFlow(): void {
   const stoppedSession = activeScannerSession;
   cancelDelayedArtifactCleanups();
   closeHowToModal();
+  closeSolarInfoModal();
   ui.scannerPage.classList.add("is-hidden");
   document.body.classList.remove("is-ar-active");
 
@@ -1716,8 +2042,18 @@ function bindStaticUiEvents(): void {
   });
 
   ui.howToBtn.addEventListener("click", openHowToModal);
+  ui.solarInfoBtn.addEventListener("click", openSolarInfoModal);
   ui.closePlanetBtn.addEventListener("click", () => {
     closePlanetDetail();
+  });
+
+  ui.planetQuizOptions.addEventListener("click", (event) => {
+    const optionButton = (event.target as HTMLElement).closest<HTMLButtonElement>(".quiz-option");
+    if (!optionButton?.dataset.answer) {
+      return;
+    }
+
+    answerPlanetQuiz(optionButton.dataset.answer);
   });
 
   const navigatePlanet = (offset: number) => {
@@ -1737,6 +2073,15 @@ function bindStaticUiEvents(): void {
       closeHowToModal();
     }
   });
+
+  ui.solarInfoModal.addEventListener("click", (event) => {
+    if (event.target === ui.solarInfoModal) {
+      closeSolarInfoModal();
+    }
+  });
+
+  ui.closeHowToBtn.addEventListener("click", closeHowToModal);
+  ui.closeSolarInfoBtn.addEventListener("click", closeSolarInfoModal);
 
   ui.closeScannerBtn.addEventListener("click", (event) => {
     event.preventDefault();
