@@ -1,6 +1,6 @@
 {
   "mode": "dynamic",
-  "status": "refined-landing-camera-switch-v11",
+  "status": "refined-ar-orbit-camera-clarity-v12",
   "seedPolicy": {
     "mode": "structure-first-scaffold",
     "requiresProjectSpecificRefinement": true,
@@ -210,7 +210,7 @@
       "marker-status capsule with detected/lost state language",
       "landing entry with actual Earth GLB preview and Hiro marker asset",
       "planet detail bottom sheet tied to AR tap flow",
-      "actual solar_system.glb as the primary marker visual",
+      "actual solar_system_animation.glb as the primary marker visual",
       "tap selection resolved from actual planet mesh/material identity instead of decorative orbit paths",
       "crisp embedded selected-planet GLB preview above the detail content"
     ],
@@ -427,10 +427,10 @@
   "designExecutionHandoff": {
     "version": "ui-handoff-v1",
     "location": "inline-design-intent",
-    "status": "refined-for-landing-camera-switch-v11",
+    "status": "refined-for-ar-orbit-camera-clarity-v12",
     "seedMode": "structure-first-scaffold",
     "requiresTaskSpecificRefinement": true,
-    "primaryExperienceGoal": "Landing must present a polished AR mission entry with actual GLB and Hiro marker signals, the removed Tentang Tata Surya flow must stay out of the UI, camera preview must stay stable, scanner close must return to a normal landing page, solar_system.glb must be the primary marker visual at a tidy readable mobile scale, planet taps must resolve to the matching selected local GLB asset, and planet detail must display that asset below the return button.",
+    "primaryExperienceGoal": "Landing must present a polished AR mission entry with actual GLB and Hiro marker signals, the removed Tentang Tata Surya flow must stay out of the UI, camera preview must stay stable and high-clarity when supported, scanner close must return to a normal landing page, solar_system_animation.glb must be the primary marker visual at a tidy readable mobile scale with a dedicated tilted presentation wrapper and capped smartphone sizing, planet taps must resolve to the matching selected local GLB asset, and planet detail must display that asset below the return button.",
     "surfacePlan": [
       {
         "surfaceId": "landing-entry",
@@ -455,7 +455,7 @@
       {
         "surfaceId": "solar-system-marker-model",
         "role": "primary-ar-model",
-        "goal": "Render solar_system.glb as the main Hiro marker visual with decorative clutter hidden at runtime, a controlled mobile scale, marker-centered fit, mesh/material-based tap targets, and fallback spheres only on model load failure.",
+        "goal": "Render solar_system_animation.glb as the main Hiro marker visual with decorative clutter hidden at runtime, a controlled mobile scale that is smaller than the desktop fit on portrait phones, marker-centered fit, dedicated solarPresentation tilt, mesh/material-based tap targets, and fallback spheres only on model load failure.",
         "antiPatterns": [
           "fallback-row-as-primary-model",
           "oversized-marker-model"

@@ -22,11 +22,15 @@ if (maybeWindow.AFRAME) {
       this.isDragging = false;
       this.previousMousePosition = { x: 0, y: 0 };
       this.dragDistance = 0;
+      this.baseRotationX = 0;
+      this.baseRotationZ = 0;
 
       this.onPointerDown = (e: PointerEvent) => {
         this.isDragging = true;
         this.previousMousePosition = { x: e.clientX, y: e.clientY };
         this.dragDistance = 0;
+        this.baseRotationX = this.el.object3D?.rotation.x ?? 0;
+        this.baseRotationZ = this.el.object3D?.rotation.z ?? 0;
       };
 
       this.onPointerUp = () => {
@@ -42,7 +46,8 @@ if (maybeWindow.AFRAME) {
         this.dragDistance += Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
         this.el.object3D.rotation.y += deltaX * this.data.speed;
-        this.el.object3D.rotation.x += deltaY * this.data.speed;
+        this.el.object3D.rotation.x = this.baseRotationX;
+        this.el.object3D.rotation.z = this.baseRotationZ;
 
         this.previousMousePosition = { x: e.clientX, y: e.clientY };
       };
@@ -159,6 +164,21 @@ const PLANET_TAP_RADIUS_MULTIPLIER: Record<PlanetId, number> = {
 };
 const TOUCH_SCREEN_PICK_RADIUS_PX = 82;
 const POINTER_SCREEN_PICK_RADIUS_PX = 54;
+const AR_CAMERA_TARGET_WIDTH = 1280;
+const AR_CAMERA_TARGET_HEIGHT = 720;
+const AR_CAMERA_TARGET_FRAME_RATE = 30;
+
+type CameraQualityCapabilities = MediaTrackCapabilities & {
+  exposureMode?: string[];
+  focusMode?: string[];
+  whiteBalanceMode?: string[];
+};
+
+type CameraQualityConstraintSet = MediaTrackConstraintSet & {
+  exposureMode?: string;
+  focusMode?: string;
+  whiteBalanceMode?: string;
+};
 
 function getSolarScaleMultiplier(): number {
   const isTouch = window.matchMedia("(pointer: coarse)").matches;
@@ -168,16 +188,16 @@ function getSolarScaleMultiplier(): number {
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 4.2;
+    return 1.25;
   }
   if (viewportWidth <= 420) {
-    return 3.9;
+    return 1.18;
   }
   if (viewportWidth <= 520) {
-    return 3.5;
+    return 1.1;
   }
   if (viewportWidth <= 768) {
-    return 2.8;
+    return 1;
   }
   return 1;
 }
@@ -190,16 +210,16 @@ function getSolarOverviewTargetSize(): number {
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 4.8;
+    return 1.9;
   }
   if (viewportWidth <= 420) {
-    return 4.5;
+    return 2.05;
   }
   if (viewportWidth <= 520) {
-    return 4.0;
+    return 2.2;
   }
   if (viewportWidth <= 768) {
-    return 3.4;
+    return 2.45;
   }
   return SOLAR_OVERVIEW_TARGET_SIZE;
 }
@@ -855,6 +875,49 @@ function isRequestedFacingModeStream(
   return isRequestedFacingModeTrack(stream.getVideoTracks()[0], requestedMode, previousIdentity);
 }
 
+function withHighClarityCameraConstraints(
+  videoConstraints: MediaTrackConstraints
+): MediaTrackConstraints {
+  return {
+    width: { ideal: AR_CAMERA_TARGET_WIDTH },
+    height: { ideal: AR_CAMERA_TARGET_HEIGHT },
+    frameRate: { ideal: AR_CAMERA_TARGET_FRAME_RATE },
+    ...videoConstraints
+  };
+}
+
+async function applyCameraQualityConstraints(track: MediaStreamTrack): Promise<void> {
+  if (typeof track.applyConstraints !== "function") {
+    return;
+  }
+
+  try {
+    const capabilities = typeof track.getCapabilities === "function"
+      ? (track.getCapabilities() as CameraQualityCapabilities)
+      : undefined;
+    const advanced: CameraQualityConstraintSet[] = [];
+
+    if (capabilities?.focusMode?.includes("continuous")) {
+      advanced.push({ focusMode: "continuous" });
+    }
+    if (capabilities?.exposureMode?.includes("continuous")) {
+      advanced.push({ exposureMode: "continuous" });
+    }
+    if (capabilities?.whiteBalanceMode?.includes("continuous")) {
+      advanced.push({ whiteBalanceMode: "continuous" });
+    }
+
+    await track.applyConstraints({
+      width: { ideal: AR_CAMERA_TARGET_WIDTH },
+      height: { ideal: AR_CAMERA_TARGET_HEIGHT },
+      frameRate: { ideal: AR_CAMERA_TARGET_FRAME_RATE },
+      ...(advanced.length > 0 ? { advanced } : {})
+    });
+  } catch (error) {
+    console.warn("[CAMERA] high clarity constraints skipped", error);
+  }
+}
+
 async function requestCameraStream(
   videoConstraints: MediaTrackConstraints,
   requestedMode: CameraFacingMode,
@@ -862,9 +925,14 @@ async function requestCameraStream(
 ): Promise<MediaStream | null> {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: videoConstraints,
+      video: withHighClarityCameraConstraints(videoConstraints),
       audio: false
     });
+    const [videoTrack] = stream.getVideoTracks();
+
+    if (videoTrack) {
+      await applyCameraQualityConstraints(videoTrack);
+    }
 
     if (isRequestedFacingModeStream(stream, requestedMode, previousIdentity)) {
       return stream;
@@ -1354,10 +1422,12 @@ async function applyFacingModeStream(previousCameraIdentity?: CameraTrackIdentit
     }
   }
 
-  // 3. Apply default zoom constraints
+  // 3. Apply high-clarity constraints and default zoom constraints
   if (videoEl.srcObject instanceof MediaStream) {
     const [currentTrack] = videoEl.srcObject.getVideoTracks();
     if (currentTrack) {
+      await applyCameraQualityConstraints(currentTrack);
+
       try {
         const capabilities = typeof currentTrack.getCapabilities === "function"
           ? (currentTrack.getCapabilities() as { zoom?: number | ZoomCapabilityRange })
@@ -1819,11 +1889,11 @@ function bindSolarModelFallback(): void {
   };
 
   const onSolarError = (error: Event) => {
-    console.error("[MODEL] solar_system.glb failed", error);
+    console.error("[MODEL] solar_system_animation.glb failed", error);
     isSolarSystemModelReady = false;
     solarSystemEl?.setAttribute("visible", "false");
     solarFallbackEl?.setAttribute("visible", currentPlanet ? "false" : "true");
-    showToast("solar_system.glb gagal dimuat. Fallback tata surya sphere diaktifkan.", "warning");
+    showToast("solar_system_animation.glb gagal dimuat. Fallback tata surya sphere diaktifkan.", "warning");
   };
 
   solarSystemEl.addEventListener("model-loaded", onSolarLoaded);

@@ -7,7 +7,7 @@ Aplikasi ini tidak memiliki API backend. Semua data dan asset disajikan statis o
 ## Kontrak Asset Statis
 
 - `/` -> halaman utama.
-- `/assets/models/solar-system/solar_system.glb` -> model tata surya.
+- `/assets/models/solar-system/solar_system_animation.glb` -> model tata surya.
 - `/assets/models/planets/*.glb` -> model planet.
 - `/assets/markers/hiro.png` -> marker untuk print.
 - `/assets/markers/patt.hiro` -> pattern marker.
