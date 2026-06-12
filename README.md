@@ -43,13 +43,12 @@ npm run preview
 
 ## Fitur Utama
 
-- Landing dengan tombol `Mulai AR`, `Cara Pakai`, dan `Tentang Tata Surya`.
+- Landing dengan tombol `Mulai AR` dan `Cara Pakai`.
 - Scanner AR berbasis Hiro marker.
 - Model tata surya utama dari `solar_system_animation.glb`.
 - Detail 8 planet utama dengan preview GLB planet individual.
 - Profil edukasi planet: kategori, bulan, atmosfer, suhu, gravitasi, komposisi, ciri utama, eksplorasi, dan fakta menarik.
 - Kuis pilihan jawaban per planet dengan feedback langsung.
-- Modal ringkas tentang Matahari, klasifikasi planet, asteroid belt, Kuiper belt, dan catatan skala AR.
 
 ## Deploy Static Hosting
 
@@ -89,8 +88,9 @@ Rekomendasi tuning cepat:
 
 Minimal sebelum demo:
 1. Buka aplikasi di Android Chrome dan iOS Safari.
-2. Tap `Tentang Tata Surya`, baca modal, lalu tutup.
+2. Tap `Cara Pakai`, cek link marker, lalu tutup.
 3. Tap `Mulai AR`, izinkan kamera, dan arahkan ke Hiro marker.
-4. Tap beberapa planet, cek judul panel dan preview GLB sesuai planet yang dipilih.
-5. Coba kuis planet dan pastikan feedback benar/salah tampil.
-6. Tap `Kembali ke Tata Surya`, lalu tutup scanner dan pastikan landing kembali normal.
+4. Tap tombol kamera `Belakang/Depan` dan pastikan transisi tidak menampilkan flash kamera yang salah.
+5. Tap beberapa planet, cek judul panel dan preview GLB sesuai planet yang dipilih.
+6. Coba kuis planet dan pastikan feedback benar/salah tampil.
+7. Tap `Kembali ke Tata Surya`, lalu tutup scanner dan pastikan landing kembali normal.

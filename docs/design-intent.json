@@ -1,6 +1,6 @@
 {
   "mode": "dynamic",
-  "status": "refined-mobile-ar-scanner-v10-material-mapped-tap-targets",
+  "status": "refined-landing-camera-switch-v11",
   "seedPolicy": {
     "mode": "structure-first-scaffold",
     "requiresProjectSpecificRefinement": true,
@@ -64,7 +64,7 @@
   "conceptualAnchor": {
     "mode": "active",
     "seedMode": "selection-policy-only",
-    "anchorReference": "Compact handheld optical finder interface with unobtrusive controls",
+    "anchorReference": "Observatory mission console paired with a compact handheld optical finder",
     "requiresAgentSelectionBeforeUiImplementation": true,
     "userResearchAbsencePolicy": {
       "userSuppliedResearchOnly": true,
@@ -148,13 +148,13 @@
         "motion-derived-from-anchor"
       ]
     },
-    "name": "Handheld Optical Instrument Panel",
+    "name": "Observatory Mission Console and Handheld Optical Finder",
     "agentResearchMode": "repo-evidence-and-brief-driven",
     "sourceDomain": "scientific-instrumentation",
-    "specificReferencePoint": "Top utility strip and bottom calibration hint that never blocks the lens center",
-    "rationale": "Marker tracking needs a clean camera field with minimal fixed overlays and clear action controls.",
-    "signatureMotion": "Fast utility transitions and marker state shifts without fullscreen or orientation forcing.",
-    "typographicDecision": "Scanner HUD uses compact 12-14px labels while landing keeps large headline contrast.",
+    "specificReferencePoint": "Mission-entry visual preview before scan, then a top utility strip and bottom calibration hint that never blocks the lens center",
+    "rationale": "The landing needs a clear AR product signal before camera permission, while marker tracking still needs a clean camera field with minimal fixed overlays and clear action controls.",
+    "signatureMotion": "Slow landing orbit drift plus fast utility transitions and camera-switch cover without fullscreen or orientation forcing.",
+    "typographicDecision": "Landing uses fixed-step display type for the product name; scanner HUD uses compact 12-14px labels.",
     "motionRiskBudget": {
       "mode": "low-amplitude-utility-motion",
       "maxDurationMs": 250,
@@ -167,16 +167,16 @@
     ]
   },
   "derivedTokenLogic": {
-    "anchorReference": "Handheld Optical Instrument Panel",
-    "colorDerivationSource": "Dark camera-first base with cool utility controls and high-contrast status roles.",
-    "spacingDerivationSource": "Safe-area aware compact HUD spacing that protects center marker visibility.",
-    "typographyDerivationSource": "Compact utility labels for scanner; large display role for landing hero only.",
-    "motionDerivationSource": "Utility-first short transitions, immediate detail-panel state changes, and no fullscreen choreography.",
-    "validationRule": "Tokens must protect marker visibility, touch target size, and AR scanning readability."
+    "anchorReference": "Observatory Mission Console and Handheld Optical Finder",
+    "colorDerivationSource": "Dark camera-first base with amber mission-entry hierarchy, cool AR controls, and high-contrast status roles.",
+    "spacingDerivationSource": "Open landing composition that exposes GLB and marker context, plus safe-area aware compact HUD spacing that protects center marker visibility.",
+    "typographyDerivationSource": "Fixed-step display type for landing; compact utility labels for scanner.",
+    "motionDerivationSource": "Slow landing orbit drift, immediate detail-panel state changes, camera-switch cover, and no fullscreen choreography.",
+    "validationRule": "Tokens must protect marker visibility, touch target size, AR scanning readability, and non-plain landing product signal."
   },
   "motionPaletteDecision": {
     "productCategorySignal": "mobile-web-ar-scanner",
-    "densityDecisionSource": "Camera usability and marker readability on mobile devices.",
+    "densityDecisionSource": "Landing must quickly communicate AR readiness, while scanner density is governed by camera usability and marker readability on mobile devices.",
     "requiredInteractionStates": [
       "default",
       "focus-visible",
@@ -208,6 +208,7 @@
     "requiredProductSpecificSignals": [
       "camera-first fixed scanner viewport",
       "marker-status capsule with detected/lost state language",
+      "landing entry with actual Earth GLB preview and Hiro marker asset",
       "planet detail bottom sheet tied to AR tap flow",
       "actual solar_system.glb as the primary marker visual",
       "tap selection resolved from actual planet mesh/material identity instead of decorative orbit paths",
@@ -426,24 +427,26 @@
   "designExecutionHandoff": {
     "version": "ui-handoff-v1",
     "location": "inline-design-intent",
-    "status": "refined-for-mobile-ar-scanner-v6-material-mapped-tap-targets",
+    "status": "refined-for-landing-camera-switch-v11",
     "seedMode": "structure-first-scaffold",
     "requiresTaskSpecificRefinement": true,
-    "primaryExperienceGoal": "Camera preview must stay visible, scanner close must return to a normal landing page, solar_system.glb must be the primary marker visual at a tidy readable mobile scale, planet taps must resolve to the matching selected local GLB asset, and planet detail must display that asset below the return button.",
+    "primaryExperienceGoal": "Landing must present a polished AR mission entry with actual GLB and Hiro marker signals, the removed Tentang Tata Surya flow must stay out of the UI, camera preview must stay stable, scanner close must return to a normal landing page, solar_system.glb must be the primary marker visual at a tidy readable mobile scale, planet taps must resolve to the matching selected local GLB asset, and planet detail must display that asset below the return button.",
     "surfacePlan": [
       {
         "surfaceId": "landing-entry",
         "role": "ar-entry",
-        "goal": "Launch scanner without fullscreen or orientation forcing.",
+        "goal": "Launch scanner from a polished landing surface with actual Earth GLB preview, Hiro marker asset, concise readiness signals, and no Tentang Tata Surya button or modal.",
         "antiPatterns": [
           "fullscreen-lock",
-          "camera-layer-overlap"
+          "camera-layer-overlap",
+          "plain-centered-card",
+          "removed-solar-info-flow"
         ]
       },
       {
         "surfaceId": "scanner-hud",
         "role": "camera-utility-overlay",
-        "goal": "Provide close/status/switch controls without blocking marker center.",
+        "goal": "Provide close/status/switch controls without blocking marker center, and cover the preview while target camera stream is verified during switching.",
         "antiPatterns": [
           "oversized-control-bars",
           "center-screen-overlay"
@@ -490,9 +493,11 @@
     },
     "contentPriorityMap": {
       "primary": [
+        "AR entry action and marker readiness",
         "camera feed and marker state"
       ],
       "secondary": [
+        "landing GLB preview and Hiro marker asset",
         "switch and close controls"
       ],
       "deferred": [

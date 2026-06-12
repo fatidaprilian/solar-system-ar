@@ -73,9 +73,9 @@ type RequiredElements = {
   arMount: HTMLElement;
   startArBtn: HTMLButtonElement;
   howToBtn: HTMLButtonElement;
-  solarInfoBtn: HTMLButtonElement;
   closeScannerBtn: HTMLButtonElement;
   switchCameraBtn: HTMLButtonElement;
+  cameraSwitchCover: HTMLElement;
   markerStatus: HTMLElement;
   scannerHint: HTMLElement;
   planetPanel: HTMLDivElement;
@@ -103,8 +103,6 @@ type RequiredElements = {
   nextPlanetBtn: HTMLButtonElement;
   howToModal: HTMLElement;
   closeHowToBtn: HTMLButtonElement;
-  solarInfoModal: HTMLElement;
-  closeSolarInfoBtn: HTMLButtonElement;
   toast: HTMLElement;
   fatalError: HTMLElement;
 };
@@ -134,6 +132,7 @@ type CameraTrackIdentity = {
 let currentFacingMode: CameraFacingMode = "environment";
 let manualFacingModeApplied = false;
 let activeScannerSession = 0;
+let preparedCameraStream: MediaStream | null = null;
 
 const cleanupListeners: Array<() => void> = [];
 let delayedArtifactCleanupTimers: number[] = [];
@@ -267,9 +266,9 @@ function buildUi(): RequiredElements {
     arMount: getRequiredElement<HTMLElement>("#arMount"),
     startArBtn: getRequiredElement<HTMLButtonElement>("#startArBtn"),
     howToBtn: getRequiredElement<HTMLButtonElement>("#howToBtn"),
-    solarInfoBtn: getRequiredElement<HTMLButtonElement>("#solarInfoBtn"),
     closeScannerBtn: getRequiredElement<HTMLButtonElement>("#closeScannerBtn"),
     switchCameraBtn: getRequiredElement<HTMLButtonElement>("#switchCameraBtn"),
+    cameraSwitchCover: getRequiredElement<HTMLElement>("#cameraSwitchCover"),
     markerStatus: getRequiredElement<HTMLElement>("#markerStatus"),
     scannerHint: getRequiredElement<HTMLElement>("#scannerHint"),
     planetPanel: getRequiredElement<HTMLDivElement>("#planetPanel"),
@@ -297,8 +296,6 @@ function buildUi(): RequiredElements {
     nextPlanetBtn: getRequiredElement<HTMLButtonElement>("#nextPlanetBtn"),
     howToModal: getRequiredElement<HTMLElement>("#howToModal"),
     closeHowToBtn: getRequiredElement<HTMLButtonElement>("#closeHowToBtn"),
-    solarInfoModal: getRequiredElement<HTMLElement>("#solarInfoModal"),
-    closeSolarInfoBtn: getRequiredElement<HTMLButtonElement>("#closeSolarInfoBtn"),
     toast: getRequiredElement<HTMLElement>("#toast"),
     fatalError: getRequiredElement<HTMLElement>("#fatalError")
   };
@@ -343,7 +340,6 @@ function showLanding(): void {
   ui.landingPage.classList.remove("is-hidden");
   ui.scannerPage.classList.add("is-hidden");
   ui.howToModal.classList.add("is-hidden");
-  ui.solarInfoModal.classList.add("is-hidden");
   enableLandingInteraction();
   resetLandingViewport();
 }
@@ -363,14 +359,6 @@ function openHowToModal(): void {
 
 function closeHowToModal(): void {
   ui.howToModal.classList.add("is-hidden");
-}
-
-function openSolarInfoModal(): void {
-  ui.solarInfoModal.classList.remove("is-hidden");
-}
-
-function closeSolarInfoModal(): void {
-  ui.solarInfoModal.classList.add("is-hidden");
 }
 
 function isTouchDevice(): boolean {
@@ -655,7 +643,6 @@ function remountCleanLandingShell(): void {
   bindStaticUiEvents();
   showLanding();
   setMarkerStatus("Mencari marker...", false);
-  closeSolarInfoModal();
   clearFatalError();
   hidePlanetPanel();
   ui.toast.classList.add("is-hidden");
@@ -708,6 +695,7 @@ function schedulePostCloseArtifactCleanup(sessionId: number): void {
 
 function prepareScannerForFreshBoot(): void {
   cancelDelayedArtifactCleanups();
+  discardPreparedCameraStream();
   killPlanetTransition();
   runCleanupListeners();
   stopVideoStreams(document);
@@ -722,6 +710,27 @@ function stopMediaStream(stream: MediaStream | null): void {
   }
 
   stream.getTracks().forEach((track) => track.stop());
+}
+
+function discardPreparedCameraStream(): void {
+  stopMediaStream(preparedCameraStream);
+  preparedCameraStream = null;
+}
+
+function setCameraSwitchingState(isSwitching: boolean, requestedMode?: CameraFacingMode): void {
+  ui.scannerPage.classList.toggle("is-camera-switching", isSwitching);
+  ui.scannerPage.setAttribute("aria-busy", isSwitching ? "true" : "false");
+  ui.switchCameraBtn.disabled = isSwitching;
+
+  if (isSwitching) {
+    const cameraLabel = requestedMode ? getFacingModeLabel(requestedMode).toLowerCase() : "target";
+    ui.cameraSwitchCover.textContent = `Menyiapkan kamera ${cameraLabel}...`;
+    ui.cameraSwitchCover.classList.remove("is-hidden");
+    return;
+  }
+
+  ui.cameraSwitchCover.classList.add("is-hidden");
+  ui.cameraSwitchCover.textContent = "Menyiapkan kamera...";
 }
 
 function getFacingModeLabel(mode: CameraFacingMode): string {
@@ -1282,6 +1291,19 @@ async function applyFacingModeStream(previousCameraIdentity?: CameraTrackIdentit
     currentFacingMode,
     previousCameraIdentity
   );
+
+  if (!facingModeApplied && preparedCameraStream) {
+    if (isRequestedFacingModeStream(preparedCameraStream, currentFacingMode, previousCameraIdentity)) {
+      const verifiedStream = preparedCameraStream;
+      preparedCameraStream = null;
+      stopMediaStream(currentStream);
+      videoEl.srcObject = verifiedStream;
+      await waitForVideoMetadata(videoEl);
+      facingModeApplied = true;
+    } else {
+      discardPreparedCameraStream();
+    }
+  }
 
   // 1. Try applyConstraints (works on desktop/multiple-webcam setups)
   const [videoTrack] = currentStream.getVideoTracks();
@@ -1936,43 +1958,57 @@ async function switchCamera(event: Event): Promise<void> {
 
   const previousMode = currentFacingMode;
   const previousCameraIdentity = getActiveCameraTrackIdentity();
-  currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
-  const requestedMode = currentFacingMode;
-  showScanner();
-  syncArViewportLayout();
+  const requestedMode = currentFacingMode === "environment" ? "user" : "environment";
+  setCameraSwitchingState(true, requestedMode);
 
   showToast(
-    `Mengganti ke kamera ${currentFacingMode === "environment" ? "belakang" : "depan"}...`,
+    `Mengganti ke kamera ${getFacingModeLabel(requestedMode).toLowerCase()}...`,
     "info"
   );
 
-  const didBoot = await bootScene(true, activeScannerSession, previousCameraIdentity);
-  if (!didBoot) {
-    currentFacingMode = previousMode;
-    updateCameraButtonLabel();
-    showToast("Switch kamera gagal. Browser mungkin membatasi pergantian kamera saat runtime.", "error");
-    return;
-  }
-
-  updateCameraButtonLabel();
-  setMarkerStatus("Mencari marker...", false);
-  syncArViewportLayout();
-
-  if (!manualFacingModeApplied) {
-    currentFacingMode = previousMode;
-    updateCameraButtonLabel();
-    const restored = await bootScene(true, activeScannerSession);
-    updateCameraButtonLabel();
-    showToast(
-      restored
-        ? `Kamera ${getFacingModeLabel(requestedMode).toLowerCase()} tidak tersedia atau tidak bisa diverifikasi. Tetap memakai kamera ${getFacingModeLabel(previousMode).toLowerCase()}.`
-        : "Switch kamera gagal dan scanner perlu dibuka ulang.",
-      "warning"
+  try {
+    preparedCameraStream = await requestVerifiedFacingModeStream(
+      requestedMode,
+      previousCameraIdentity
     );
-    return;
-  }
 
-  showToast(`Kamera ${getFacingModeLabel(currentFacingMode).toLowerCase()} aktif.`);
+    if (!preparedCameraStream) {
+      showToast(
+        `Kamera ${getFacingModeLabel(requestedMode).toLowerCase()} tidak tersedia atau tidak bisa diverifikasi. Tetap memakai kamera ${getFacingModeLabel(previousMode).toLowerCase()}.`,
+        "warning"
+      );
+      return;
+    }
+
+    currentFacingMode = requestedMode;
+    showScanner();
+    syncArViewportLayout();
+
+    const didBoot = await bootScene(true, activeScannerSession, previousCameraIdentity);
+    if (!didBoot || !manualFacingModeApplied) {
+      discardPreparedCameraStream();
+      currentFacingMode = previousMode;
+      updateCameraButtonLabel();
+
+      const restored = await bootScene(true, activeScannerSession);
+      showToast(
+        restored
+          ? `Switch kamera gagal. Tetap memakai kamera ${getFacingModeLabel(previousMode).toLowerCase()}.`
+          : "Switch kamera gagal dan scanner perlu dibuka ulang.",
+        "warning"
+      );
+      return;
+    }
+
+    updateCameraButtonLabel();
+    setMarkerStatus("Mencari marker...", false);
+    syncArViewportLayout();
+    showToast(`Kamera ${getFacingModeLabel(currentFacingMode).toLowerCase()} aktif.`);
+  } finally {
+    discardPreparedCameraStream();
+    setCameraSwitchingState(false);
+    updateCameraButtonLabel();
+  }
 }
 
 async function startArFlow(): Promise<void> {
@@ -2009,8 +2045,8 @@ function stopArFlow(): void {
   activeScannerSession += 1;
   const stoppedSession = activeScannerSession;
   cancelDelayedArtifactCleanups();
+  discardPreparedCameraStream();
   closeHowToModal();
-  closeSolarInfoModal();
   ui.scannerPage.classList.add("is-hidden");
   document.body.classList.remove("is-ar-active");
 
@@ -2042,7 +2078,6 @@ function bindStaticUiEvents(): void {
   });
 
   ui.howToBtn.addEventListener("click", openHowToModal);
-  ui.solarInfoBtn.addEventListener("click", openSolarInfoModal);
   ui.closePlanetBtn.addEventListener("click", () => {
     closePlanetDetail();
   });
@@ -2074,14 +2109,7 @@ function bindStaticUiEvents(): void {
     }
   });
 
-  ui.solarInfoModal.addEventListener("click", (event) => {
-    if (event.target === ui.solarInfoModal) {
-      closeSolarInfoModal();
-    }
-  });
-
   ui.closeHowToBtn.addEventListener("click", closeHowToModal);
-  ui.closeSolarInfoBtn.addEventListener("click", closeSolarInfoModal);
 
   ui.closeScannerBtn.addEventListener("click", (event) => {
     event.preventDefault();
@@ -2116,9 +2144,6 @@ function bootstrap(): void {
   bindStaticUiEvents();
   showLanding();
   setMarkerStatus("Mencari marker...", false);
-
-  const totalPlanets = PLANETS.length;
-  showToast(`Data planet siap: ${totalPlanets} planet.`);
 }
 
 bootstrap();

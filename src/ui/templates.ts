@@ -3,14 +3,62 @@ export const APP_TEMPLATE = `
   <div class="space-backdrop" aria-hidden="true"></div>
 
   <section id="landingPage" class="view view-landing" aria-label="Landing">
-    <div class="landing-content">
-      <p class="landing-kicker">TUGAS AKHIR VAR</p>
-      <h1>AR Tata Surya Explorer</h1>
-      <p class="landing-subtitle">Jelajahi tata surya melalui Augmented Reality</p>
-      <div class="landing-actions">
-        <button id="startArBtn" class="btn btn-primary" type="button">Mulai AR</button>
-        <button id="howToBtn" class="btn btn-secondary" type="button">Cara Pakai</button>
-        <button id="solarInfoBtn" class="btn btn-secondary" type="button">Tentang Tata Surya</button>
+    <div class="landing-shell">
+      <div class="landing-content">
+        <p class="landing-kicker">TUGAS AKHIR VAR</p>
+        <h1>AR Tata Surya Explorer</h1>
+        <p class="landing-subtitle">Scan Hiro marker, tampilkan tata surya, lalu tap planet untuk membuka detail belajar.</p>
+        <div class="landing-actions">
+          <button id="startArBtn" class="btn btn-primary" type="button">
+            <span class="btn-icon" aria-hidden="true">AR</span>
+            Mulai AR
+          </button>
+          <button id="howToBtn" class="btn btn-secondary" type="button">Cara Pakai</button>
+        </div>
+        <dl class="landing-signals" aria-label="Ringkasan pengalaman">
+          <div>
+            <dt>8</dt>
+            <dd>Planet interaktif</dd>
+          </div>
+          <div>
+            <dt>Hiro</dt>
+            <dd>Marker utama</dd>
+          </div>
+          <div>
+            <dt>GLB</dt>
+            <dd>Model lokal</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="landing-visual" aria-label="Preview model dan marker AR">
+        <div class="mission-status">
+          <span class="status-dot" aria-hidden="true"></span>
+          Siap scan marker
+        </div>
+        <div class="orbit-stage" aria-hidden="true">
+          <span class="orbit-ring orbit-ring-wide"></span>
+          <span class="orbit-ring orbit-ring-tight"></span>
+          <model-viewer
+            class="landing-planet"
+            src="/assets/models/planets/earth.glb"
+            alt="Model Bumi"
+            auto-rotate
+            camera-orbit="0deg 80deg 160%"
+            interaction-prompt="none"
+            shadow-intensity="0.8"
+            environment-image="neutral"
+          >
+            <div slot="poster" class="landing-model-poster">Memuat model Bumi...</div>
+          </model-viewer>
+        </div>
+        <div class="marker-preview">
+          <div>
+            <span>Marker</span>
+            <strong>Hiro</strong>
+          </div>
+          <img src="/assets/markers/hiro.png" alt="Marker Hiro untuk AR" />
+        </div>
       </div>
     </div>
   </section>
@@ -26,6 +74,9 @@ export const APP_TEMPLATE = `
       </div>
 
       <div id="scannerHint" class="scanner-hint">Arahkan kamera ke Hiro marker</div>
+      <div id="cameraSwitchCover" class="camera-switch-cover is-hidden" role="status" aria-live="polite">
+        Menyiapkan kamera...
+      </div>
     </div>
 
     <aside id="planetPanel" class="planet-panel is-hidden" aria-label="Detail planet">
@@ -90,34 +141,6 @@ export const APP_TEMPLATE = `
       <div class="modal-actions">
         <a class="btn btn-secondary" href="/assets/markers/hiro.png" target="_blank" rel="noreferrer">Download Hiro Marker</a>
         <button id="closeHowToBtn" class="btn btn-primary" type="button">Tutup</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="solarInfoModal" class="modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="solarInfoTitle">
-    <div class="modal-card modal-card-wide">
-      <h2 id="solarInfoTitle">Tentang Tata Surya</h2>
-      <p class="modal-lead">Tata surya terdiri dari Matahari, delapan planet utama, satelit alami, asteroid, komet, dan objek kecil lain yang terikat oleh gravitasi Matahari.</p>
-      <div class="solar-info-grid">
-        <section>
-          <h3>Matahari</h3>
-          <p>Matahari adalah pusat tata surya dan sumber energi utama. Gravitasi Matahari menjaga planet tetap bergerak pada orbitnya.</p>
-        </section>
-        <section>
-          <h3>Klasifikasi Planet</h3>
-          <p>Mercury, Venus, Earth, dan Mars adalah planet batuan. Jupiter dan Saturn adalah gas giant. Uranus dan Neptune adalah ice giant.</p>
-        </section>
-        <section>
-          <h3>Asteroid dan Kuiper Belt</h3>
-          <p>Asteroid belt berada di antara Mars dan Jupiter. Kuiper belt berada lebih jauh dari Neptune dan berisi objek es, termasuk Pluto sebagai dwarf planet.</p>
-        </section>
-        <section>
-          <h3>Catatan Skala AR</h3>
-          <p>Ukuran dan jarak di mode AR disederhanakan agar semua planet tetap terlihat pada marker Hiro. Skala visual dipakai untuk pembelajaran, bukan perbandingan 1:1.</p>
-        </section>
-      </div>
-      <div class="modal-actions">
-        <button id="closeSolarInfoBtn" class="btn btn-primary" type="button">Tutup</button>
       </div>
     </div>
   </div>
