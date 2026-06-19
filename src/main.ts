@@ -148,7 +148,7 @@ let planetPreviewRenderToken = 0;
 const MIN_VIEWPORT_HEIGHT = 320;
 const MAX_TOUCH_VIEWPORT_HEIGHT = 1400;
 const MAX_TOUCH_VIEWPORT_ASPECT = 2.35;
-const SOLAR_OVERVIEW_TARGET_SIZE = 1.6;
+const SOLAR_OVERVIEW_TARGET_SIZE = 1.8;
 const MOBILE_CLOSE_RELOAD_DELAY_MS = 180;
 const SOLAR_MODEL_VERTICAL_OFFSET = 0.05;
 const SOLAR_MODEL_CLUTTER_NAME_PARTS = ["asteroid", "asteroidi", "ceres", "pluto", "moon"];
@@ -210,16 +210,16 @@ function getSolarOverviewTargetSize(): number {
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 1.0;
-  }
-  if (viewportWidth <= 420) {
     return 1.15;
   }
+  if (viewportWidth <= 420) {
+    return 1.35;
+  }
   if (viewportWidth <= 520) {
-    return 1.3;
+    return 1.5;
   }
   if (viewportWidth <= 768) {
-    return 1.45;
+    return 1.65;
   }
   return SOLAR_OVERVIEW_TARGET_SIZE;
 }
