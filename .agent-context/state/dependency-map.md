@@ -21,7 +21,7 @@ Use this map to keep Agentic-Senior-Core's CLI, governance, and validation layer
 | `lib/cli/commands/upgrade.mjs` | detector, compiler, scaffolder seeds, backup/rollback, shared setup helpers | duplicated setup-policy helpers, silent stack migration |
 | `lib/cli/project-scaffolder.mjs` | stable public scaffolder exports | private validation helpers that do not need public API exposure |
 | `lib/cli/project-scaffolder/design-contract.mjs` | validation submodule, constants, utilities | hardcoded final palettes, fixed layouts, external design memory |
-| `scripts/sync-thin-adapters.mjs` | canonical instructions and adapter targets | hand-maintained duplicate policy blocks |
+| `scripts/sync-thin-adapters.mjs` | `AGENTS.md` and native import bridge targets | hand-maintained duplicate policy blocks |
 | `scripts/validate*.mjs` | config, coverage checks, file evidence | stale V2 skill-marketplace artifacts |
 | `.agent-context/prompts/bootstrap-design.md` | current repo evidence and frontend rule | prior-chat visuals, unrelated screenshots, template style presets |
 
@@ -30,7 +30,7 @@ Use this map to keep Agentic-Senior-Core's CLI, governance, and validation layer
 - Reject `commands -> project-scaffolder -> commands`.
 - Reject `compiler -> commands`.
 - Reject `scripts/validate -> tests`.
-- Reject generated adapters becoming inputs for `.instructions.md` or `.agent-context/`.
+- Reject generated adapters becoming inputs for `AGENTS.md` or `.agent-context/`.
 - Move repeated command setup policy into shared helper modules instead of copying local functions.
 
 ## Package Hygiene

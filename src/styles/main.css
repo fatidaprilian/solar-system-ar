@@ -662,8 +662,9 @@ body:not(.is-ar-active) .a-orientation-modal {
   right: max(16px, env(safe-area-inset-right));
   top: calc(max(12px, env(safe-area-inset-top)) + 60px);
   width: min(420px, calc(100vw - 32px));
-  max-height: calc(100% - 96px);
-  overflow: auto;
+  max-height: calc(var(--app-height, 100svh) - 100px);
+  overflow-y: auto;
+  overflow-x: hidden;
   border-radius: 16px;
   border: 1px solid color-mix(in srgb, var(--planet-theme), #ffffff 68%);
   background: var(--panel);

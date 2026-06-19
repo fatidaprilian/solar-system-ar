@@ -17,8 +17,9 @@ Tracked operational artifact:
 
 Local-only/generated artifacts:
 - `active-memory.json`
-- `v3-purge-audit.json`
 - `llm-judge-report.json`
+- `token-saver/`
+- `token-optimization-report.json`
 - benchmark, trend, weekly governance, and quality report outputs
 
 Do not treat generated reports or archived research as current project truth. Rerun the matching `npm run benchmark:*`, `npm run report:*`, or `npm run audit:*` command when fresh evidence is needed.

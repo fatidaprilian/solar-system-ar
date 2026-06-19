@@ -11,7 +11,7 @@ Before editing:
 3. If required project docs are missing, stop and bootstrap or update docs first.
 4. If the change touches UI, load .agent-context/prompts/bootstrap-design.md and .agent-context/rules/frontend-architecture.md before editing.
 5. If the change touches a dependency, framework, Docker, runtime, or ecosystem claim, verify current official docs before choosing.
-6. Enforce Universal SOP hard gate: stop implementation if `docs/architecture-decision-record.md` is missing, and for UI scope stop if `docs/DESIGN.md` or `docs/design-intent.json` is missing.
+6. Enforce Universal SOP hard gate: stop implementation if root `README.md` is missing, if `docs/doc-index.md` is missing while `docs/` exists, if `docs/project-brief.md` is missing, if `docs/architecture-decision-record.md` is missing, if `docs/flow-overview.md` is missing, if `docs/database-schema.md` is missing while the project uses persistent data, if `docs/api-contract.md` is missing while the project exposes API or web application flows, or for UI scope if `docs/DESIGN.md` is missing.
 7. Enforce backend universal principles: no clever hacks, no premature abstraction, readability over brevity.
 8. For backend/API scope, enforce layered boundaries, zero-trust input validation, safe centralized error responses, bounded list reads, transaction safety for multi-write mutations, idempotency for sensitive mutations, and behavior-focused API tests.
 9. Backend/API governance is global and stack-agnostic. Do not create stack-specific adapters or framework-specific rule branches; apply the global rules through the framework already present in the target project.
@@ -20,6 +20,7 @@ Before editing:
 Refactor rules:
 - Improve clarity, boundaries, naming, validation, error handling, tests, and docs.
 - Prioritize maintainability over compressed one-liners.
+- Apply the natural implementation pass from architecture.md: keep the main flow traceable, use early returns where they reduce nesting, and avoid helper chains that only make the code look abstract.
 - Do not choose a stack, framework, library, or topology from offline assumptions.
 - Keep module boundaries explicit and project-specific.
 - Split large files when the split makes the flow easier to understand.
@@ -28,6 +29,7 @@ Refactor rules:
 - Prefer the shorter implementation only when it keeps the same guarantees.
 - Run a final simplification pass before completion.
 - Update tests and docs whenever behavior contracts, public APIs, data shape, or UI contracts change.
+- When fixing a bug: append one sentence to the nearest relevant doc (`docs/flow-overview.md` or `docs/architecture-decision-record.md`) naming the root cause and how to prevent recurrence.
 
 For every meaningful change, explain:
 - what risk or friction existed

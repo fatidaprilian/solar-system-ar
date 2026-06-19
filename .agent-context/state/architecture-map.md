@@ -6,10 +6,10 @@ Use this file as repo-local agent context. It records the current governance arc
 
 | Surface | Criticality | Change Policy | Required Checks |
 | --- | --- | --- | --- |
-| `.instructions.md`, `AGENTS.md`, generated adapters | critical | Keep `.instructions.md` canonical and adapters thin/hash-synced | `npm run sync:adapters`, `npm run check:adapters`, `npm run validate` |
+| `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` | critical | Keep `AGENTS.md` canonical and native bridges minimal | `npm run sync:adapters`, `npm run check:adapters`, `npm run validate` |
 | `.agent-context/rules/**`, `.agent-context/prompts/**`, `.agent-context/review-checklists/**` | critical | Keep rules imperative, compact, scope-resolved, and non-duplicative | adapter sync, validation, targeted smoke tests |
 | `.agent-context/state/**` | high | Track only seed/config and current operational state; keep generated reports local-only | `npm pack --dry-run`, state README review |
-| `lib/cli/compiler.mjs`, `scripts/sync-thin-adapters.mjs` | critical | Preserve generated surface compatibility across Codex, Cursor, Windsurf, Copilot, Claude, and Gemini | adapter tests, smoke tests, validation |
+| `scripts/sync-thin-adapters.mjs` | critical | Preserve minimal import bridge compatibility for Claude and Gemini | adapter tests, smoke tests, validation |
 | `lib/cli/commands/init.mjs`, `lib/cli/commands/upgrade.mjs` | high | Preserve fresh-project and existing-project behavior without silent stack/style decisions | CLI smoke tests, onboarding report checks |
 | `lib/cli/project-scaffolder/**` | high | Preserve docs-first and design-contract behavior without hardcoded house style | design/detection smoke tests, validation |
 | `scripts/validate*.mjs`, `scripts/validate/**` | high | Keep validation mechanical and aligned with current shipped surfaces | `node ./scripts/validate.mjs`, targeted script checks |
@@ -34,7 +34,7 @@ Use this file as repo-local agent context. It records the current governance arc
 ## Agent Behavior
 
 1. Load the smallest relevant rule set.
-2. Use README only for overview/install/user context when governance files conflict.
-3. Preserve generated adapter sync before release.
+2. Use README only for public and developer overview, setup, usage, and user-facing context when governance files conflict.
+3. Preserve native import bridge sync before release.
 4. Treat stale generated state, dual lockfiles, and obsolete V2/V3 transition files as cleanup findings.
 5. Before claiming done, run the relevant validation gate and report any skipped checks.

@@ -1,41 +1,200 @@
 {
-  "timestamp": "2026-05-10T17:34:50.737Z",
+  "timestamp": "2026-06-19T12:38:20.031Z",
   "files": {
-    ".instructions.md": {
-      "action": "delete"
-    },
-    ".cursorrules": {
-      "action": "delete"
-    },
-    ".windsurfrules": {
-      "action": "delete"
+    ".gitignore": {
+      "action": "restore",
+      "hash": "d50ab07e11fa4bf3b1c7c3312e1d7baeab56cca756832ccf40476823ad2a38b7",
+      "mtimeMs": 1781872358173.466
     },
     "AGENTS.md": {
-      "action": "delete"
+      "action": "restore",
+      "hash": "7877a97bedfba4f0df6e82e15c1a1435e4c20233b2f8128b57c12ab05c940df2",
+      "mtimeMs": 1781872358174.4336
     },
     "CLAUDE.md": {
-      "action": "delete"
+      "action": "restore",
+      "hash": "884f9dca53150a4e6906f808181db6806b63986a659e160c4046920f309dfa7b",
+      "mtimeMs": 1781872358174.4336
     },
     "GEMINI.md": {
-      "action": "delete"
+      "action": "restore",
+      "hash": "a51bbccf0fcefad398a2b409cbeb6a6d1c2a005249925f446f559ae305f02cfd",
+      "mtimeMs": 1781872358175.4258
     },
-    ".cursor\\rules\\agentic-senior-core.mdc": {
-      "action": "delete"
+    ".agent-context\\policies\\llm-judge-threshold.json": {
+      "action": "restore",
+      "hash": "407046ecaa2cf9dd3771444d7b4284d9bc35a6ac3305489d02ca0bfbedb04e9d",
+      "mtimeMs": 1781872358159.4355
     },
-    ".github\\copilot-instructions.md": {
-      "action": "delete"
+    ".agent-context\\prompts\\bootstrap-design.md": {
+      "action": "restore",
+      "hash": "6a5accc24ab7aee81af7b1faf4b12b2eec050d3f34d07bc61c0bce908ea551dd",
+      "mtimeMs": 1781872358160.46
     },
-    ".github\\instructions\\agentic-senior-core.instructions.md": {
-      "action": "delete"
+    ".agent-context\\prompts\\init-project.md": {
+      "action": "restore",
+      "hash": "586f6d58e64459bfd39c946ae280744b1b88d201e1086ac3dd882a4289764f52",
+      "mtimeMs": 1781872358160.46
     },
-    ".windsurf\\rules\\agentic-senior-core.md": {
-      "action": "delete"
+    ".agent-context\\prompts\\refactor.md": {
+      "action": "restore",
+      "hash": "1ab1f976c147392d170535ec439bc6aa3ff41d0b2c42a2c9cfdde38dcde5b87b",
+      "mtimeMs": 1781872358160.46
     },
-    ".agent-override.md": {
-      "action": "delete"
+    ".agent-context\\prompts\\review-code.md": {
+      "action": "restore",
+      "hash": "068a8aa245fc2b0ccbf0b403cc410e5d1f92d9e9d6224bde8df234a19d130a40",
+      "mtimeMs": 1781872358160.46
     },
-    ".agent-context": {
-      "action": "delete"
+    ".agent-context\\review-checklists\\architecture-review.md": {
+      "action": "restore",
+      "hash": "a8f630ae992142cf0e55022f555bfa331c3192c3799e71c594bc05bec5f3dcdf",
+      "mtimeMs": 1781872358161.4663
+    },
+    ".agent-context\\review-checklists\\pr-checklist.md": {
+      "action": "restore",
+      "hash": "21ae5fdb971a122edd5792ecb47929bd0dcbe3ad767607020e4e1cf6dd746697",
+      "mtimeMs": 1781872358161.4663
+    },
+    ".agent-context\\rules\\api-docs.md": {
+      "action": "restore",
+      "hash": "3bae764953b72bdd53319fc70a0f5be230e4bf1fe156743caaf5e959c3adaaaf",
+      "mtimeMs": 1781872358161.4663
+    },
+    ".agent-context\\rules\\architecture.md": {
+      "action": "restore",
+      "hash": "70bc6cbfb74566a4324b3c8d1d4a8068b0d84872a1d7cb4727957f35d24ef929",
+      "mtimeMs": 1781872358162.4243
+    },
+    ".agent-context\\rules\\database-design.md": {
+      "action": "restore",
+      "hash": "0c55043f51e78731fba7ea41e5baca08b1a032b8dca3257b23260979de53854c",
+      "mtimeMs": 1781872358162.4243
+    },
+    ".agent-context\\rules\\docker-runtime.md": {
+      "action": "restore",
+      "hash": "6156b7e8d09e782adcd3b8d35350aef01a506460a551800baf9bdfb7b55bdd40",
+      "mtimeMs": 1781872358162.4243
+    },
+    ".agent-context\\rules\\efficiency-vs-hype.md": {
+      "action": "restore",
+      "hash": "e2cbb28f5bf659e226ccda9be957a857fbdab5da2ce9cfe894c084540c4083eb",
+      "mtimeMs": 1781872358163.4258
+    },
+    ".agent-context\\rules\\error-handling.md": {
+      "action": "restore",
+      "hash": "7a3739af56474702b54cee2168ba4eadfcac89c18764a2286037d08c37f4d8fe",
+      "mtimeMs": 1781872358163.4258
+    },
+    ".agent-context\\rules\\event-driven.md": {
+      "action": "restore",
+      "hash": "8efc2ec02f935ac03ab59d876f22067650d84ec3f1534120af4528665fe4e42d",
+      "mtimeMs": 1781872358163.4258
+    },
+    ".agent-context\\rules\\frontend-architecture.md": {
+      "action": "restore",
+      "hash": "dc89d3189ddf64ae4ef74240f6de522a48235fe1c8a7a502791615562af010eb",
+      "mtimeMs": 1781872358164.4258
+    },
+    ".agent-context\\rules\\git-workflow.md": {
+      "action": "restore",
+      "hash": "f39f28119a7da7781fd9af01cf8ab0aa0f5723449f7ab0efe4787f55a1b985bd",
+      "mtimeMs": 1781872358164.4258
+    },
+    ".agent-context\\rules\\microservices.md": {
+      "action": "restore",
+      "hash": "c06cfaea0715d294dcbc46c4a95cf8aae4b43edc4ee6acca59db8ffde670d6d9",
+      "mtimeMs": 1781872358164.4258
+    },
+    ".agent-context\\rules\\naming-conv.md": {
+      "action": "restore",
+      "hash": "945a6044b07a7e092d635d4fd3e5f50f7e38625bba35321b2847fe69d251245f",
+      "mtimeMs": 1781872358164.4258
+    },
+    ".agent-context\\rules\\performance.md": {
+      "action": "restore",
+      "hash": "258c90fcde068f1ccffd378878b56359b4901dff999d7f226a8b6217d7d4809e",
+      "mtimeMs": 1781872358164.4258
+    },
+    ".agent-context\\rules\\realtime.md": {
+      "action": "restore",
+      "hash": "e8e21cc187934cb4d05086db5c8ddee7165540d39451b1304991dcc69a20dd20",
+      "mtimeMs": 1781872358165.433
+    },
+    ".agent-context\\rules\\security.md": {
+      "action": "restore",
+      "hash": "6419a824637c78c1ad80a51566b81e62d4d7200fb42cc2adf6872c44e094b48c",
+      "mtimeMs": 1781872358165.433
+    },
+    ".agent-context\\rules\\testing.md": {
+      "action": "restore",
+      "hash": "c96709efafdc55a8b1eb08b7acfe54042e82d96298bd6e5851b9d0e93dd7be85",
+      "mtimeMs": 1781872358165.433
+    },
+    ".agent-context\\state\\active-memory.json": {
+      "action": "restore",
+      "hash": "bdb945a275eb18380c443b3f101e922c99b7668f00fcca128cc0940d0322635e",
+      "mtimeMs": 1781872358166.4658
+    },
+    ".agent-context\\state\\architecture-map.md": {
+      "action": "restore",
+      "hash": "e43d4e5621d05659bca20f84333f03f2c7597f32224ab651b6f5fdd78f999673",
+      "mtimeMs": 1781872358166.4658
+    },
+    ".agent-context\\state\\benchmark-comparison-schema.json": {
+      "action": "restore",
+      "hash": "b38cc8eb70a3b3c0e692c1067666be0948dfc01fc7b669f610ab714e63f3473b",
+      "mtimeMs": 1781872358166.4658
+    },
+    ".agent-context\\state\\benchmark-reproducibility.json": {
+      "action": "restore",
+      "hash": "b0c702b2179eabf1a9b45f0d5a73ecddeeea455f3d364123cd0e5288dae4084f",
+      "mtimeMs": 1781872358167.4722
+    },
+    ".agent-context\\state\\benchmark-thresholds.json": {
+      "action": "restore",
+      "hash": "ce8f4de4a5982780eb0ed7b65fa18934c895f78d3769c1e64f60920cfceda457",
+      "mtimeMs": 1781872358167.4722
+    },
+    ".agent-context\\state\\benchmark-writer-judge-config.json": {
+      "action": "restore",
+      "hash": "9a54f601e7beeb16fc7cbfb7cc8682a4bb8eeff47ad5c6ec8c580fe6fd66f7b6",
+      "mtimeMs": 1781872358167.4722
+    },
+    ".agent-context\\state\\dependency-map.md": {
+      "action": "restore",
+      "hash": "97193a04a3673d9760cf87c023b011a280bd94fbcec84b5c8a28639126001231",
+      "mtimeMs": 1781872358167.4722
+    },
+    ".agent-context\\state\\memory-adapter-contract.json": {
+      "action": "restore",
+      "hash": "3be186069c347029540cedb96b5290bf25902cad2669286a41ee61714b37640f",
+      "mtimeMs": 1781872358168.4255
+    },
+    ".agent-context\\state\\memory-continuity.json": {
+      "action": "restore",
+      "hash": "9113e0f65f0aebb77e84e2242d283adef97e084d060008c54c1b32c68415cb43",
+      "mtimeMs": 1781872358168.4255
+    },
+    ".agent-context\\state\\memory-schema-v1.json": {
+      "action": "restore",
+      "hash": "f9b3c467257344f6ba483231caf7be0c92e661bd43deec2db10223eb6d623d17",
+      "mtimeMs": 1781872358168.4255
+    },
+    ".agent-context\\state\\onboarding-report.json": {
+      "action": "restore",
+      "hash": "ea1916a6be73db29f524d7f3314d4cd8fb4cac2909b92379e6f92af951c33ed1",
+      "mtimeMs": 1781872358168.4255
+    },
+    ".agent-context\\state\\README.md": {
+      "action": "restore",
+      "hash": "fbf41a0489b35b486ae7a7a6bbf4b9ffdde856c9c783baab25b7f73b82314f3a",
+      "mtimeMs": 1781872358166.4658
+    },
+    ".agent-context\\state\\token-optimization.json": {
+      "action": "restore",
+      "hash": "148741b4d21ddb9c2b7e0ff68101a747438586320723e9237e5241bf5c4d3a45",
+      "mtimeMs": 1781872358169.4333
     }
   }
 }

@@ -1,176 +1,63 @@
-# Bootstrap Dynamic Design Contract
+# Design Direction Prompt
 
-Use this prompt for UI, UX, frontend layout, screen, Tailwind, animation, 3D, canvas, or redesign work.
-
-Create or refine `docs/DESIGN.md` for human reasoning and `docs/design-intent.json` for machine-readable design intent, guardrails, and review signals.
-
-This contract is a decision scaffold, not a style preset. We guide the agent; we do not pick the final style, stack, framework, palette, typography, layout paradigm, or animation library offline.
+Use this prompt for UI, UX, frontend layout, screen, or redesign work. Create or refine `docs/DESIGN.md` before writing UI code.
 
 ## Authority
-- Treat `.agent-context/` and current project docs as technical authority.
-- Treat `README.md` as overview, install, and user-facing context only. Do not use it as coding, architecture, or design authority when `.agent-context/` gives a stricter rule.
-- Use current repo evidence, product copy, route names, component names, user goals, and existing constraints as the source of truth.
-- Treat prior-chat visuals, unrelated project memory, benchmark screenshots, and famous-product aesthetics as tainted context unless the user explicitly approves continuity.
-- Keep external references non-copying; extract constraints only.
-- Before choosing a new UI, animation, scroll, 3D, canvas, chart, icon, styling, or component library, research current official docs.
 
-## Required Order
-1. Read `AGENTS.md`, this prompt, `../rules/frontend-architecture.md`, current UI code, current project docs, and existing design docs.
-2. Refine existing `docs/DESIGN.md` and `docs/design-intent.json`; do not replace them blindly.
-3. If either design doc is missing, create it before UI implementation.
-4. Record `motionPaletteDecision` before UI code; product categories are heuristics, not style presets.
-5. Encode `repoEvidence.designEvidenceSummary` when onboarding or detector evidence exists.
-6. Keep both design docs synchronized after implementation.
+- Use current repo evidence, project docs, and `.agent-context/` as style context.
+- Do not copy layout rhythm, palette, component skin, or brand posture from external references without explicit user approval.
+- WCAG 2.2 AA is the hard compliance floor.
+- When generating any UI component that renders or accepts user data, explicitly state in the prompt: "ensure all user-supplied input is sanitized, all status indicators have non-color alternatives, and all interactive elements have visible focus states."
+- Before choosing a new UI library, research current official docs.
 
-## Creative Commitment Gate
-Before broad compliance review or UI implementation, record an agent-chosen visual direction in both design docs:
-- one concrete real-world anchor reference
-- one signature motion behavior more specific than "smooth"
-- one typographic decision with meaningful role contrast
-- one authored visual bet visible in the first viewport
+## Design Direction Process
 
-Reject generic anchors. Do not accept "modern", "clean", "premium", "expressive", "minimal", or "bold" as the anchor. Name a material, instrument, artifact class, architectural system, editorial genre, cinematic behavior, exhibition system, scientific apparatus, or industrial mechanism.
+1. **Name Your Defaults**: Name three temptations (e.g. SaaS admin default, AI-startup landing) and why they flatten this product. Derive your search direction by rejecting them.
+2. **Choose an Anchor**: Run `npx -y getdesign@latest list` to browse proven brand references. Pick one whose spatial rhythm fits this product. Run `npx -y getdesign@latest add <brand>` to read the full reference — use it to derive token values, then discard it. Output DESIGN.md stays under 400 tokens. Do not use generic quality words ("clean", "modern").
+3. **Creative Commitments**: Choose distinctive typography, dominant colors with sharp accents, and one signature motion behavior. Create depth rather than flat card stacks.
+4. **Previous Directions**: If `docs/DESIGN.md` contains previous directions, treat them as a blocklist. The new anchor must differ in conceptual family, hierarchy, and motion.
 
-## Dynamic Avant-Garde Anchor Engine
-If no current-task research or visual reference exists, activate the Dynamic Avant-Garde Anchor Engine before coding.
+## Redesign Protocol
 
-Rules:
-- Treat old design docs, prior UI, and scaffold seeds as evidence, not research.
-- Internally consider at least three high-variance anchors.
-- Discard the two safest or most predictable options.
-- Output only the chosen anchor, specific reference point, and rationale.
-- Forbid final anchors named dashboard, portal, cards, admin panel, SaaS shell, web app shell, or minimalist interface.
-- Derive typography, spacing, density, color behavior, morphology, motion, and responsive composition from the chosen anchor.
-- Translate the anchor non-literally first. Anchor artifacts are evidence for behavior, hierarchy, density, typography, state language, and motion, not automatic UI chrome.
-- Use reduced-motion fallbacks instead of suppressing motion.
+When the user says "redesign from zero": treat existing UI as behavioral evidence only. Rewrite design docs. Change primary composition, hierarchy, interaction model, and responsive architecture. Do not ship a palette swap.
 
-## Creative Ambition Floor
-Before UI code, record:
-- one product-derived palette move
-- one signature motion, spatial, or interaction behavior
-- one morphology or composition choice that avoids interchangeable card stacks when the product allows it
-- at least three at-a-glance product-specific signals for new screens or broad redesigns
+## Output Format
 
-Do not ship AI-safe UI. Record exact drift signals in `reviewRubric`; at minimum reject decorative grid wallpaper, default line backgrounds, calibration-mark wallpaper, soft glow backgrounds, generic abstract marks, testing/demo/placeholder UI copy, terminal-only user flows, and first-output composition with only local copy swapped in when they have no product function. Treat measurement, calibration, crop, route, timeline, and inspection marks as task overlays or control affordances only; never promote them to the page background, hero backdrop, or first-output visual texture. If a conceptual anchor suggests a forbidden motif, the forbidden motif wins; express the anchor through workflow, hierarchy, density, typography, material behavior, state design, and interaction grammar instead of literal wallpaper.
+`docs/DESIGN.md` must be a compact token file under 400 tokens. Rationale stays in working memory.
 
-## Brave Redesign Default
-For UI design work, the agent owns the ambition decision. For broad screens, redesigns, or new visual systems, treat expressive motion, spatial hierarchy, distinctive composition, and product-specific interaction as the baseline even when the user did not say "rich". Do not reduce the request to a safer version of the existing UI, a static implementation, or a component-kit rearrangement because research or dependency selection feels inconvenient.
+Required sections (in this order, no additions):
 
-If the expressive path needs a new motion, 3D, canvas, scroll, or interaction library and web search is available, perform the official-doc research and record the decision. If web search is unavailable, use already-present dependencies or native browser capabilities while preserving the intended ambition, then mark library verification as pending.
+### Anchor
+One sentence: the interaction anchor and what mechanic is borrowed.
 
-Only downshift ambition after naming the concrete blocker: product fit, content density, measured performance budget, accessibility, device support, package conflict, security risk, or missing runtime capability. A new dependency, package count, or vague performance concern is not a blocker by itself. Pair every downshift with a replacement interaction quality that still changes composition, hierarchy, feedback, or memorability.
+### Tokens
+- **Typography**: font families (display, body, mono), scale base and ratio, scale method
+- **Colors**: OKLCH primitives with semantic role mapping (primary, secondary, surface, error, success)
+- **Spacing**: base unit, scale
+- **Radius**: small, medium, large values
+- **Shadow**: elevation levels
+- **Motion**: duration, easing, reduced-motion fallback
 
-## Design Flexibility Layer
+### Constraints
+- WCAG 2.2 AA floor
+- Up to 3 product-specific anti-patterns
 
-`docs/design-intent.json` must separate locked outcomes from flexible expression. The machine contract keeps review invariants stable; it must not freeze exact aesthetic implementation unless repo evidence, accessibility validation, implementation constraints, or explicit user approval locks it.
+### Previous Directions
+Anchors used in prior iterations (blocklist for redesign). Start empty for fresh projects.
 
-Record `designFlexibilityPolicy`: lock user goals, runtime constraints, accessibility, production readiness, forbidden patterns, and approved continuity; keep exact palette primitives, font families, radius/shadow values, component-kit theme mapping, signature move implementation, and literal anchor artifacts flexible until validated or approved. Semantic roles are required; exact primitives are not automatically locked. Required experience outcomes are separate from candidate implementation moves. Libraries supply behavior, accessibility, primitives, and delivery speed; the project supplies final composition, theme, morphology, and visual language.
+## Required Validation Gates
 
-## AI Color and Template Residue Audit
-AI color drift happens when a palette uses safe defaults before product meaning.
+Only three gates. Do not add more:
+1. Anchor exists and is specific.
+2. Token values are derived from the anchor.
+3. WCAG 2.2 AA compliance floor is met.
 
-Complete the AI color audit before coding:
-- Explain what product evidence or anchorReference makes the palette fit.
-- Name the color roles that carry task, status, data, or navigation meaning.
-- Name one color behavior that would not transfer cleanly to another product category.
-- Use visually exploratory, product-derived palettes while preserving WCAG contrast and status clarity.
+## Pre-Commit Critique
 
-Cream, slate, monochrome, purple-blue gradients, cyber-neon terminals, pale editorial surfaces, soft glow atmospheres, and dark control rooms are autopilot risks, not banned palettes.
+Before committing any UI output, answer:
 
-## Motion and 3D Courage Rule
-Motion, 3D, canvas, WebGL, scroll choreography, and modern animation libraries are first-class UI options when they improve understanding, exploration, feedback, hierarchy, memorability, or confidence.
+1. Rename test: if the product name changed to an unrelated category, would this UI still look identical? Yes = too generic, reset anchor.
+2. Token drift test: does any color, font, or spacing in the output contradict the DESIGN.md token definitions? Yes = align before commit.
+3. Security test: is user-controlled data rendered unsanitized, or does any status depend on color alone? Yes = fix before merge.
 
-Use modern, expressive interaction when it improves hierarchy, feedback, confidence, or memorability.
-
-If rich motion or spatial UI is omitted, record the product, content-density, performance, accessibility, or device reason and the replacement interaction quality. "Not necessary" is not enough.
-
-If 3D or canvas is used, record product role, interaction model, fallback path, runtime/library choice, loading state, keyboard path, and reduced-motion behavior.
-
-## Token Derivation Audit
-Before implementation, `docs/design-intent.json` must include top-level `derivedTokenLogic`:
-- `anchorReference`
-- `colorDerivationSource`
-- `spacingDerivationSource`
-- `typographyDerivationSource`
-- `motionDerivationSource`
-- `validationRule`
-
-Every semantic token role must trace to `anchorReference`. Exact primitive values stay flexible until repo evidence, accessibility validation, implementation constraints, or explicit user approval locks them. If the rationale is "looks good", "common practice", "modern default", or "framework default", derive the token again before UI code.
-
-## Library Research Protocol
-If web search is available:
-- Verify each new UI-related library against current official docs.
-- Record source URL, fetched date, stable compatible version, purpose, risk, and fallback in `libraryDecisions[]`.
-- Set `libraryResearchStatus` to `verified` only when every external library decision has evidence.
-
-If web search is unavailable:
-- Do not hallucinate package names, APIs, versions, or imports.
-- Use native CSS, browser APIs, or already-present dependencies.
-- Set `libraryResearchStatus` to `pending-verification`.
-
-Treat unresearched dependency choices as review findings. Dynamic UI Foundation Selection: do not default to shadcn/ui, Tailwind-only, native-only, or any component kit because it is familiar. Choose the foundation from product type, interaction complexity, accessibility needs, design ambition, team/runtime constraints, bundle/runtime cost, and current official docs.
-Ready-made primitives are allowed when they improve behavior, accessibility, speed, or maintainability. The library supplies mechanics; the project supplies visual language. Reject default component-kit styling without product rationale, but do not reject a modern lightweight library solely because a dependency was needed.
-## Zero-Based Redesign Protocol
-
-When the user says "redesign from zero", "redesain dari 0", "ulang dari 0", or "research ulang":
-- Treat existing UI as content, behavior, accessibility, and asset evidence only.
-- Rewrite or materially update both design docs before UI code.
-- Add `visualResetStrategy`.
-- Reset composition, hierarchy, palette/typography, motion or interaction, and responsive information architecture.
-- Do not ship a palette swap, dark-mode flip, or same hero with new colors.
-- Run the redesign regression test: if the result preserves the old hero structure, navigation grammar, card rhythm, motion density, image framing, or primary interaction model without explicit user-approved continuity, revise before implementation is considered complete.
-
-## Responsive Recomposition Plan
-
-Responsive design means recomposition, not resizing.
-
-Define viewport mutation rules:
-- Mobile: prioritize the first decisive action and touch flow.
-- Tablet: regroup surfaces without becoming a shrunken desktop.
-- Desktop: expose more context without defaulting to admin chrome.
-- For each viewport, name what is reordered, merged, hidden, disclosed, promoted, and forbidden.
-
-## Required `docs/DESIGN.md` Sections
-
-1. Design Intent and Product Personality
-2. Audience and Use-Context Signals
-3. Visual Direction and Distinctive Moves
-4. Color, Typography, Spacing, and Density Decisions
-5. Token Architecture and Alias Strategy
-6. Responsive Recomposition Plan
-7. Motion, Interaction, and Feedback Rules
-8. Component Language, States, and Morphology
-9. Source Boundaries and Context Hygiene
-10. Accessibility Non-Negotiables
-11. Anti-Patterns to Avoid
-12. Implementation Notes for Future UI Tasks
-
-## Required `docs/design-intent.json` Behavior
-
-The JSON is the source of truth for machine review. It must stay project-specific and include:
-- confirmed project context and assumptions
-- agent-chosen visual direction
-- `motionPaletteDecision`
-- `designFlexibilityPolicy`
-- `conceptualAnchor`
-- `derivedTokenLogic`
-- `aiSafeUiAudit` and `productionContentPolicy`
-- `tokenSystem`, `colorTruth`, `crossViewportAdaptation`, `motionSystem`, and `componentMorphology`
-- `accessibilityPolicy`
-- `designExecutionPolicy`
-- `designExecutionHandoff`
-- `reviewRubric`
-- `contextHygiene`
-- `libraryResearchStatus` and `libraryDecisions[]`
-- `forbiddenPatterns`
-- `repoEvidence.designEvidenceSummary` when available
-
-## Accessibility and Review
-
-WCAG 2.2 AA is the hard floor. APCA may be used only as advisory perceptual tuning.
-
-Define a review rubric that names drift signals and separates taste from failure.
-
-Block or flag inaccessible contrast/focus/target/keyboard/auth/status behavior, scale-only responsive behavior, default component-kit styling, nonfunctional background effects, grid or line filler, placeholder copy, terminal-only core flows, readability-as-safe-default palettes, copied visual direction, and genericity findings that cannot name the exact drift signal.
-
-Wait for user approval before generating Figma or code assets when the user only asked for planning or design direction.
+Max 3 revision cycles. If unresolved, reset the anchor entirely.

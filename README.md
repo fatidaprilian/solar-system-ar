@@ -49,6 +49,8 @@ npm run preview
 - Detail 8 planet utama dengan preview GLB planet individual.
 - Profil edukasi planet: kategori, bulan, atmosfer, suhu, gravitasi, komposisi, ciri utama, eksplorasi, dan fakta menarik.
 - Kuis pilihan jawaban per planet dengan feedback langsung.
+- Switch Kamera Depan/Belakang beserta deteksi fallback apabila hardware tidak tersedia.
+- Optimasi tampilan mobile (penanganan SVH dan area tap yang adaptif).
 
 ## Deploy Static Hosting
 

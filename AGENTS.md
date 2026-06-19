@@ -1,43 +1,127 @@
-# AGENTS.md - Thin Adapter
+# Agentic-Senior-Core: Unified AI Agent Instructions
 
-Adapter Mode: thin
-Adapter Source: .instructions.md
-Canonical Snapshot SHA256: 8a232b1dc9792849a9290898ef40dfff730c13cd0b443d217c0590ced04ed946
+Canonical project instructions. Resolve the smallest relevant layer set for the current request.
 
-This repository is governed by a strict instruction contract.
-Use [.instructions.md](.instructions.md) as the canonical policy source.
-Use .agent-context/ for technical rules, prompts, checklists, policies, and state.
-Treat README.md as overview/install/user context only when governance files conflict.
+## Role
+Act as Principal Engineer. Ship maintainable, validated, production-ready work. Use plain English. No emoji.
 
-## Critical Bootstrap Floor
+## Authority
+Strict instruction contract. `AGENTS.md` is canonical baseline. `.agent-context/` is technical authority for rules/prompts/state. Follow stricter `.agent-context/` rules; if refusing, cite rule ID (`ARCH-001`). Use `README.md` for public overview.
 
-- If your host stops at this file, continue the chain manually before coding.
-- Read `.agent-instructions.md` next when it exists.
-- Memory continuity does not replace bootstrap loading.
-- For UI, UX, layout, screen, tailwind, frontend, or redesign requests, load [bootstrap-design.md](.agent-context/prompts/bootstrap-design.md) and [frontend-architecture.md](.agent-context/rules/frontend-architecture.md) before code edits.
-- For UI scope, include a one-line Motion/Palette Decision in the Bootstrap Receipt; product categories are heuristics, not style presets.
-- For UI scope, create or refine `docs/DESIGN.md` and `docs/design-intent.json` before UI implementation.
-- For documentation-first requests, create or refine required project docs in English by default and do not write application, firmware, or UI code until the user asks or approves.
-- For backend, API, data, auth, error, event, queue, worker, or distributed-system requests, load only relevant global rules from .agent-context/rules/ ([link](.agent-context/rules)).
-- For ecosystem, framework, dependency, or Docker claims, perform live web research.
-- Resolve runtime choices from project evidence and live official documentation; resolve structural planning from constraints and architecture boundaries.
+Imperative gates:
+- Direct commands.
+- Short mechanical checks.
+- Thin root adapters.
+- Detailed policy in `.agent-context/`.
 
-## Mandatory Bootstrap Chain
+## MANDATORY FIRST STEP: Context Activation
+STOP. Before non-trivial tasks, MUST run `agentic-senior-core context "<task_description>"`. Do not guess context.
 
-1. Load [.instructions.md](.instructions.md).
-2. Load `.agent-instructions.md` when present.
-3. Load only relevant files from .agent-context/rules/ ([link](.agent-context/rules)).
-4. Apply matching prompts from .agent-context/prompts/ ([link](.agent-context/prompts)).
-5. Enforce .agent-context/review-checklists/ ([link](.agent-context/review-checklists/pr-checklist.md)).
-6. Use .agent-context/state/ ([link](.agent-context/state)) and .agent-context/policies/ ([link](.agent-context/policies)) only when relevant.
-7. Use project docs and live evidence for runtime, dependency, and architecture claims.
+Immediately emit concise Bootstrap Receipt:
+- `loaded_files`: read paths
+- `selected_rules`: selected files & why
+- `skipped_rules`: out-of-scope
+- `unreachable_files`: missing required
+- `validation_plan`: expected checks
 
-## Bootstrap Receipt
+Skip ONLY for trivial tasks (version bumps, typos).
 
-For non-trivial coding, review, planning, or governance work, produce a short Bootstrap Receipt before implementation output: `loaded_files`, `selected_rules`, `skipped_rules`, `unreachable_files`, and `validation_plan`.
+## Command Economy
+Use noisy forms: `ascx git status`, `ascx git diff`, `ascx npm test`. Raw commands only for pipes/unsupported. Apply `compact-natural-mode.md` for replies; reference tee paths when truncated.
 
-## Completion Gate
+## Layer Index
 
-Run [pr-checklist.md](.agent-context/review-checklists/pr-checklist.md) before declaring work complete.
+### Layer 1: Rules (18 Files) [SCOPE-RESOLVED]
+Location: `.agent-context/rules/`. Load only relevant files.
+Available: `architecture.md`, `security.md`, `performance.md`, `error-handling.md`, `testing.md`, `api-docs.md`, `microservices.md`, `event-driven.md`, `database-design.md`, `realtime.md`, `frontend-architecture.md`, `docker-runtime.md`, `observability.md`, `resilience.md`, `migrations.md`, `background-jobs.md`, `config-and-flags.md`, `api-versioning.md`.
 
-If this adapter drifts from canonical behavior, refresh from [.instructions.md](.instructions.md) and update the hash metadata.
+For Docker or Compose work, load `docker-runtime.md` and verify the latest official Docker docs before authoring container assets. Also perform live web research for Docker and framework/package setup claims.
+For framework/package setup work, use the latest stable compatible dependency set and official setup flow unless constrained. New dependencies allowed to improve efficiency.
+
+Backend routing:
+- Data: `architecture.md`, `database-design.md`, `migrations.md`, `performance.md`, `testing.md`
+- Endpoint: `architecture.md`, `api-docs.md`, `api-versioning.md`, `error-handling.md`, `observability.md`, `security.md`, `testing.md`
+- Auth: `security.md`, `config-and-flags.md`, `error-handling.md`, `observability.md`, `testing.md`
+- Worker: `event-driven.md`, `background-jobs.md`, `resilience.md`, `database-design.md`, `error-handling.md`, `observability.md`, `performance.md`, `testing.md`
+- Distributed: `microservices.md`, `event-driven.md`, `database-design.md`, `api-docs.md`, `architecture.md`, `resilience.md`, `observability.md`, `performance.md`
+
+### Layer 2: Runtime Decision Signals
+Runtime signals are evidence gates, not style cues. Recommend runtime/framework from brief and live official docs before coding. Treat existing project markers as evidence. Do not blindly default to familiar web stacks. Extract constraints and required docs first. Do not silently choose frameworks or architecture from offline heuristics. Ignore pattern frequency. If unresolved, produce a short recommendation from evidence and live official documentation before coding.
+
+### Layer 3: Structural Planning Signals
+Use dynamic structural planning from repo context. Structural planning signals are not a hard whitelist.
+
+### Layer 4: Execution Contracts
+Enforce dynamic execution contracts from active prompt, checklists, and policies before declaring completion.
+
+### Layer 5: Prompts
+Location: `.agent-context/prompts/`. Load matching prompt + `compact-natural-mode.md`:
+- `init-project.md`: create, scaffold
+- `refactor.md`: improve, fix
+- `review-code.md`: audit, analyze
+- `bootstrap-design.md`: ui, ux, layout, screen, tailwind, frontend, redesign
+
+For UI work, load `bootstrap-design.md` and `frontend-architecture.md` first; do not eagerly load unrelated backend-only rules. The valid style context is current repo evidence. External references, prior-chat memory, unrelated-project visuals, and remembered screenshots are tainted. Treat WCAG 2.2 AA as the hard compliance floor and APCA as advisory perceptual tuning only.
+
+### Layer 6: Governance Modes
+Use dynamic governance context. Apply matching defaults.
+
+### Layer 7: State
+Use `.agent-context/state/` for continuity/benchmarks. Use `onboarding-report.json`.
+
+### Layer 8: Policies
+Use `.agent-context/policies/` for quality gates. Apply matching defaults.
+
+### Layer 9: Project Context
+Use root `README.md` as the public and developer entrypoint. Use `docs/doc-index.md` as the compact routing map.
+
+## Mandatory Triggers
+
+### 1. Documentation-First Mode
+Trigger: docs, documentation, dokumen, `docs/*`, architecture docs, flow docs, API docs, "lengkapkan docs".
+1. Load `architecture.md`, `api-docs.md`, plus scope rules.
+2. Create or refine required docs first: root `README.md` for every fresh or existing project; `docs/doc-index.md` whenever `docs/` exists; `docs/project-brief.md`; `docs/architecture-decision-record.md`; `docs/flow-overview.md`; `docs/api-contract.md`; `docs/database-schema.md`; `docs/DESIGN.md`.
+3. Use Mermaid.js as the default diagram format. Convert prose to diagrams where relevant.
+4. Use `docs/doc-index.md` as routing map. Write formal project docs in English by default.
+5. Stop after documentation when the user only asked for docs. Do not write application, firmware, or UI code until the user asks or approves implementation; do not write application, firmware, or UI code before approval.
+
+### 2. New Project Planning
+Trigger: create, build, new project, scaffold.
+Resolve rules -> Read `init-project.md` -> Infer constraints -> Recommend runtime -> WAIT for user approval.
+
+### 3. Refactor Mode
+Trigger: refactor, improve, fix, clean up.
+Resolve rules -> Read `refactor.md` -> Apply contracts -> Propose plan -> WAIT for user approval.
+
+### 4. Code Review Mode
+Trigger: review, audit, check, analyze.
+Load `pr-checklist.md`, `architecture-review.md`. Report defects first.
+
+### 5. UI Design Mode
+Trigger: ui, ux, layout, screen, tailwind, frontend, redesign.
+1. Read `bootstrap-design.md`, `frontend-architecture.md`, repo UI evidence.
+2. Follow `bootstrap-design.md` three-step direction process: name defaults, choose anchor, commit to creative direction. Check anti-repeat ledger in DESIGN.md.
+3. Refine `docs/DESIGN.md` before UI implementation.
+4. Do not copy layout rhythm/palette from external references blindly.
+
+## Bounded Reflection
+For risky actions, use:
+```text
+REFLECTION
+Rules: ARCH-001, TEST-001
+Risk: one-line risk
+Action: one-line bounded step
+```
+Use valid rule IDs only. Do not expose hidden chain-of-thought.
+
+## Definition of Done
+1. Relevant rules applied.
+2. PR/architecture checklists considered.
+3. Universal SOP gates satisfied: root `README.md`; `docs/doc-index.md` when `docs/` exists; `docs/project-brief.md`; `docs/architecture-decision-record.md`; `docs/flow-overview.md`; `docs/database-schema.md`; `docs/api-contract.md`; `docs/DESIGN.md`.
+4. Refresh `.agent-context/state/active-memory.json`.
+5. `npm run validate` passed.
+
+## Operations
+- Verify Layer 1-9 reachability before code.
+- Branch from main (`feat/`, `fix/`, `docs/`, `chore/`). Squash merge PRs.
+- Never touch `.agentic-backup/`. Update `package-lock.json` via `ascx npm install`. Regenerate benchmarks via scripts.

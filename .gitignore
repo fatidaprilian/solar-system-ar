@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# agentic-senior-core: local backup artifacts
+.agentic-backup/
+
+# agentic-senior-core: local runtime artifacts
+.agent-context/state/token-saver/
+.agent-context/state/token-optimization-report.json
