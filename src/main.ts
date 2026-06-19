@@ -1566,7 +1566,8 @@ function setSolarOverviewVisible(isVisible: boolean): void {
     // Workaround for A-Frame animation-mixer getting stuck after being hidden
     if (shouldShowModel) {
       try {
-        const mixer = (solarSystemEl as any).components?.['animation-mixer'];
+        const glbWrapperEl = solarSystemEl.querySelector<HTMLElement>("#glbWrapper");
+        const mixer = (glbWrapperEl as any)?.components?.['animation-mixer'];
         if (mixer && typeof mixer.playAction === 'function') {
           mixer.playAction();
         } else if (typeof (solarSystemEl as any).play === 'function') {
