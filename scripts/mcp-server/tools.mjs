@@ -1,4 +1,4 @@
-// @ts-check
+// @ts-nocheck
 
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';

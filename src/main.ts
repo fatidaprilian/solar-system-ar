@@ -148,9 +148,9 @@ let planetPreviewRenderToken = 0;
 const MIN_VIEWPORT_HEIGHT = 320;
 const MAX_TOUCH_VIEWPORT_HEIGHT = 1400;
 const MAX_TOUCH_VIEWPORT_ASPECT = 2.35;
-const SOLAR_OVERVIEW_TARGET_SIZE = 2.8;
+const SOLAR_OVERVIEW_TARGET_SIZE = 1.6;
 const MOBILE_CLOSE_RELOAD_DELAY_MS = 180;
-const SOLAR_MODEL_VERTICAL_OFFSET = 0.08;
+const SOLAR_MODEL_VERTICAL_OFFSET = 0.05;
 const SOLAR_MODEL_CLUTTER_NAME_PARTS = ["asteroid", "asteroidi", "ceres", "pluto", "moon"];
 const PLANET_TAP_RADIUS_MULTIPLIER: Record<PlanetId, number> = {
   mercury: 3,
@@ -164,8 +164,8 @@ const PLANET_TAP_RADIUS_MULTIPLIER: Record<PlanetId, number> = {
 };
 const TOUCH_SCREEN_PICK_RADIUS_PX = 82;
 const POINTER_SCREEN_PICK_RADIUS_PX = 54;
-const AR_CAMERA_TARGET_WIDTH = 1280;
-const AR_CAMERA_TARGET_HEIGHT = 720;
+const AR_CAMERA_TARGET_WIDTH = 640;
+const AR_CAMERA_TARGET_HEIGHT = 480;
 const AR_CAMERA_TARGET_FRAME_RATE = 30;
 
 type CameraQualityCapabilities = MediaTrackCapabilities & {
@@ -210,16 +210,16 @@ function getSolarOverviewTargetSize(): number {
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 1.9;
+    return 1.0;
   }
   if (viewportWidth <= 420) {
-    return 2.05;
+    return 1.15;
   }
   if (viewportWidth <= 520) {
-    return 2.2;
+    return 1.3;
   }
   if (viewportWidth <= 768) {
-    return 2.45;
+    return 1.45;
   }
   return SOLAR_OVERVIEW_TARGET_SIZE;
 }
@@ -1268,7 +1268,7 @@ function normalizeArVideoLayer(videoEl: HTMLVideoElement): HTMLVideoElement {
   style.width = "100vw";
   style.height = "var(--app-height, 100svh)";
   style.minHeight = "var(--app-height, 100svh)";
-  style.objectFit = "contain";
+  style.objectFit = "cover";
   style.objectPosition = "center center";
   style.margin = "0";
   style.marginTop = "0px";
