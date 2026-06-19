@@ -1569,6 +1569,9 @@ function setSolarOverviewVisible(isVisible: boolean): void {
         const glbWrapperEl = solarSystemEl.querySelector<HTMLElement>("#glbWrapper");
         const mixer = (glbWrapperEl as any)?.components?.['animation-mixer'];
         if (mixer && typeof mixer.playAction === 'function') {
+          if (typeof mixer.stopAction === 'function') {
+            mixer.stopAction();
+          }
           mixer.playAction();
         } else if (typeof (solarSystemEl as any).play === 'function') {
           (solarSystemEl as any).play();
