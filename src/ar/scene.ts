@@ -86,14 +86,19 @@ export function createArSceneMarkup(
         <a-entity
           id="solarSystem"
           class="interactable-planet"
-          gltf-model="#solarSystemModel"
-          animation-mixer="clip: *; loop: repeat; timeScale: 0.5"
           continuous-sun-spin
           visible="false"
           position="0 0 0"
           rotation="0 0 0"
           scale="${solarScaleValue}"
-        ></a-entity>
+        >
+          <a-entity
+            id="glbWrapper"
+            gltf-model="#solarSystemModel"
+            animation-mixer="clip: *; loop: repeat; timeScale: 0.5"
+            rotation="-90 0 0"
+          ></a-entity>
+        </a-entity>
 
         <a-entity id="solarFallback" visible="true" position="0 0 0" scale="${fallbackScaleValue}">
           <a-sphere color="#ffbe73" radius="0.08" position="0 0.12 0"></a-sphere>

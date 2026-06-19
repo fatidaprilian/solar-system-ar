@@ -1874,7 +1874,24 @@ function bindSolarModelFallback(): void {
 
 
     tuneSolarSystemModelScale();
-    if (solarSystemEl) {
+
+    const maybeWindow = window as Window & { THREE?: any };
+    if (solarSystemEl && maybeWindow.THREE) {
+      const glbWrapperEl = solarSystemEl.querySelector<HTMLElement>("#glbWrapper");
+      if (glbWrapperEl) {
+        const glbObj = (glbWrapperEl as any).object3D;
+        if (glbObj && glbObj.parent) {
+          glbObj.updateMatrixWorld(true);
+          const box = new maybeWindow.THREE.Box3().setFromObject(glbObj);
+          const center = box.getCenter(new maybeWindow.THREE.Vector3());
+          glbObj.parent.worldToLocal(center);
+          
+          glbObj.position.x -= center.x;
+          glbObj.position.y -= center.y;
+          glbObj.position.z -= center.z;
+        }
+      }
+
       const didFit = fitModelToMarkerSize(solarSystemEl, getSolarOverviewTargetSize(), {
         center: true,
         centerY: true,
