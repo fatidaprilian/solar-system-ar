@@ -148,7 +148,7 @@ let planetPreviewRenderToken = 0;
 const MIN_VIEWPORT_HEIGHT = 320;
 const MAX_TOUCH_VIEWPORT_HEIGHT = 1400;
 const MAX_TOUCH_VIEWPORT_ASPECT = 2.35;
-const SOLAR_OVERVIEW_TARGET_SIZE = 1.8;
+const SOLAR_OVERVIEW_TARGET_SIZE = 2.0;
 const MOBILE_CLOSE_RELOAD_DELAY_MS = 180;
 const SOLAR_MODEL_VERTICAL_OFFSET = 0.05;
 const SOLAR_MODEL_CLUTTER_NAME_PARTS = ["asteroid", "asteroidi", "ceres", "pluto", "moon"];
@@ -210,16 +210,16 @@ function getSolarOverviewTargetSize(): number {
 
   const viewportWidth = window.visualViewport?.width ?? window.innerWidth ?? 0;
   if (viewportWidth <= 360) {
-    return 1.15;
+    return 1.3;
   }
   if (viewportWidth <= 420) {
-    return 1.35;
-  }
-  if (viewportWidth <= 520) {
     return 1.5;
   }
-  if (viewportWidth <= 768) {
+  if (viewportWidth <= 520) {
     return 1.65;
+  }
+  if (viewportWidth <= 768) {
+    return 1.8;
   }
   return SOLAR_OVERVIEW_TARGET_SIZE;
 }
@@ -2068,25 +2068,20 @@ async function switchCamera(event: Event): Promise<void> {
   );
 
   try {
+    // Try to pre-acquire stream but don't block if verification fails
     preparedCameraStream = await requestVerifiedFacingModeStream(
       requestedMode,
       previousCameraIdentity
     );
 
-    if (!preparedCameraStream) {
-      showToast(
-        `Kamera ${getFacingModeLabel(requestedMode).toLowerCase()} tidak tersedia atau tidak bisa diverifikasi. Tetap memakai kamera ${getFacingModeLabel(previousMode).toLowerCase()}.`,
-        "warning"
-      );
-      return;
-    }
-
+    // Even if preparedCameraStream is null, still attempt the switch
+    // AR.js will use the facingMode from its config to request the camera
     currentFacingMode = requestedMode;
     showScanner();
     syncArViewportLayout();
 
     const didBoot = await bootScene(true, activeScannerSession, previousCameraIdentity);
-    if (!didBoot || !manualFacingModeApplied) {
+    if (!didBoot) {
       discardPreparedCameraStream();
       currentFacingMode = previousMode;
       updateCameraButtonLabel();
@@ -2099,6 +2094,10 @@ async function switchCamera(event: Event): Promise<void> {
         "warning"
       );
       return;
+    }
+
+    if (!manualFacingModeApplied) {
+      console.warn("[CAMERA] facing mode stream not verified, AR.js handling camera directly");
     }
 
     updateCameraButtonLabel();
